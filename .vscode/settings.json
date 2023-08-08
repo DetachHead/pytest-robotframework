@@ -10,31 +10,20 @@
   "git.useEditorAsCommitInput": false,
   "diffEditor.ignoreTrimWhitespace": false,
   "python.linting.mypyArgs": ["--show-column-numbers"],
-  "python.formatting.provider": "black",
   "python.linting.mypyEnabled": true,
   "python.linting.enabled": true,
   "files.autoSave": "onFocusChange",
   "search.useIgnoreFiles": true,
   "git.useCommitInputAsStashMessage": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll": true,
     "source.organizeImports": true
   },
   "files.eol": "\n",
   "python.testing.pytestEnabled": true,
   "python.analysis.typeCheckingMode": "off",
   "python.linting.flake8Enabled": false,
-  "python.analysis.pylanceLspClientEnabled": true,
   "python.analysis.autoFormatStrings": true,
   "python.analysis.gotoDefinitionInStringLiteral": true,
-  "flake8.importStrategy": "fromEnvironment",
-  "flake8.severity": {
-    "E": "Warning",
-    "F": "Warning",
-    "I": "Warning",
-    "W": "Warning",
-    "Y": "Warning"
-  },
   "pylint.importStrategy": "fromEnvironment",
   "pylint.severity": {
     "convention": "Warning",
@@ -50,5 +39,5 @@
   },
   "yaml.schemas": {
     "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json": ".github/workflows/*.yaml"
-  },
+  }
 }

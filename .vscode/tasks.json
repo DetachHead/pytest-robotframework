@@ -10,7 +10,8 @@
       "args": ["install"],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "poetry update lockfile",
@@ -19,7 +20,8 @@
       "args": ["update"],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "poetry refresh lockfile (no update)",
@@ -28,7 +30,8 @@
       "args": ["lock", "--no-update"],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "basedmypy - all files",
@@ -37,7 +40,8 @@
       "args": ["-m", "mypy", "."],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "basedmypy write baseline - all files",
@@ -46,7 +50,8 @@
       "args": ["-m", "mypy", ".", "--write-baseline"],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "flake8 - all files",
@@ -55,7 +60,8 @@
       "args": ["-m", "flake8"],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "pylint - all files",
@@ -64,7 +70,8 @@
       "args": ["-m", "pylint", "testpy"],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "isort - all files",
@@ -73,7 +80,8 @@
       "args": ["-m", "isort", "--diff", "--color", "."],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     },
     {
       "label": "black - all files",
@@ -82,7 +90,8 @@
       "args": ["-m", "black", "--color", "."],
       "presentation": {
         "clear": true
-      }
+      },
+      "problemMatcher": []
     }
   ]
 }
