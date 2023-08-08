@@ -54,10 +54,10 @@
       "problemMatcher": []
     },
     {
-      "label": "flake8 - all files",
+      "label": "ruff - all files",
       "type": "shell",
       "command": "${command:python.interpreterPath}",
-      "args": ["-m", "flake8"],
+      "args": ["-m", "ruff", "."],
       "presentation": {
         "clear": true
       },
@@ -68,16 +68,6 @@
       "type": "shell",
       "command": "${command:python.interpreterPath}",
       "args": ["-m", "pylint", "pytest_robotframework"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "isort - all files",
-      "type": "shell",
-      "command": "${command:python.interpreterPath}",
-      "args": ["-m", "isort", "--diff", "--color", "."],
       "presentation": {
         "clear": true
       },

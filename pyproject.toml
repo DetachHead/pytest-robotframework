@@ -22,11 +22,6 @@ requires = ["poetry-core>=1.1.0b2"]
 [tool.poetry.plugins.pytest11]
 robotframework = "pytest_robotframework.pytest_robotframework"
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-combine_as_imports = true
-
 [tool.black]
 target-version = ["py311"]
 skip-magic-trailing-comma = true

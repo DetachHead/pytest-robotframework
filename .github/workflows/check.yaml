@@ -19,7 +19,6 @@ jobs:
       - run: poetry run mypy -p pytest_robotframework
       - run: poetry run mypy tests
       - run: poetry run black --check --diff .
-      - run: poetry run isort --check --diff .
-      - run: poetry run flake8 .
+      - run: poetry run ruff .
       - run: poetry run pylint pytest_robotframework tests
       - run: poetry run pytest
