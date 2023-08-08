@@ -1,0 +1,25 @@
+name: check
+
+on: push
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.11"
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.1.4
+        with:
+          poetry-version: "1.3.2"
+      - run: poetry lock --check
+      - run: poetry install
+      - run: poetry run mypy -p testpy
+      - run: poetry run mypy tests
+      - run: poetry run black --check --diff .
+      - run: poetry run isort --check --diff .
+      - run: poetry run flake8 .
+      - run: poetry run pylint testpy tests
+      - run: poetry run pytest

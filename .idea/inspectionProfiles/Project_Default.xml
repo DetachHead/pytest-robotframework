@@ -1,0 +1,11 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <!-- you'll probably want to disable these as your project gets bigger if you're on windows. see https://github.com/leinardi/mypy-pycharm/pull/58 -->
+    <inspection_tool class="Mypy" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="Pylint" enabled="true" level="ERROR" enabled_by_default="true" />
+
+    <!-- re-enable this if you disable the mypy inspection -->
+    <inspection_tool class="PyTypeCheckerInspection" enabled="false" level="WARNING" enabled_by_default="false" />
+  </profile>
+</component>

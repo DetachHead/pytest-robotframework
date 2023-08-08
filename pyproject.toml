@@ -1,0 +1,74 @@
+[tool.poetry]
+authors = ["DetachHead <detachhead@users.noreply.github.com>"]
+description = ""
+name = "testpy"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.dev-dependencies]
+black = "^22"
+flake8 = "^6"
+basedmypy = "^1.6.1"
+pylint = "^2.15"
+pytest = "^7"
+isort = "^5.12.0"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.1.0b2"]
+
+[tool.flake8]
+select = "E,F,W"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+combine_as_imports = true
+
+[tool.black]
+target-version = ["py311"]
+skip-magic-trailing-comma = true
+
+[tool.pylint.MASTER]
+fail-on = "I"
+
+[tool.pylint."MESSAGE CONTROL"]
+disable = [
+    "missing-function-docstring",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "fixme",
+    "invalid-name",                              # https://github.com/PyCQA/pylint/issues/3401
+    "duplicate-code",                            # https://github.com/PyCQA/pylint/issues/214
+    "useless-import-alias",                      # required when using no-implicit-reexport in mypy
+    "too-few-public-methods",                    # didn't ask + ratio
+    "too-many-instance-attributes",              # who cares
+    "too-many-locals",                           # who cares
+    "too-many-statements",                       # who cares
+    "too-many-branches",                         # who cares
+    "too-many-nested-blocks",                    # who cares
+    "unused-import",                             # false negatives + handled by flake8
+    "inherit-non-class",                         # handled by mypy, false positive on ReifiedGeneric
+    "isinstance-second-argument-not-valid-type", # false positive on Never type, handled by mypy
+    "unsubscriptable-object",                    # false positive + handled by mypy
+    "no-name-in-module",                         # why is this linter so stupid
+    "no-value-for-parameter",                    # handled by mypy
+    "no-member",                                 # handled by mypy
+    "too-many-function-args",                    # handled by mypy
+    "unexpected-keyword-arg",                    # handled by mypy
+    "abstract-class-instantiated",               # handled by mypy
+]
+enable = ["useless-suppression", "deprecated-pragma"]
+
+[tool.pylint.FORMAT]
+max-line-length = 200
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+xfail_strict = true
+
+[tool.mypy]
+allow_redefinition = true
+default_return = true
