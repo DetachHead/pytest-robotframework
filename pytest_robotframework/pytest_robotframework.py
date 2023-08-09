@@ -52,12 +52,13 @@ class PytestParser(Parser):
 class RobotResultGetter(ListenerV3):
     """listener to get the test results from the robot run"""
 
-    results = list[ResultTestSuite]()
+    def __init__(self) -> None:
+        self.results = list[ResultTestSuite]()
+        super().__init__()
 
     @override
-    @classmethod
-    def end_suite(cls, data: RunningTestSuite, result: ResultTestSuite):
-        cls.results.append(result)
+    def end_suite(self, data: RunningTestSuite, result: ResultTestSuite):
+        self.results.append(result)
 
 
 result_getter_key = StashKey[RobotResultGetter]()
