@@ -3,3 +3,5 @@
 /venv/
 *.log
 output.xml
+log.html
+report.html

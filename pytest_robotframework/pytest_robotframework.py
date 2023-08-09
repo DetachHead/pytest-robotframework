@@ -3,51 +3,93 @@ from types import ModuleType
 from typing import Literal, cast
 
 from pytest import CallInfo, Function, Item, Session, StashKey, TestReport
-from robot.model.testcase import TestCases
-from robot.result.executionresult import Result
-from robot.result.model import TestCase as ResultTestCase
-from robot.running.model import Body, Keyword, TestCase as ModelTestCase, TestSuite
+from robot.api import TestSuite as RunningTestSuite
+from robot.api.interfaces import ListenerV3, Parser, TestDefaults
+from robot.result.model import TestCase as ResultTestCase, TestSuite as ResultTestSuite
+from robot.run import RobotFramework
+from robot.running.model import Body, Keyword, TestCase as RunningTestCase
+from typing_extensions import override
 
-test_result = StashKey[Result]()
+
+class PytestParser(Parser):
+    """custom robot "parser" for pytest files. doesn't actually do any parsing,
+    but instead creates the test suites using the pytest session. this requires
+    the tests to have already been collected by pytest"""
+
+    def __init__(self, session: Session) -> None:
+        self.session = session
+        super().__init__()
+
+    extension = "py"
+
+    @override
+    def parse(self, source: Path, defaults: TestDefaults) -> RunningTestSuite:
+        suite = RunningTestSuite(
+            RunningTestSuite.name_from_source(source), source=source
+        )
+        for test in self.session.items:
+            if (
+                # TODO: what items are not Functions?
+                not isinstance(test, Function)
+                # only add tests from the pytest session that are in the suite robot is parsing
+                or test.path != source
+            ):
+                continue
+            test_case = RunningTestCase(name=test.originalname)
+            test_case.body = Body(
+                # TODO: make this not a keyword https://github.com/DetachHead/pytest-robotframework/issues/2
+                items=[Keyword(name=test.originalname)]
+            )
+            suite.resource.imports.library(cast(ModuleType, test.module).__name__)
+            suite.tests.append(test_case)
+        return suite
+
+
+class RobotResultGetter(ListenerV3):
+    """listener to get the test results from the robot run"""
+
+    results = list[ResultTestSuite]()
+
+    @override
+    @classmethod
+    def end_suite(cls, data: RunningTestSuite, result: ResultTestSuite):
+        cls.results.append(result)
+
+
+result_getter_key = StashKey[RobotResultGetter]()
 
 # these functions are called by pytest and require the arguments with these names even if they are not used
 # ruff: noqa: ARG001
 
 
-def pytest_runtestloop(session: Session):
-    suite = TestSuite(name=session.name, source=Path(__file__))
-    suite.tests = TestCases(tests=[])  # type:ignore[no-any-expr]
-    for test in session.items:
-        if not isinstance(test, Function):
-            continue
-        suite.resource.imports.library(cast(ModuleType, test.module).__name__)
-        test_case = ModelTestCase(name=test.originalname)
-        test_case.body = Body(
-            items=[Keyword(name=test.originalname)]  # type:ignore[no-any-expr]
-        )
-        suite.tests.append(test_case)  # type:ignore[no-any-expr]
-
-    session.stash[
-        test_result
-    ] = suite.run()  # type:ignore[no-untyped-call,func-returns-value]
-
-
 def pytest_pyfunc_call(pyfuncitem: Function) -> object:
-    """prevent pytest from running the function because robot runs it later"""
+    """prevent pytest from running the function because robot runs it instead in `pytest_runtestloop`"""
     return True
+
+
+def pytest_runtestloop(session: Session):
+    result_getter = RobotResultGetter()
+    session.stash[result_getter_key] = result_getter
+    RobotFramework().main(  # type:ignore[no-untyped-call]
+        {item.path for item in session.items},  # type:ignore[no-any-expr]
+        parser=[PytestParser(session=session)],  # type:ignore[no-any-expr]
+        listener=[result_getter],  # type:ignore[no-any-expr]
+    )
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:
     if call.when != "call" or not isinstance(item, Function):
         return None
-    robot_suite_result = item.session.stash[test_result]
-    robot_test_result: ResultTestCase = next(
-        robot_test
-        for robot_test in cast(
-            TestCases[ResultTestCase], cast(TestSuite, robot_suite_result.suite).tests
-        )
-        if robot_test.name == item.originalname  # type:ignore[no-any-expr]
-    )
+    robot_test_result: ResultTestCase | None = None
+    for suite in item.session.stash[result_getter_key].results:
+        for test in suite.tests:
+            if test.name == item.originalname:
+                robot_test_result = test
+                break
+        if robot_test_result:
+            break
+    else:
+        raise Exception(f"failed to find robot test for {item.originalname}")
     outcomes: dict[str, Literal["passed", "failed", "skipped"]] = {
         robot_test_result.FAIL: "failed",
         robot_test_result.PASS: "passed",
