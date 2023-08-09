@@ -44,6 +44,10 @@ class PytestParser(Parser):
             suite.tests.append(test_case)
         return suite
 
+    @override
+    def parse_init(self, source: Path, defaults: TestDefaults) -> RunningTestSuite:
+        return RunningTestSuite()
+
 
 class RobotResultGetter(ListenerV3):
     """listener to get the test results from the robot run"""
@@ -71,7 +75,7 @@ def pytest_runtestloop(session: Session):
     result_getter = RobotResultGetter()
     session.stash[result_getter_key] = result_getter
     RobotFramework().main(  # type:ignore[no-untyped-call]
-        {item.path for item in session.items},  # type:ignore[no-any-expr]
+        [str(session.path)],  # type:ignore[no-any-expr]
         parser=[PytestParser(session=session)],  # type:ignore[no-any-expr]
         listener=[result_getter],  # type:ignore[no-any-expr]
     )
