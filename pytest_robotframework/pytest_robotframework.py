@@ -88,7 +88,10 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
     robot_test_result: ResultTestCase | None = None
     for suite in item.session.stash[result_getter_key].results:
         for test in suite.tests:
-            if test.name == item.originalname:
+            if (
+                test.name == item.originalname
+                and str(test.source) == item.module.__file__  # type:ignore[no-any-expr]
+            ):
                 robot_test_result = test
                 break
         if robot_test_result:
