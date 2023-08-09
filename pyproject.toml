@@ -246,6 +246,11 @@ allow_redefinition = true
 default_return = true
 ignore_missing_py_typed = true # https://github.com/robotframework/robotframework/issues/4822
 
+[[tool.mypy.overrides]]
+module = ['robot.*']
+default_return = false
+no_implicit_reexport = false
+
 [tool.ruff]
 extend-select = [
     "I",
