@@ -21,4 +21,4 @@ jobs:
       - run: poetry run black --check --diff .
       - run: poetry run ruff .
       - run: poetry run pylint pytest_robotframework tests
-      - run: poetry run pytest -p no:robotframework
+      - run: poetry run pytest

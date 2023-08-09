@@ -9,7 +9,6 @@
       "type": "python",
       "request": "launch",
       "module": "pytest",
-      "args": ["-p", "no:robotframework"],
       "justMyCode": false
     }
   ]
