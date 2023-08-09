@@ -111,7 +111,6 @@ enable = [
     "used-before-assignment",
     "abstract-method",
     "anomalous-unicode-escape-in-string",
-    "arguments-differ",
     "arguments-out-of-order",
     "arguments-renamed",
     "attribute-defined-outside-init",
