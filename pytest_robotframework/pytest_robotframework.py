@@ -76,7 +76,7 @@ def pytest_runtestloop(session: Session):
     result_getter = RobotResultGetter()
     session.stash[result_getter_key] = result_getter
     RobotFramework().main(  # type:ignore[no-untyped-call]
-        [str(session.path)],  # type:ignore[no-any-expr]
+        [session.path],  # type:ignore[no-any-expr]
         parser=[PytestParser(session=session)],  # type:ignore[no-any-expr]
         listener=[result_getter],  # type:ignore[no-any-expr]
     )
