@@ -57,6 +57,32 @@ def test_one_test_fails(pytester: Pytester):
     assert_log_file_exists(pytester)
 
 
+def test_one_test_skipped(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest import mark
+
+        @mark.skipif(True, reason="foo")
+        def test_one_test_skipped():
+            raise Exception("asdf")
+        """
+    )
+    run_and_assert_result(pytester, skipped=1)
+    assert_log_file_exists(pytester)
+    assert (
+        output_xml(pytester).find(
+            "./suite//test[@name='test_one_test_skipped']/kw[@name='Skip If']/arg[.='True']"
+        )
+        is not None
+    )
+    assert (
+        output_xml(pytester).find(
+            "./suite//test[@name='test_one_test_skipped']/kw[@name='Skip If']/arg[.='foo']"
+        )
+        is not None
+    )
+
+
 def test_two_tests_one_fail_one_pass(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """

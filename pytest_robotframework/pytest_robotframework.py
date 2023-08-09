@@ -36,10 +36,28 @@ class PytestParser(Parser):
             ):
                 continue
             test_case = RunningTestCase(name=test.originalname)
-            test_case.body = Body(
-                # TODO: make this not a keyword https://github.com/DetachHead/pytest-robotframework/issues/2
-                items=[Keyword(name=test.originalname)]
-            )
+            test_case.body = Body()
+            for marker in test.iter_markers():
+                if marker.name == "skip":
+                    keyword = Keyword("skip")
+                elif marker.name == "skipif":
+                    # TODO: styring conditions? but i think they're deprecated and/or cringe so who cares
+                    condition: object = (
+                        marker.args[0]  # type:ignore[no-any-expr]
+                        or marker.kwargs["condition"]  # type:ignore[no-any-expr]
+                    )
+                    keyword = Keyword(
+                        "skip if",
+                        (
+                            str(condition),
+                            marker.kwargs["reason"],  # type:ignore[no-any-expr]
+                        ),
+                    )
+                else:
+                    continue
+                test_case.body.append(keyword)
+            # TODO: make this not use a keyword https://github.com/DetachHead/pytest-robotframework/issues/2
+            test_case.body.append(Keyword(name=test.originalname))
             suite.resource.imports.library(cast(ModuleType, test.module).__name__)
             suite.tests.append(test_case)
         return suite
