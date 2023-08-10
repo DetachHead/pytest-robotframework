@@ -2,16 +2,24 @@ from pathlib import Path
 from types import ModuleType
 from typing import Literal, cast
 
-from pytest import CallInfo, Function, Item, Session, StashKey, TestReport
+from pytest import (
+    CallInfo,
+    Function,
+    Item,
+    Parser as PytestParser,
+    Session,
+    StashKey,
+    TestReport,
+)
 from robot.api import TestSuite as RunningTestSuite
-from robot.api.interfaces import ListenerV3, Parser, TestDefaults
+from robot.api.interfaces import ListenerV3, Parser as RobotParser, TestDefaults
 from robot.result.model import TestCase as ResultTestCase, TestSuite as ResultTestSuite
 from robot.run import RobotFramework
 from robot.running.model import Body, Keyword, TestCase as RunningTestCase
 from typing_extensions import override
 
 
-class PytestParser(Parser):
+class PytestRobotParser(RobotParser):
     """custom robot "parser" for pytest files. doesn't actually do any parsing,
     but instead creates the test suites using the pytest session. this requires
     the tests to have already been collected by pytest"""
@@ -85,6 +93,14 @@ result_getter_key = StashKey[RobotResultGetter]()
 # ruff: noqa: ARG001
 
 
+def pytest_addoption(parser: PytestParser):
+    parser.addoption(
+        "--robotargs",
+        default="",
+        help="additional arguments to be passed to robotframework",
+    )
+
+
 def pytest_pyfunc_call(pyfuncitem: Function) -> object:
     """prevent pytest from running the function because robot runs it instead in `pytest_runtestloop`"""
     return True
@@ -93,11 +109,23 @@ def pytest_pyfunc_call(pyfuncitem: Function) -> object:
 def pytest_runtestloop(session: Session):
     result_getter = RobotResultGetter()
     session.stash[result_getter_key] = result_getter
-    RobotFramework().main(  # type:ignore[no-untyped-call]
+    robot = RobotFramework()  # type:ignore[no-untyped-call]
+    robot.main(  # type:ignore[no-untyped-call]
         [session.path],  # type:ignore[no-any-expr]
-        parser=[PytestParser(session=session)],  # type:ignore[no-any-expr]
+        parser=[PytestRobotParser(session=session)],  # type:ignore[no-any-expr]
         listener=[result_getter],  # type:ignore[no-any-expr]
         extension="py",
+        **robot.parse_arguments(  # type:ignore[no-any-expr]
+            [
+                *cast(
+                    str,
+                    session.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
+                        "--robotargs"
+                    ),
+                ).split(" "),
+                session.path,  # no
+            ]
+        )[0],
     )
 
 

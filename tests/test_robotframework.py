@@ -88,7 +88,7 @@ def test_two_tests_one_fail_one_pass(pytester: Pytester):
         """
         def test_one():
             pass
-        
+
         def test_two():
             raise Exception("asdf")
         """
@@ -205,3 +205,15 @@ def test_doesnt_run_robot_files(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
+
+
+def test_robot_args(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        def test_func1():
+            pass
+        """
+    )
+    result = pytester.runpytest("--robotargs", "-d results")
+    result.assert_outcomes(passed=1)
+    assert (pytester.path / "results" / "log.html").exists()
