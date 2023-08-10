@@ -107,6 +107,8 @@ def pytest_pyfunc_call(pyfuncitem: Function) -> object:
 
 
 def pytest_runtestloop(session: Session):
+    if session.config.option.collectonly:  # type:ignore[no-any-expr]
+        return
     result_getter = RobotResultGetter()
     session.stash[result_getter_key] = result_getter
     robot = RobotFramework()  # type:ignore[no-untyped-call]

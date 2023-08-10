@@ -217,3 +217,15 @@ def test_robot_args(pytester: Pytester):
     result = pytester.runpytest("--robotargs", "-d results")
     result.assert_outcomes(passed=1)
     assert (pytester.path / "results" / "log.html").exists()
+
+
+def test_doesnt_run_when_collecting(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        def test_func1():
+            pass
+        """
+    )
+    result = pytester.runpytest("--collect-only")
+    result.assert_outcomes()
+    assert not (pytester.path / "log.html").exists()
