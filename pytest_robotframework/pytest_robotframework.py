@@ -97,6 +97,7 @@ def pytest_runtestloop(session: Session):
         [session.path],  # type:ignore[no-any-expr]
         parser=[PytestParser(session=session)],  # type:ignore[no-any-expr]
         listener=[result_getter],  # type:ignore[no-any-expr]
+        extension="py",
     )
 
 
