@@ -103,11 +103,11 @@ class PytestRobotParser(RobotParser):
 
             def run_test(item: Item = item):
                 # mostly copied from the middle of `_pytest.runner.runtestprotocol`
+                # TODO: this function never gets run if the test is skipped, which deviates from runtestprotocol's behavior
                 # (reporting section moved to `pytest_report`)
                 # the original implementation in runtestprotocol gets the result from the report
                 # in the pytest_runtest_makereport hook, but we can't call these yet because robot doesn't
-                # give us the status until after setup, call and teardown are finished
-                # TODO: this part never gets run if the test is skipped, which deviates from runtestprotocol's behavior
+                # give us the status until after setup and call are finished
                 if not item.stash[calls_key][0].excinfo:
                     if item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
                         "setupshow", False
