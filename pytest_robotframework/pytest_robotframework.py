@@ -1,6 +1,6 @@
 from pathlib import Path
 from types import ModuleType
-from typing import Literal, cast
+from typing import cast
 
 from _pytest.config.compat import PathAwareHookProxy
 from _pytest.outcomes import Skipped
@@ -26,8 +26,6 @@ from robot.result.model import TestCase as ResultTestCase
 from robot.run import RobotFramework
 from robot.running.model import Body, Keyword, TestCase as RunningTestCase
 from typing_extensions import override
-
-PytestTestStage = Literal["setup", "call", "teardown"]
 
 
 class PytestRobotParser(RobotParser):
