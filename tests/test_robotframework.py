@@ -229,3 +229,25 @@ def test_doesnt_run_when_collecting(pytester: Pytester):
     result = pytester.runpytest("--collect-only")
     result.assert_outcomes()
     assert not (pytester.path / "log.html").exists()
+
+
+def test_pytest_runtest_setup(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from robot.api import logger
+
+        def test_one_test_robot():
+            logger.info(1)
+        """
+    )
+    pytester.makeconftest(
+        """
+        from pytest import Item
+        from robot.api import logger
+
+        def pytest_runtest_setup(item: Item):
+            logger.info(2)
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
