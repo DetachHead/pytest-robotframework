@@ -34,6 +34,15 @@ def test_foo(cache: Cache):
     foo()
 ```
 
+## robot command line arguments
+
+specify robot CLI arguments with the `--robotargs` argument:
+```
+pytest --robotargs="-d results --listener foo.Foo"
+```
+
+some arguments such as `--extension` obviously won't work .
+
 ### setup/teardown and other hooks
 
 to define a function that runs for each test at setup or teardown, create a `conftest.py` with a `pytest_runtest_setup` and/or `pytest_runtest_teardown` function:
