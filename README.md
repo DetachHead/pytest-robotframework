@@ -49,6 +49,10 @@ def test_something():
     """i am logged in now"""
 ```
 
+these hooks appear in the log the same way that the a `.robot` file's `Setup` and `Teardown` options in `*** Settings ***` would:
+
+![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/d0b6ee6c-adcd-4f84-9880-9e602c2328f9)
+
 for more information, see [writing hook functions](https://docs.pytest.org/en/7.1.x/how-to/writing_hook_functions.html). pretty much every pytest hook should work with this plugin
 but i haven't tested them all. please raise an issue if you find one that's broken.
 
