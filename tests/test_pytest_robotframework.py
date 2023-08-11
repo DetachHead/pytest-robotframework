@@ -276,10 +276,49 @@ def test_module_docstring(pytester: Pytester):
 def test_test_case_docstring(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """
-        def test_docstring():
+        def test_docstring(): 
             \"\"\"hello???\"\"\"
         """
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
     assert output_xml(pytester).find("./suite/suite/test/doc[.='hello???']") is not None
+
+
+def test_keyword_decorator(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest_robotframework import keyword
+        
+        @keyword 
+        def foo():
+            \"\"\"hie\"\"\"
+
+        def test_docstring():
+            foo()
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+    assert (
+        output_xml(pytester).find(
+            ".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']"
+        )
+        is not None
+    )
+
+
+def test_tags(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest import mark
+
+        @mark.slow
+        def test_tags():
+            ...
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.find(".//test[@name='test_tags']/tag[.='slow']") is not None
