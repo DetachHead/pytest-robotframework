@@ -246,3 +246,16 @@ def test_pytest_runtest_setup(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
+
+
+def test_fixture(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest import CaptureFixture
+        
+        def test_fixture(capfd: CaptureFixture):
+            assert isinstance(capfd, CaptureFixture)
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)

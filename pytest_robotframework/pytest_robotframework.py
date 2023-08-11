@@ -1,4 +1,3 @@
-from functools import wraps
 from pathlib import Path
 from types import ModuleType
 from typing import Literal, cast
@@ -100,7 +99,6 @@ class PytestRobotParser(RobotParser):
                 name=create_keyword_handler(module, setup), type=Keyword.SETUP
             )
 
-            @wraps(item.function)  # type:ignore[no-any-expr]
             def run_test(item: Item = item):
                 """mostly copied from the middle of `_pytest.runner.runtestprotocol`
                 (reporting section moved to `pytest_report`)"""
