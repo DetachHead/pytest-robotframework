@@ -4,6 +4,7 @@ from types import ModuleType
 from typing import Literal, cast
 
 from _pytest.config.compat import PathAwareHookProxy
+from _pytest.outcomes import Skipped
 from _pytest.runner import (
     call_runtest_hook,
     check_interactive_exception,
@@ -21,6 +22,7 @@ from pytest import (
 )
 from robot.api import TestSuite as RunningTestSuite
 from robot.api.interfaces import ListenerV3, Parser as RobotParser, TestDefaults
+from robot.libraries.BuiltIn import BuiltIn
 from robot.result.model import TestCase as ResultTestCase
 from robot.run import RobotFramework
 from robot.running.model import Body, Keyword, TestCase as RunningTestCase
@@ -74,28 +76,6 @@ class PytestRobotParser(RobotParser):
             item.stash[running_test_key] = test_case
             module = cast(ModuleType, item.module)
             test_case.body = Body()
-            # TODO: we treat the setuponly arg the same as if every test is skipped, meaning setup/teardowns will still be run.
-            #  is that correct?
-            skip = bool(
-                item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                    "setuponly", False
-                )
-            )
-            for marker in item.iter_markers():
-                if skip:
-                    break
-                if marker.name == "skip":
-                    skip = True
-                elif marker.name == "skipif":
-                    # TODO: string conditions? but i think they're deprecated and/or cringe so who cares
-                    condition: object = (
-                        marker.args[0]  # type:ignore[no-any-expr]
-                        or marker.kwargs["condition"]  # type:ignore[no-any-expr]
-                    )
-                    skip = bool(condition)
-            if skip:
-                test_case.body.append(Keyword(name="skip"))
-            item.stash[skip_key] = skip
 
             def setup(item: Item = item):
                 """mostly copied from the start of `_pytest.runner.runtestprotocol`
@@ -108,32 +88,38 @@ class PytestRobotParser(RobotParser):
                 item.stash[calls_key] = [call]
                 # make robot show the exception:
                 if call.excinfo:
-                    raise call.excinfo.value
+                    exception = call.excinfo.value
+                    if isinstance(exception, Skipped):
+                        BuiltIn().skip(  # type:ignore[no-untyped-call]
+                            "test marked with skip or skipif"
+                        )
+                    else:
+                        raise call.excinfo.value
 
             test_case.setup = Keyword(  # type:ignore[assignment]
                 name=create_keyword_handler(module, setup), type=Keyword.SETUP
             )
 
             @wraps(item.function)  # type:ignore[no-any-expr]
-            def run_test(item: Item = item, skip: bool = skip):
+            def run_test(item: Item = item):
                 """mostly copied from the middle of `_pytest.runner.runtestprotocol`
                 (reporting section moved to `pytest_report`)"""
                 # the original implementation in runtestprotocol gets the result from the report
                 # in the pytest_runtest_makereport hook, but we can't call these yet because robot doesn't
                 # give us the status until after setup, call and teardown are finished
+                # TODO: this part never gets run if the test is skipped, which deviates from runtestprotocol's behavior
                 if not item.stash[calls_key][0].excinfo:
                     if item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
                         "setupshow", False
                     ):
                         show_test_item(item)
-                    if not skip:
-                        call = call_runtest_hook(
-                            item, "call"
-                        )  # type:ignore[no-untyped-call]
-                        item.stash[calls_key].append(call)
-                        # make robot show the exception:
-                        if call.excinfo:
-                            raise call.excinfo.value
+                    call = call_runtest_hook(
+                        item, "call"
+                    )  # type:ignore[no-untyped-call]
+                    item.stash[calls_key].append(call)
+                    # make robot show the exception:
+                    if call.excinfo:
+                        raise call.excinfo.value
 
             # TODO: make this not use a keyword https://github.com/DetachHead/pytest-robotframework/issues/2
             test_case.body.append(  # type:ignore[no-any-expr]
@@ -165,7 +151,7 @@ class PytestRobotParser(RobotParser):
         return RunningTestSuite()
 
 
-def _pytest_reportreport(item: Item, call: CallInfo[None], log=True) -> TestReport:
+def _pytest_report(item: Item, call: CallInfo[None], log=True) -> TestReport:
     """copied from the last half of `_pytest.runner.call_and_report`"""
     hook = cast(PathAwareHookProxy, item.ihook)
     report: TestReport = hook.pytest_runtest_makereport(item=item, call=call)
@@ -189,9 +175,8 @@ class ResultReporter(ListenerV3):
         item = next(
             item for item in self.session.items if item.stash[running_test_key] == data
         )
-        item.stash[result_test_key] = result
         for when in item.stash[calls_key]:
-            _pytest_reportreport(item, when)
+            _pytest_report(item, when)
 
         # copied from the end of `_pytest.runner.runtestprotocol`:
         # After all teardown hooks have been called
@@ -202,9 +187,7 @@ class ResultReporter(ListenerV3):
 
 
 calls_key = StashKey[list[CallInfo[None]]]()
-skip_key = StashKey[bool]()
 running_test_key = StashKey[RunningTestCase]()
-result_test_key = StashKey[ResultTestCase]()
 
 # these functions are called by pytest and require the arguments with these names even if they are not used
 # ruff: noqa: ARG001
@@ -240,24 +223,3 @@ def pytest_runtestloop(session: Session) -> object:
         )[0],
     )
     return True
-
-
-def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:
-    if call.when == "collect":
-        return None
-    if not isinstance(item, PytestFunction):
-        return None
-    robot_test_result = item.stash[result_test_key]
-    outcomes: dict[str, Literal["passed", "failed", "skipped"]] = {
-        robot_test_result.FAIL: "failed",
-        robot_test_result.PASS: "passed",
-        robot_test_result.SKIP: "skipped",
-    }
-    return TestReport(
-        nodeid=item.nodeid,
-        location=item.location,
-        keywords=item.keywords,  # type:ignore[no-any-expr]
-        outcome=outcomes[robot_test_result.status],
-        longrepr=robot_test_result.message,
-        when=call.when,
-    )
