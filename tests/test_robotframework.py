@@ -50,8 +50,7 @@ def test_one_test_fails(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """
         def test_one_test_robot():
-            import traceback
-            raise Exception(traceback.format_stack())
+            raise Exception("asdf")
         """
     )
     run_and_assert_result(pytester, failed=1)
