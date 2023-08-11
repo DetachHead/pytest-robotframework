@@ -94,8 +94,11 @@ class PytestRobotParser(RobotParser):
                 or item.path != source
             ):
                 continue
+            function = cast(Function, item.function)
             test_case = RunningTestCase(
-                name=item.originalname, doc=cast(Function, item.function).__doc__ or ""
+                name=item.originalname,
+                doc=function.__doc__ or "",
+                tags=[marker.name for marker in item.iter_markers()],
             )
             module = cast(ModuleType, item.module)
             if module.__doc__ and not suite.doc:
