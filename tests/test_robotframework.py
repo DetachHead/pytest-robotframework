@@ -6,8 +6,8 @@ from pytest import Pytester
 
 def output_xml(pytester: Pytester) -> Element:
     return cast(
-        # builtin xml parser only used for tests, it's more typed than the alternative
         Element,
+        # builtin xml parser only used for tests, it's more typed than the alternative
         parse(str(pytester.path / "output.xml")).getroot(),  # noqa: S314
     )
 
