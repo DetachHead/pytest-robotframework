@@ -180,7 +180,7 @@ def pytest_runtestloop(session: Session) -> object:
                         "--robotargs"
                     ),
                 ).split(" "),
-                session.path,  # no
+                session.path,  # not actually used here, but the argument parser requires at least one path
             ]
         )[0],
     )
