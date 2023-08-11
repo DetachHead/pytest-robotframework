@@ -15,8 +15,8 @@ _P = ParamSpec("_P")
 def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
     """marks a function as a keyword and makes it show in the robot log.
 
-    unlike robot's `deco.keyword` decorator, decorated with this one will appear
-    as keywordds in the robot log even when ran from a python file."""
+    unlike robot's `deco.keyword` decorator, this one will make your function appear
+    as a keyword in the robot log even when ran from a python file."""
 
     @wraps(fn)
     def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
