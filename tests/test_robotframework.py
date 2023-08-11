@@ -259,3 +259,28 @@ def test_fixture(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
+
+
+def test_module_docstring(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        \"\"\"hello???\"\"\"
+        def test_nothing():
+            ...
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+    assert output_xml(pytester).find("./suite/suite/doc[.='hello???']") is not None
+
+
+def test_test_case_docstring(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        def test_docstring():
+            \"\"\"hello???\"\"\"
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+    assert output_xml(pytester).find("./suite/suite/test/doc[.='hello???']") is not None

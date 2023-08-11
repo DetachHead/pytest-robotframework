@@ -69,14 +69,18 @@ class PytestRobotParser(RobotParser):
                 or item.path != source
             ):
                 continue
-            test_case = RunningTestCase(name=item.originalname)
+            test_case = RunningTestCase(
+                name=item.originalname, doc=cast(Function, item.function).__doc__ or ""
+            )
             item.stash[running_test_key] = test_case
             module = cast(ModuleType, item.module)
+            if module.__doc__ and not suite.doc:
+                suite.doc = module.__doc__
             test_case.body = Body()
 
             def setup(item: Item = item):
-                """mostly copied from the start of `_pytest.runner.runtestprotocol`
-                (reporting section moved to `pytest_report`)"""
+                # mostly copied from the start of `_pytest.runner.runtestprotocol`
+                # (reporting section moved to `pytest_report`)
                 if hasattr(item, "_request") and not item._request:  # type: ignore[no-any-expr]
                     # This only happens if the item is re-run, as is done by
                     # pytest-rerunfailures.
@@ -98,8 +102,8 @@ class PytestRobotParser(RobotParser):
             )
 
             def run_test(item: Item = item):
-                """mostly copied from the middle of `_pytest.runner.runtestprotocol`
-                (reporting section moved to `pytest_report`)"""
+                # mostly copied from the middle of `_pytest.runner.runtestprotocol`
+                # (reporting section moved to `pytest_report`)
                 # the original implementation in runtestprotocol gets the result from the report
                 # in the pytest_runtest_makereport hook, but we can't call these yet because robot doesn't
                 # give us the status until after setup, call and teardown are finished
@@ -123,10 +127,9 @@ class PytestRobotParser(RobotParser):
             )
 
             def teardown(item: Item = item):
-                """mostly copied from the end of `_pytest.runner.runtestprotocol`
-                (reporting section moved to `pytest_report`, _request cleanup thingy
-                moved to the `end_test` method of the `ResultReporter` robot listener)
-                """
+                # mostly copied from the end of `_pytest.runner.runtestprotocol`
+                # (reporting section moved to `pytest_report`, _request cleanup thingy
+                # moved to the `end_test` method of the `ResultReporter` robot listener)
                 reports = item.stash[calls_key]
                 call = call_runtest_hook(  # type:ignore[no-untyped-call]
                     item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
