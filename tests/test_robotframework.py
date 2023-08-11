@@ -50,7 +50,8 @@ def test_one_test_fails(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """
         def test_one_test_robot():
-            raise Exception("asdf")
+            import traceback
+            raise Exception(traceback.format_stack())
         """
     )
     run_and_assert_result(pytester, failed=1)
@@ -71,13 +72,7 @@ def test_one_test_skipped(pytester: Pytester):
     assert_log_file_exists(pytester)
     assert (
         output_xml(pytester).find(
-            "./suite//test[@name='test_one_test_skipped']/kw[@name='Skip If']/arg[.='True']"
-        )
-        is not None
-    )
-    assert (
-        output_xml(pytester).find(
-            "./suite//test[@name='test_one_test_skipped']/kw[@name='Skip If']/arg[.='foo']"
+            "./suite//test[@name='test_one_test_skipped']/kw[@type='SETUP']/msg[@level='SKIP']"
         )
         is not None
     )
