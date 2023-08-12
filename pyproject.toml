@@ -1,8 +1,10 @@
 [tool.poetry]
 authors = ["DetachHead <detachhead@users.noreply.github.com>"]
-description = ""
+description = "a pytest plugin to run robotframework with tests written in python, so you can use the robot log without the language"
 name = "pytest_robotframework"
-version = "0.1.0"
+version = "1.0.0"
+readme = "README.md"
+repository = "https://github.com/detachhead/pylint-module-boundaries"
 
 [tool.poetry.dependencies]
 python = "^3.11"
