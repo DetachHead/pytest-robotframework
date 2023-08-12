@@ -1,0 +1,54 @@
+name: check and publish
+
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.3.2"
+
+on: push
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.11"
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.1.4
+        with:
+          poetry-version: "1.3.2"
+      - run: poetry lock --check
+      - run: poetry install
+      - run: poetry run mypy -p pytest_robotframework
+      - run: poetry run mypy tests
+      - run: poetry run black --check --diff .
+      - run: poetry run ruff .
+      - run: poetry run pylint pytest_robotframework tests
+      - run: poetry run pytest
+  publish:
+    runs-on: 'ubuntu-latest'
+    if: github.ref == 'refs/heads/master'
+    needs: check
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.1.4
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
+      - name: set token
+        run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+      - run: poetry build
+      - run: poetry publish
+      - name: get version number
+        id: current-version
+        run: echo ::set-output name=CURRENT_VERSION::$(poetry version -s)
+      - uses: marvinpinto/action-automatic-releases@v1.2.1
+        with:
+            repo_token: ${{ secrets.GITHUB_TOKEN }}
+            prerelease: false
+            files: dist/*
+            automatic_release_tag: ${{ steps.current-version.outputs.CURRENT_VERSION }}
