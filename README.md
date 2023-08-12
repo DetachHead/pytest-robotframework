@@ -34,7 +34,7 @@ def test_foo(cache: Cache):
     foo()
 ```
 
-## robot command line arguments
+### robot command line arguments
 
 specify robot CLI arguments with the `--robotargs` argument:
 ```
