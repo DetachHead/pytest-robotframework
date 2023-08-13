@@ -1,6 +1,6 @@
 [tool.poetry]
 authors = ["DetachHead <detachhead@users.noreply.github.com>"]
-description = "a pytest plugin to run robotframework with tests written in python, so you can use the robot log without the language"
+description = "a pytest plugin to generate robotframework reports without having to write your tests in the robot langauge"
 name = "pytest_robotframework"
 version = "1.0.0"
 readme = "README.md"
