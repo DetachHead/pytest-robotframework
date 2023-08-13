@@ -10,9 +10,11 @@ repository = "https://github.com/detachhead/pylint-module-boundaries"
 python = "^3.11"
 robotframework = "^6.1.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^23"
 basedmypy = "^2"
+lxml = "^4.9.3"
+lxml-stubs = "^0.4.0"
 pylint = "^2.15"
 pytest = "^7"
 ruff = "~0.0.280"
@@ -87,7 +89,6 @@ enable = [
     "missing-kwoa",
     "modified-iterating-dict",
     "modified-iterating-set",
-    "no-name-in-module",
     "non-iterator-returned",
     "nonlocal-and-global",
     "not-a-mapping",

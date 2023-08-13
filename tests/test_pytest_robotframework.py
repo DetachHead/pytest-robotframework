@@ -1,22 +1,26 @@
-from typing import cast
-from xml.etree.ElementTree import Element, parse
+from __future__ import annotations
 
-from pytest import Pytester
+from typing import TYPE_CHECKING, cast
+
+from lxml.etree import XML
+from pytest import Pytester, mark
+
+if TYPE_CHECKING:
+    from lxml.etree import _Element
 
 
-def output_xml(pytester: Pytester) -> Element:
-    return cast(
-        Element,
-        # builtin xml parser only used for tests, it's more typed than the alternative
-        parse(str(pytester.path / "output.xml")).getroot(),  # noqa: S314
-    )
+def output_xml(pytester: Pytester) -> _Element:
+    return XML((pytester.path / "output.xml").read_bytes())
 
 
 def get_robot_total_stats(pytester: Pytester) -> dict[str, str]:
     root = output_xml(pytester)
     statistics = next(child for child in root if child.tag == "statistics")
     total = next(child for child in statistics if child.tag == "total")
-    return next(child for child in total if child.tag == "stat").attrib
+    return cast(
+        dict[str, str],
+        next(child for child in total if child.tag == "stat").attrib.__copy__(),
+    )
 
 
 def assert_log_file_exists(pytester: Pytester):
@@ -69,11 +73,8 @@ def test_one_test_skipped(pytester: Pytester):
     )
     run_and_assert_result(pytester, skipped=1)
     assert_log_file_exists(pytester)
-    assert (
-        output_xml(pytester).find(
-            "./suite//test[@name='test_one_test_skipped']/kw[@type='SETUP']/msg[@level='SKIP']"
-        )
-        is not None
+    assert output_xml(pytester).xpath(
+        "./suite//test[@name='test_one_test_skipped']/kw[@type='SETUP']/msg[@level='SKIP']"
     )
 
 
@@ -136,11 +137,8 @@ def test_suites(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
-    assert (
-        output_xml(pytester).find(
-            "./suite/suite[@name='Suite1']/suite[@name='Test Asdf']/test[@name='test_func1']"
-        )
-        is not None
+    assert output_xml(pytester).xpath(
+        "./suite/suite[@name='Suite1']/suite[@name='Test Asdf']/test[@name='test_func1']"
     )
 
 
@@ -164,22 +162,13 @@ def test_nested_suites(pytester: Pytester):
     run_and_assert_result(pytester, passed=2, failed=1)
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
-    assert (
-        xml.find(
-            "./suite/suite[@name='Suite1']/suite[@name='Suite2']/suite[@name='Test Asdf']/test[@name='test_func1']"
-        )
-        is not None
+    assert xml.xpath(
+        "./suite/suite[@name='Suite1']/suite[@name='Suite2']/suite[@name='Test Asdf']/test[@name='test_func1']"
     )
-    assert (
-        xml.find(
-            "./suite/suite[@name='Suite1']/suite[@name='Suite3']/suite[@name='Test Asdf2']/test[@name='test_func2']"
-        )
-        is not None
+    assert xml.xpath(
+        "./suite/suite[@name='Suite1']/suite[@name='Suite3']/suite[@name='Test Asdf2']/test[@name='test_func2']"
     )
-    assert (
-        xml.find("./suite/suite[@name='Test Top Level']/test[@name='test_func1']")
-        is not None
-    )
+    assert xml.xpath("./suite/suite[@name='Test Top Level']/test[@name='test_func1']")
 
 
 def test_doesnt_run_robot_files(pytester: Pytester):
@@ -270,7 +259,7 @@ def test_module_docstring(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
-    assert output_xml(pytester).find("./suite/suite/doc[.='hello???']") is not None
+    assert output_xml(pytester).xpath("./suite/suite/doc[.='hello???']")
 
 
 def test_test_case_docstring(pytester: Pytester):
@@ -282,7 +271,7 @@ def test_test_case_docstring(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
-    assert output_xml(pytester).find("./suite/suite/test/doc[.='hello???']") is not None
+    assert output_xml(pytester).xpath("./suite/suite/test/doc[.='hello???']")
 
 
 def test_keyword_decorator(pytester: Pytester):
@@ -300,11 +289,8 @@ def test_keyword_decorator(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
-    assert (
-        output_xml(pytester).find(
-            ".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']"
-        )
-        is not None
+    assert output_xml(pytester).xpath(
+        ".//kw[contains(@name, ' Run Test')]/kw[@name='foo']/doc[.='hie']"
     )
 
 
@@ -321,4 +307,25 @@ def test_tags(pytester: Pytester):
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
-    assert xml.find(".//test[@name='test_tags']/tag[.='slow']") is not None
+    assert xml.xpath(".//test[@name='test_tags']/tag[.='slow']")
+
+
+@mark.xfail(
+    reason="TODO: figure out how to modify the keyword names before the xml is written or read the html file instead"
+)
+def test_keyword_names(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        def test_0():
+            pass
+        def test_1():
+            pass
+        """
+    )
+    run_and_assert_result(pytester, passed=2)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    for index in range(2):
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Setup']")
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Run Test']")
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Teardown']")
