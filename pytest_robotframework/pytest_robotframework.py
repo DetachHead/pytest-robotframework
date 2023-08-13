@@ -1,6 +1,9 @@
+import re
 from pathlib import Path
 from types import ModuleType
-from typing import Literal, cast
+
+# Callable is not a collection
+from typing import Callable, Literal, cast  # noqa: UP035
 
 from _pytest._code.code import ExceptionInfo, ExceptionRepr
 from _pytest.runner import call_and_report, show_test_item
@@ -13,15 +16,36 @@ from pytest import (
     StashKey,
     TestReport,
 )
-from robot.api import TestSuite as RunningTestSuite
+from robot import result, running
+from robot.api import ResultVisitor
 from robot.api.interfaces import Parser as RobotParser, TestDefaults
 from robot.libraries.BuiltIn import BuiltIn
 from robot.run import RobotFramework
-from robot.running.model import Body, Keyword, TestCase as RunningTestCase
+from robot.running.model import Body, Keyword
 from typing_extensions import override
 
+KeywordFunction = Callable[[], None]
 
-class PytestRobotParser(RobotParser):
+
+def _register_keyword(
+    suite: running.TestSuite, module: ModuleType, fn: KeywordFunction
+) -> str:
+    """when robot parses a test suite, there's no way to specify function references for the keywords, only the name.
+    then when the test is executed, the execution context creates a handler which imports the modules used by the
+    suite, which is where it resolves the keywords by name.
+
+    so since we are defining arbitrary functions here that robot needs to be able to find in a module, we have to
+    dynamically add it to the specified module with a unique name.
+
+    after the test suite is run, `_KeywordNameFixer` modifies the run results to change the keyword names back to
+    non-unique user friendly ones"""
+    suite.resource.imports.library(module.__name__)
+    name = f"pytestrobotkeyword{hash(fn)}_{fn.__name__}"
+    setattr(module, name, fn)
+    return name
+
+
+class _PytestRobotParser(RobotParser):
     """custom robot "parser" for pytest files. doesn't actually do any parsing,
     but instead creates the test suites using the pytest session. this requires
     the tests to have already been collected by pytest"""
@@ -33,27 +57,11 @@ class PytestRobotParser(RobotParser):
     extension = "py"
 
     @override
-    def parse(self, source: Path, defaults: TestDefaults) -> RunningTestSuite:
+    def parse(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
         report_key = StashKey[list[TestReport]]()
-        suite = RunningTestSuite(
-            RunningTestSuite.name_from_source(source), source=source
+        suite = running.TestSuite(
+            running.TestSuite.name_from_source(source), source=source
         )
-
-        def create_keyword_handler(module: ModuleType, fn: Function) -> str:
-            """when robot parses a test suite, there's no way to specify function references for the keywords, only the name.
-            then when the test is executed, the execution context creates a handler which imports the modules used by the
-            suite, which is where it resolves the keywords by name.
-
-            so since we are defining arbitrary functions here that robot needs to be able to find in a module, we have to
-            dynamically add it to the specified module with a unique name"""
-            suite.resource.imports.library(module.__name__)
-            unique_name = fn.__name__
-            i = 0
-            while hasattr(module, unique_name):
-                unique_name = f"{unique_name}_{i}"
-                i = i + 1
-            setattr(module, unique_name, fn)
-            return unique_name
 
         def call_and_report_robot_edition(
             item: Item, when: Literal["setup", "call", "teardown"], **kwargs: object
@@ -96,7 +104,7 @@ class PytestRobotParser(RobotParser):
             ):
                 continue
             function = cast(Function, item.function)
-            test_case = RunningTestCase(
+            test_case = running.TestCase(
                 name=item.originalname,
                 doc=function.__doc__ or "",
                 tags=[marker.name for marker in item.iter_markers()],
@@ -115,7 +123,7 @@ class PytestRobotParser(RobotParser):
                 call_and_report_robot_edition(item, "setup")
 
             test_case.setup = Keyword(  # type:ignore[assignment]
-                name=create_keyword_handler(module, setup), type=Keyword.SETUP
+                name=_register_keyword(suite, module, setup), type=Keyword.SETUP
             )
 
             def run_test(item: Item = item):
@@ -134,7 +142,7 @@ class PytestRobotParser(RobotParser):
 
             # TODO: make this not use a keyword https://github.com/DetachHead/pytest-robotframework/issues/2
             test_case.body.append(
-                Keyword(name=create_keyword_handler(module, run_test))
+                Keyword(name=_register_keyword(suite, module, run_test))
             )
 
             def teardown(item: Item = item):
@@ -144,14 +152,25 @@ class PytestRobotParser(RobotParser):
                 )
 
             test_case.teardown = Keyword(
-                name=create_keyword_handler(module, teardown), type=Keyword.TEARDOWN
+                name=_register_keyword(suite, module, teardown), type=Keyword.TEARDOWN
             )
             suite.tests.append(test_case)
         return suite
 
     @override
-    def parse_init(self, source: Path, defaults: TestDefaults) -> RunningTestSuite:
-        return RunningTestSuite()
+    def parse_init(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
+        return running.TestSuite()
+
+
+class _KeywordNameFixer(ResultVisitor):
+    """renames our dynamically generated setup/call/teardown keywords in the log back to user friendly ones"""
+
+    @override
+    # supertype is wrong, TODO: raise mypy issue
+    def visit_keyword(self, keyword: result.Keyword):  # type:ignore[override]
+        keyword.kwname = re.sub(
+            r"pytestrobotkeyword\d+", "", keyword.kwname, flags=re.IGNORECASE
+        )
 
 
 # these functions are called by pytest and require the arguments with these names even if they are not used
@@ -172,8 +191,9 @@ def pytest_runtestloop(session: Session) -> object:
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot.main(  # type:ignore[no-untyped-call]
         [session.path],  # type:ignore[no-any-expr]
-        parser=[PytestRobotParser(session=session)],  # type:ignore[no-any-expr]
+        parser=[_PytestRobotParser(session=session)],  # type:ignore[no-any-expr]
         extension="py",
+        prerebotmodifier=[_KeywordNameFixer()],  # type:ignore[no-any-expr]
         **robot.parse_arguments(  # type:ignore[no-any-expr]
             [
                 *cast(
