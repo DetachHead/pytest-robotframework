@@ -1,13 +1,13 @@
 # pytest-robotframework
 
-a pytest plugin to run robotframework with tests written in python, so you can use the robot log without the robot language
+a pytest plugin to generate robotframework reports without having to write your tests in the robot langauge
 
 ![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/9caabc2e-450e-4db6-bb63-e149a38d49a2)
-
 
 ## install
 
 not on pypi yet so install it from github for now:
+
 ```toml
 # pyproject.toml with poetry
 [tool.poetry.group.dev.dependencies]
@@ -37,6 +37,7 @@ def test_foo(cache: Cache):
 ### robot command line arguments
 
 specify robot CLI arguments with the `--robotargs` argument:
+
 ```
 pytest --robotargs="-d results --listener foo.Foo"
 ```
@@ -52,6 +53,7 @@ to define a function that runs for each test at setup or teardown, create a `con
 def pytest_runtest_setup():
     log_in()
 ```
+
 ```py
 # ./tests/test_suite.py
 def test_something():
