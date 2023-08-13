@@ -2,7 +2,7 @@
 authors = ["DetachHead <detachhead@users.noreply.github.com>"]
 description = "a pytest plugin to generate robotframework reports without having to write your tests in the robot langauge"
 name = "pytest_robotframework"
-version = "1.0.0"
+version = "1.0.1"
 readme = "README.md"
 repository = "https://github.com/detachhead/pylint-module-boundaries"
 
