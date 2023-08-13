@@ -34,6 +34,7 @@ class PytestRobotParser(RobotParser):
 
     @override
     def parse(self, source: Path, defaults: TestDefaults) -> RunningTestSuite:
+        report_key = StashKey[list[TestReport]]()
         suite = RunningTestSuite(
             RunningTestSuite.name_from_source(source), source=source
         )
@@ -152,8 +153,6 @@ class PytestRobotParser(RobotParser):
     def parse_init(self, source: Path, defaults: TestDefaults) -> RunningTestSuite:
         return RunningTestSuite()
 
-
-report_key = StashKey[list[TestReport]]()
 
 # these functions are called by pytest and require the arguments with these names even if they are not used
 # ruff: noqa: ARG001
