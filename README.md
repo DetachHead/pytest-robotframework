@@ -6,12 +6,8 @@ a pytest plugin to generate robotframework reports without having to write your 
 
 ## install
 
-not on pypi yet so install it from github for now:
-
-```toml
-# pyproject.toml with poetry
-[tool.poetry.group.dev.dependencies]
-pytest-robotframework = { git = "https://github.com/DetachHead/pytest-robotframework.git", rev = "master" }
+```
+poetry add pytest-robotframework --group=dev
 ```
 
 ## usage
