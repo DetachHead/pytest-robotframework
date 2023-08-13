@@ -169,7 +169,7 @@ class _KeywordNameFixer(ResultVisitor):
     # supertype is wrong, TODO: raise mypy issue
     def visit_keyword(self, keyword: result.Keyword):  # type:ignore[override]
         keyword.kwname = re.sub(
-            r"pytestrobotkeyword\d+", "", keyword.kwname, flags=re.IGNORECASE
+            r"pytestrobotkeyword\d+ ", "", keyword.kwname, flags=re.IGNORECASE
         )
 
 
