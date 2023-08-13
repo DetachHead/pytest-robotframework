@@ -6,6 +6,11 @@ env:
 
 on: push
 
+permissions:
+  contents: "write"
+  packages: "write"
+  pull-requests: "read"
+
 jobs:
   check:
     runs-on: ubuntu-latest
