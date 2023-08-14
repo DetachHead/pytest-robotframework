@@ -388,3 +388,20 @@ def test_variables_not_in_scope_in_other_suites(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=2)
     assert_log_file_exists(pytester)
+
+
+def test_parameterize(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest import mark
+
+        @mark.parametrize("test_input,expected", [(1, 8), (6, 6)])
+        def test_eval(test_input: int, expected: int):
+            assert test_input == expected
+        """
+    )
+    run_and_assert_result(pytester, passed=1, failed=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath("//test[@name='test_eval[1-8]']")
+    assert xml.xpath("//test[@name='test_eval[6-6]']")

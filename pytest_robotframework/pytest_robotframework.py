@@ -108,7 +108,7 @@ class _PytestRobotParser(RobotParser):
                 continue
             function = cast(Function, item.function)
             test_case = running.TestCase(
-                name=item.originalname,
+                name=item.name,
                 doc=function.__doc__ or "",
                 tags=[marker.name for marker in item.iter_markers()],
             )
