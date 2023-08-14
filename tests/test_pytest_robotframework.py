@@ -405,3 +405,17 @@ def test_parameterize(pytester: Pytester):
     xml = output_xml(pytester)
     assert xml.xpath("//test[@name='test_eval[1-8]']")
     assert xml.xpath("//test[@name='test_eval[6-6]']")
+
+
+def test_unittest_class(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from unittest import TestCase
+
+        class TestSet(TestCase):
+            def test_foo(self):
+                ...
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
