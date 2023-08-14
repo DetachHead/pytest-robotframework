@@ -18,6 +18,7 @@ from pytest import (
 )
 from robot import result, running
 from robot.api import ResultVisitor
+from robot.api.deco import keyword
 from robot.api.interfaces import Parser as RobotParser, TestDefaults
 from robot.libraries.BuiltIn import BuiltIn
 from robot.run import RobotFramework
@@ -43,7 +44,7 @@ def _register_keyword(
     non-unique user friendly ones"""
     suite.resource.imports.library(module.__name__)
     name = f"pytestrobotkeyword{hash(fn)}_{fn.__name__}"
-    setattr(module, name, fn)
+    setattr(module, name, keyword(fn))  # type:ignore[no-any-expr]
     return name
 
 
