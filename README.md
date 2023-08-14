@@ -77,6 +77,18 @@ def test_blazingly_fast_sorting_algorithm():
 
 ![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/f25ee4bd-2f10-42b4-bdef-18a22379bd0d)
 
+markers like `skip`, `skipif` and `parameterize` also work how you'd expect:
+
+```py
+from pytest import mark
+
+@mark.parametrize("test_input,expected", [(1, 8), (6, 6)])
+def test_eval(test_input: int, expected: int):
+    assert test_input == expected
+```
+
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/4361295b-5e44-4c9d-b2f3-839e3901b1eb)
+
 ### robot suite variables
 
 to set suite-level robot variables, call the `set_variables` function at the top of the test suite:
