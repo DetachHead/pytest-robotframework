@@ -172,7 +172,7 @@ class _KeywordNameFixer(ResultVisitor):
     """renames our dynamically generated setup/call/teardown keywords in the log back to user friendly ones"""
 
     @override
-    # supertype is wrong, TODO: raise mypy issue
+    # supertype is wrong, TODO: raise robot issue
     def visit_keyword(
         self,
         keyword: result.Keyword,  # type:ignore[override] # pylint:disable=redefined-outer-name
