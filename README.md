@@ -86,8 +86,8 @@ from pytest_robotframework import set_variables
 
 set_variables(
     {
-        "$foo": "bar",
-        "@baz": ["a", "b"],
+        "foo": "bar",
+        "baz": ["a", "b"],
     }
 )
 
@@ -95,4 +95,4 @@ def test_variables():
     assert BuiltIn().get_variable_value("$foo") == "bar"
 ```
 
-`set_variables` is equivalent to the `*** Variables ***` section in a `.robot` file.
+`set_variables` is equivalent to the `*** Variables ***` section in a `.robot` file. all variables are prefixed with `$`. `@` and `&` are not required since `$` variables can store lists and dicts anyway
