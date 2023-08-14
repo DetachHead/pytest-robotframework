@@ -173,7 +173,10 @@ class _KeywordNameFixer(ResultVisitor):
 
     @override
     # supertype is wrong, TODO: raise mypy issue
-    def visit_keyword(self, keyword: result.Keyword):  # type:ignore[override]
+    def visit_keyword(
+        self,
+        keyword: result.Keyword,  # type:ignore[override] # pylint:disable=redefined-outer-name
+    ):
         keyword.kwname = re.sub(
             r"pytestrobotkeyword\d+ ", "", keyword.kwname, flags=re.IGNORECASE
         )
