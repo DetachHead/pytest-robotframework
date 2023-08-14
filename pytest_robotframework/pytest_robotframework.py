@@ -123,8 +123,8 @@ class _PytestRobotParser(RobotParser):
                     # This only happens if the item is re-run, as is done by
                     # pytest-rerunfailures.
                     item._initrequest()  # type: ignore[attr-defined]
-                for key, values in _suite_variables[source].items():
-                    builtin.set_suite_variable(key, *values)
+                for key, value in _suite_variables[source].items():
+                    builtin.set_suite_variable(r"${" + key + "}", value)
                 call_and_report_robot_edition(item, "setup")
 
             test_case.setup = Keyword(  # type:ignore[assignment]
