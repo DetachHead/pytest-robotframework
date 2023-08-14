@@ -82,6 +82,7 @@ def test_blazingly_fast_sorting_algorithm():
 to set suite-level robot variables, call the `set_variables` function at the top of the test suite:
 
 ```py
+from robot.libraries.BuiltIn import BuiltIn
 from pytest_robotframework import set_variables
 
 set_variables(
