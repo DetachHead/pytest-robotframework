@@ -343,7 +343,7 @@ def test_suite_variables(pytester: Pytester):
         set_variables({"foo":{"bar": ""}})
 
         def test_asdf():
-            assert BuiltIn().get_variable_value("foo") == {"bar": ""}
+            assert BuiltIn().get_variable_value("$foo") == {"bar": ""}
         """
     )
     run_and_assert_result(pytester, passed=1)
@@ -359,7 +359,7 @@ def test_variables_list(pytester: Pytester):
         set_variables({"foo": ["bar", "baz"]})
 
         def test_asdf():
-            assert BuiltIn().get_variable_value("foo") == ["bar", "baz"]
+            assert BuiltIn().get_variable_value("$foo") == ["bar", "baz"]
         """
     )
     run_and_assert_result(pytester, passed=1)
@@ -376,13 +376,13 @@ def test_variables_not_in_scope_in_other_suites(pytester: Pytester):
                 set_variables({"foo": "bar"})
 
                 def test_asdf():
-                    assert BuiltIn().get_variable_value("foo") == "bar"
+                    assert BuiltIn().get_variable_value("$foo") == "bar"
             """,
             "test_two": """
                 from robot.libraries.BuiltIn import BuiltIn
 
                 def test_func():
-                    assert BuiltIn().get_variable_value("foo") is None
+                    assert BuiltIn().get_variable_value("$foo") is None
             """,
         }
     )
