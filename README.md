@@ -76,3 +76,23 @@ def test_blazingly_fast_sorting_algorithm():
 ```
 
 ![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/f25ee4bd-2f10-42b4-bdef-18a22379bd0d)
+
+### robot suite variables
+
+to set suite-level robot variables, call the `set_variables` function at the top of the test suite:
+
+```py
+from pytest_robotframework import set_variables
+
+set_variables(
+    {
+        "$foo": "bar",
+        "@baz": ["a", "b"],
+    }
+)
+
+def test_variables():
+    assert BuiltIn().get_variable_value("$foo") == "bar"
+```
+
+`set_variables` is equivalent to the `*** Variables ***` section in a `.robot` file.

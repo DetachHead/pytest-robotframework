@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from lxml.etree import XML
-from pytest import Pytester, mark
+from pytest import Pytester, mark, raises
+
+from pytest_robotframework import set_variables
 
 if TYPE_CHECKING:
     from lxml.etree import _Element
@@ -30,7 +32,9 @@ def assert_log_file_exists(pytester: Pytester):
 def run_and_assert_result(
     pytester: Pytester, *, passed: int = 0, skipped: int = 0, failed: int = 0
 ):
-    result = pytester.runpytest()
+    # TODO: figure out why robot doesn't use pytester's cd anymore. started happening when
+    #  i added a test that calls a function from the plugin directly instead of using pytester
+    result = pytester.runpytest("--robotargs", f"-d {pytester.path}")
     result.assert_outcomes(passed=passed, skipped=skipped, failed=failed)
     assert get_robot_total_stats(pytester) == {
         "pass": str(passed),
@@ -197,9 +201,10 @@ def test_robot_args(pytester: Pytester):
             pass
         """
     )
-    result = pytester.runpytest("--robotargs", "-d results")
+    results_path = pytester.path / "results"
+    result = pytester.runpytest("--robotargs", f"-d {results_path}")
     result.assert_outcomes(passed=1)
-    assert (pytester.path / "results" / "log.html").exists()
+    assert (results_path / "log.html").exists()
 
 
 def test_doesnt_run_when_collecting(pytester: Pytester):
@@ -329,3 +334,73 @@ def test_keyword_names(pytester: Pytester):
         assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Setup']")
         assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Run Test']")
         assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Teardown']")
+
+
+def test_variables_scalar(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest_robotframework import set_variables
+        from robot.libraries.BuiltIn import BuiltIn
+
+        set_variables({"$foo": "bar"})
+
+        def test_asdf():
+            assert BuiltIn().get_variable_value("$foo") == "bar"
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+
+
+def test_variables_list(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest_robotframework import set_variables
+        from robot.libraries.BuiltIn import BuiltIn
+
+        set_variables({"@foo": ["bar", "baz"]})
+
+        def test_asdf():
+            assert BuiltIn().get_variable_value("@foo") == ["bar", "baz"]
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+
+
+def test_variables_wrong_type():
+    list_error = "robot variables prefixed with `@` must be a `list`"
+    with raises(TypeError, match=list_error):
+        set_variables({"@foo": "bar"})
+    with raises(TypeError, match=list_error):
+        set_variables({"@foo": {"a": "1"}})
+
+    mapping_error = "robot variables prefixed with `&` must be a `Mapping`"
+    with raises(TypeError, match=mapping_error):
+        set_variables({"&foo": ["bar", "baz"]})
+    with raises(TypeError, match=mapping_error):
+        set_variables({"&foo": "asdf"})
+
+
+def test_variables_not_in_scope_in_other_suites(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        **{
+            "test_one": """
+                from pytest_robotframework import set_variables
+                from robot.libraries.BuiltIn import BuiltIn
+
+                set_variables({"$foo": "bar"})
+
+                def test_asdf():
+                    assert BuiltIn().get_variable_value("$foo") == "bar"
+            """,
+            "test_two": """
+                from robot.libraries.BuiltIn import BuiltIn
+
+                def test_func():
+                    assert BuiltIn().get_variable_value("$foo") is None
+            """,
+        }
+    )
+    run_and_assert_result(pytester, passed=2)
+    assert_log_file_exists(pytester)

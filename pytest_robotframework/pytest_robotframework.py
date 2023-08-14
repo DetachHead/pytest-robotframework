@@ -24,6 +24,8 @@ from robot.run import RobotFramework
 from robot.running.model import Body, Keyword
 from typing_extensions import override
 
+from pytest_robotframework import _suite_variables
+
 KeywordFunction = Callable[[], None]
 
 
@@ -62,6 +64,7 @@ class _PytestRobotParser(RobotParser):
         suite = running.TestSuite(
             running.TestSuite.name_from_source(source), source=source
         )
+        builtin = BuiltIn()
 
         def call_and_report_robot_edition(
             item: Item, when: Literal["setup", "call", "teardown"], **kwargs: object
@@ -78,7 +81,7 @@ class _PytestRobotParser(RobotParser):
             )
             reports.append(report)
             if report.skipped:
-                BuiltIn().skip("")  # type:ignore[no-untyped-call]
+                builtin.skip("")  # type:ignore[no-untyped-call]
             elif report.failed:
                 # make robot show the exception:
                 # TODO: whats up with longrepr why is it such a pain in the ass to use?
@@ -120,6 +123,8 @@ class _PytestRobotParser(RobotParser):
                     # This only happens if the item is re-run, as is done by
                     # pytest-rerunfailures.
                     item._initrequest()  # type: ignore[attr-defined]
+                for key, values in _suite_variables[source].items():
+                    builtin.set_suite_variable(key, *values)
                 call_and_report_robot_edition(item, "setup")
 
             test_case.setup = Keyword(  # type:ignore[assignment]
