@@ -178,10 +178,6 @@ class _KeywordNameFixer(ResultVisitor):
         )
 
 
-# these functions are called by pytest and require the arguments with these names even if they are not used
-# ruff: noqa: ARG001
-
-
 def pytest_addoption(parser: PytestParser):
     parser.addoption(
         "--robotargs",
