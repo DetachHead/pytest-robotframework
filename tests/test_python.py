@@ -1,44 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
-
-from lxml.etree import XML
 from pytest import Pytester, mark
 
-if TYPE_CHECKING:
-    from lxml.etree import _Element
-
-
-def output_xml(pytester: Pytester) -> _Element:
-    return XML((pytester.path / "output.xml").read_bytes())
-
-
-def get_robot_total_stats(pytester: Pytester) -> dict[str, str]:
-    root = output_xml(pytester)
-    statistics = next(child for child in root if child.tag == "statistics")
-    total = next(child for child in statistics if child.tag == "total")
-    return cast(
-        dict[str, str],
-        next(child for child in total if child.tag == "stat").attrib.__copy__(),
-    )
-
-
-def assert_log_file_exists(pytester: Pytester):
-    assert (pytester.path / "log.html").exists()
-
-
-def run_and_assert_result(
-    pytester: Pytester, *, passed: int = 0, skipped: int = 0, failed: int = 0
-):
-    # TODO: figure out why robot doesn't use pytester's cd anymore. started happening when
-    #  i added a test that calls a function from the plugin directly instead of using pytester
-    result = pytester.runpytest("--robotargs", f"-d {pytester.path}")
-    result.assert_outcomes(passed=passed, skipped=skipped, failed=failed)
-    assert get_robot_total_stats(pytester) == {
-        "pass": str(passed),
-        "fail": str(failed),
-        "skip": str(skipped),
-    }
+from tests.utils import assert_log_file_exists, output_xml, run_and_assert_result
 
 
 def test_one_test_passes(pytester: Pytester):
@@ -243,7 +207,7 @@ def test_fixture(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """
         from pytest import CaptureFixture
-        
+
         def test_fixture(capfd: CaptureFixture):
             assert isinstance(capfd, CaptureFixture)
         """
@@ -268,7 +232,7 @@ def test_module_docstring(pytester: Pytester):
 def test_test_case_docstring(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """
-        def test_docstring(): 
+        def test_docstring():
             \"\"\"hello???\"\"\"
         """
     )
@@ -281,8 +245,8 @@ def test_keyword_decorator(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """
         from pytest_robotframework import keyword
-        
-        @keyword 
+
+        @keyword
         def foo():
             \"\"\"hie\"\"\"
 

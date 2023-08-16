@@ -137,6 +137,17 @@ files = [
 ]
 
 [[package]]
+name = "deepmerge"
+version = "1.1.0"
+description = "a toolset to deeply merge python dictionaries."
+optional = false
+python-versions = "*"
+files = [
+    {file = "deepmerge-1.1.0-py3-none-any.whl", hash = "sha256:59e6ef80b77dc52af3882a1ea78da22bcfc91ae9cdabc0c80729049fe295ff8b"},
+    {file = "deepmerge-1.1.0.tar.gz", hash = "sha256:4c27a0db5de285e1a7ceac7dbc1531deaa556b627dea4900c8244581ecdfea2d"},
+]
+
+[[package]]
 name = "dill"
 version = "0.3.7"
 description = "serialize all of Python"
@@ -608,4 +619,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "fb55e364ddfe417773be11da185906f429b7648e377135609d3905bf6a6fe037"
+content-hash = "6c1ea8c68d226f58ede6bd79ff1dd12cb8f9dbfbc1505e3a0222512334a87fa4"
