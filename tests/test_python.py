@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from pytest import Pytester, mark
 
-from tests.utils import assert_log_file_exists, output_xml, run_and_assert_result
+from tests.utils import (
+    assert_log_file_exists,
+    output_xml,
+    run_and_assert_result,
+    run_pytest,
+)
 
 
 def test_one_test_passes(pytester: Pytester):
@@ -176,7 +181,7 @@ def test_doesnt_run_when_collecting(pytester: Pytester):
             pass
         """
     )
-    result = pytester.runpytest("--collect-only")
+    result = run_pytest(pytester, "--collect-only")
     result.assert_outcomes()
     assert not (pytester.path / "log.html").exists()
 

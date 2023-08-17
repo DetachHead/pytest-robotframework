@@ -34,16 +34,18 @@ def pytest_collectstart(collector: Collector):
     collected_suite: model.TestSuite | None = None
 
     class RobotTestCollector(SuiteVisitor):
-        def end_suite(self, suite: model.TestSuite):
+        def visit_suite(self, suite: model.TestSuite):
             nonlocal collected_suite
-            collected_suite = suite
+            # copy the suite since we want to remove everything from it to prevent robot from running anything
+            # but still want to preserve them in `collected_suite`
+            collected_suite = suite.deepcopy()  # type:ignore[no-untyped-call]
+            suite.suites.clear()  # type:ignore[no-untyped-call]
+            suite.tests.clear()  # type:ignore[no-untyped-call]
 
-    # TODO: this dryruns during collection. should it?
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot.main(  # type:ignore[no-untyped-call]
         [collector.session.path],  # type:ignore[no-any-expr]
         extension="robot",
-        dryrun=True,
         runemptysuite=True,
         console="none",
         report=None,

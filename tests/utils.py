@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from lxml.etree import XML
-from pytest import Pytester
+from pytest import Pytester, RunResult
 
 if TYPE_CHECKING:
     from lxml.etree import _Element
@@ -27,6 +27,12 @@ def assert_log_file_exists(pytester: Pytester):
     assert (pytester.path / "log.html").exists()
 
 
+def run_pytest(pytester: Pytester, *pytest_args: str) -> RunResult:
+    # TODO: figure out why robot doesn't use pytester's cd anymore. started happening when
+    #  i added a test that calls a function from the plugin directly instead of using pytester
+    return pytester.runpytest(*pytest_args, "--robotargs", f"-d {pytester.path}")
+
+
 def run_and_assert_result(
     pytester: Pytester,
     *,
@@ -35,11 +41,7 @@ def run_and_assert_result(
     skipped: int = 0,
     failed: int = 0,
 ):
-    # TODO: figure out why robot doesn't use pytester's cd anymore. started happening when
-    #  i added a test that calls a function from the plugin directly instead of using pytester
-    result = pytester.runpytest(
-        *(pytest_args or []), "--robotargs", f"-d {pytester.path}"
-    )
+    result = run_pytest(pytester, *(pytest_args or []))
     result.assert_outcomes(passed=passed, skipped=skipped, failed=failed)
     assert get_robot_total_stats(pytester) == {
         "pass": str(passed),
