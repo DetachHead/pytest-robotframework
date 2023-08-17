@@ -53,6 +53,8 @@ class RobotItem(Item):
         # ideally this would just be stored on a normal attribute but we want a consistent way
         # of accessing the robot test from both `RobotItem`s and regular `Item`s
         self.stash[test_case_key] = robot_test
+        for tag in robot_test.tags:
+            self.add_marker(tag)
 
     @override
     def setup(self):
