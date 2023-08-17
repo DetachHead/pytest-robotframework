@@ -1,4 +1,4 @@
-from pytest import Pytester
+from pytest import Mark, Pytester, Session
 
 from tests.utils import (
     assert_log_file_exists,
@@ -56,6 +56,37 @@ def test_tags(pytester: Pytester):
     xml = output_xml(pytester)
     assert xml.xpath(".//test[@name='foo']/tag[.='m1']")
     assert not xml.xpath(".//test[@name='bar']")
+
+
+def test_parameterized_tags(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** test cases ***
+        foo
+            [tags]  key:hi
+            no operation
+        """,
+    )
+    pytester.makeini(
+        """
+        [pytest]
+        markers =
+            key(value)
+        """
+    )
+    markers: list[Mark] | None = None
+
+    class TagGetter:
+        def pytest_collection_finish(self, session: Session):
+            nonlocal markers
+            for item in session.items:
+                markers = item.own_markers
+
+    run_pytest(pytester, "--collectonly", plugins=[TagGetter()])
+    assert markers and len(markers) == 1
+    assert markers[0].name == "key"
+    assert markers[0].args == ("hi",)  # type:ignore[no-any-expr]
 
 
 def test_doesnt_run_when_collecting(pytester: Pytester):

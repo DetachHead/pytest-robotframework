@@ -27,10 +27,14 @@ def assert_log_file_exists(pytester: Pytester):
     assert (pytester.path / "log.html").exists()
 
 
-def run_pytest(pytester: Pytester, *pytest_args: str) -> RunResult:
+def run_pytest(
+    pytester: Pytester, *pytest_args: str, plugins: list[object] | None = None
+) -> RunResult:
     # TODO: figure out why robot doesn't use pytester's cd anymore. started happening when
     #  i added a test that calls a function from the plugin directly instead of using pytester
-    return pytester.runpytest(*pytest_args, "--robotargs", f"-d {pytester.path}")
+    return pytester.runpytest(
+        *pytest_args, "--robotargs", f"-d {pytester.path}", plugins=plugins or []
+    )
 
 
 def run_and_assert_result(
