@@ -45,6 +45,9 @@ def pytest_collectstart(collector: Collector):
         dryrun=True,
         runemptysuite=True,
         console="none",
+        report=None,
+        output=None,
+        log=None,
         prerunmodifier=[RobotTestCollector()],  # type:ignore[no-any-expr]
     )
     if not collected_suite:
