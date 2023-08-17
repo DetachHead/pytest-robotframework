@@ -70,3 +70,26 @@ def test_doesnt_run_when_collecting(pytester: Pytester):
     result = run_pytest(pytester, "--collect-only")
     result.assert_outcomes()
     assert not (pytester.path / "log.html").exists()
+
+
+def test_doesnt_run_tests_outside_path(pytester: Pytester):
+    pytester.makefile(
+        ".robot",
+        **{
+            "foo/asdf.robot": """
+                *** test cases ***
+                foo
+                    log  1
+            """,
+            "bar/asdf.robot": """
+                *** test cases ***
+                bar
+                    log  1
+            """,
+        },
+    )
+    run_and_assert_result(pytester, pytest_args=["foo"], passed=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath(".//test[@name='foo']")
+    assert not xml.xpath(".//test[@name='bar']")
