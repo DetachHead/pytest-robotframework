@@ -58,6 +58,21 @@ def test_tags(pytester: Pytester):
     assert not xml.xpath(".//test[@name='bar']")
 
 
+def test_warning_on_unknown_tag(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** test cases ***
+        foo
+            [tags]  m1
+            no operation
+        """,
+    )
+    # TODO: figure out why the error message is wack
+    result = run_pytest(pytester, "--strict-markers", "-m", "m1")
+    result.assert_outcomes(errors=1)
+
+
 def test_parameterized_tags(pytester: Pytester):
     make_robot_file(
         pytester,
@@ -73,8 +88,6 @@ def test_parameterized_tags(pytester: Pytester):
         [pytest]
         markers =
             key(value)
-        filterwarnings =
-            error
         """
     )
     markers: list[Mark] | None = None
@@ -85,7 +98,7 @@ def test_parameterized_tags(pytester: Pytester):
             for item in session.items:
                 markers = item.own_markers
 
-    run_pytest(pytester, "--collectonly", plugins=[TagGetter()])
+    run_pytest(pytester, "--collectonly", "--strict-markers", plugins=[TagGetter()])
     assert markers and len(markers) == 1
     assert markers[0].name == "key"
     assert markers[0].args == ("hi",)  # type:ignore[no-any-expr]
