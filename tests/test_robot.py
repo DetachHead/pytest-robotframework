@@ -73,6 +73,8 @@ def test_parameterized_tags(pytester: Pytester):
         [pytest]
         markers =
             key(value)
+        filterwarnings =
+            error
         """
     )
     markers: list[Mark] | None = None
