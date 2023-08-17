@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from os import PathLike
 
-from pytest import Config, File, Item, Session, StashKey
+from pytest import Config, File, Item, Mark, MarkDecorator, Session, StashKey
 from robot import running
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model import TestSuite
@@ -55,7 +55,12 @@ class RobotItem(Item):
         # of accessing the robot test from both `RobotItem`s and regular `Item`s
         self.stash[test_case_key] = robot_test
         for tag in robot_test.tags:
-            self.add_marker(tag)
+            tag, *args = tag.split(":")
+            self.add_marker(
+                MarkDecorator(
+                    Mark(tag, tuple[object, ...](args), kwargs=dict[str, object]())
+                )
+            )
 
     @override
     def setup(self):
