@@ -25,9 +25,10 @@ class RobotFile(File):
     @override
     def collect(self) -> Iterable[Item]:
         for test in self.session.stash[collected_robot_suite_key].all_tests:
-            yield RobotItem.from_parent(  # type:ignore[no-untyped-call,no-any-expr]
-                self, name=test.name, robot_test=test
-            )
+            if self.path == test.source:
+                yield RobotItem.from_parent(  # type:ignore[no-untyped-call,no-any-expr]
+                    self, name=test.name, robot_test=test
+                )
 
 
 class RobotItem(Item):

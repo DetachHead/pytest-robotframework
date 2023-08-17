@@ -30,7 +30,7 @@ def pytest_addoption(parser: Parser):
     )
 
 
-def pytest_collectstart(collector: Collector):
+def pytest_collection(session: Session):
     collected_suite: model.TestSuite | None = None
 
     class RobotTestCollector(SuiteVisitor):
@@ -44,7 +44,7 @@ def pytest_collectstart(collector: Collector):
 
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot.main(  # type:ignore[no-untyped-call]
-        [collector.session.path],  # type:ignore[no-any-expr]
+        [session.path],  # type:ignore[no-any-expr]
         extension="robot",
         runemptysuite=True,
         console="none",
@@ -55,7 +55,7 @@ def pytest_collectstart(collector: Collector):
     )
     if not collected_suite:
         raise Exception("failed to collect .robot tests")
-    collector.session.stash[collected_robot_suite_key] = collected_suite
+    session.stash[collected_robot_suite_key] = collected_suite
 
 
 def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
