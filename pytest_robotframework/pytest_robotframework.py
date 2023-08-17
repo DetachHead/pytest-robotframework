@@ -33,7 +33,7 @@ def pytest_addoption(parser: Parser):
 def pytest_collectstart(collector: Collector):
     collected_suite: model.TestSuite | None = None
 
-    class _RobotTestCollector(SuiteVisitor):
+    class RobotTestCollector(SuiteVisitor):
         def end_suite(self, suite: model.TestSuite):
             nonlocal collected_suite
             collected_suite = suite
@@ -45,7 +45,7 @@ def pytest_collectstart(collector: Collector):
         dryrun=True,
         runemptysuite=True,
         console="none",
-        prerunmodifier=[_RobotTestCollector()],  # type:ignore[no-any-expr]
+        prerunmodifier=[RobotTestCollector()],  # type:ignore[no-any-expr]
     )
     if not collected_suite:
         raise Exception("failed to collect .robot tests")

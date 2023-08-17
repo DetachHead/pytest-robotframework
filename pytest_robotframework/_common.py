@@ -41,15 +41,14 @@ def parse_robot_args(robot: RobotFramework, session: Session) -> RobotArgs:
     )
 
 
-def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item:
+def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
     try:
         return next(
             item for item in session.items if item.stash[test_case_key].id == test.id
         )
     except StopIteration:
-        raise Exception(
-            f"failed to find pytest item matching test case {test.name}"
-        ) from None
+        # the robot test was found but got filtered out by pytest
+        return None
 
 
 class KeywordNameFixer(ResultVisitor):
@@ -135,56 +134,59 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             raise Exception(f"Unknown exception type appeared, {error_text}")
 
     @override
-    def visit_test(self, test: model.TestCase):
-        item = get_item_from_robot_test(self.session, test)
-        test_suite = test.parent
-        if not test_suite:
-            raise Exception(f"failed to find test suite for {test.name}")
+    def start_suite(self, suite: model.TestSuite):
+        for test in suite.tests:
+            item = get_item_from_robot_test(self.session, test)
+            if not item:
+                # happens when running .robot tests that were filtered out by pytest
+                suite.tests.remove(test)
+                continue
 
-        def setup():
-            # mostly copied from the start of `_pytest.runner.runtestprotocol`
-            if hasattr(item, "_request") and not item._request:  # type: ignore[no-any-expr]
-                # This only happens if the item is re-run, as is done by
-                # pytest-rerunfailures.
-                item._initrequest()  # type: ignore[attr-defined]
-            self._call_and_report_robot_edition(item, "setup")
+            # https://github.com/python/mypy/issues/15894
+            def setup(item: Item = item):  # type:ignore[assignment]
+                # mostly copied from the start of `_pytest.runner.runtestprotocol`
+                if hasattr(item, "_request") and not item._request:  # type: ignore[no-any-expr]
+                    # This only happens if the item is re-run, as is done by
+                    # pytest-rerunfailures.
+                    item._initrequest()  # type: ignore[attr-defined]
+                self._call_and_report_robot_edition(item, "setup")
 
-        item.stash[original_setup_key] = test.setup
-        test.setup = running.Keyword(  # type:ignore[assignment]
-            name=self._register_keyword(test_suite, setup), type=model.Keyword.SETUP
-        )
-
-        def run_test():
-            # mostly copied from the middle of `_pytest.runner.runtestprotocol`
-            # TODO: this function never gets run if the test is skipped, which deviates from runtestprotocol's behavior
-            reports = item.stash[self.report_key]
-            if reports[0].passed:
-                if item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                    "setupshow", False
-                ):
-                    show_test_item(item)
-                if not item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                    "setuponly", False
-                ):
-                    self._call_and_report_robot_edition(item, "call")
-
-        # TODO: what is this mypy error
-        item.stash[original_body_key] = test.body  # type:ignore[misc]
-        test.body = Body(
-            items=[running.Keyword(name=self._register_keyword(test_suite, run_test))]
-        )
-
-        def teardown():
-            # mostly copied from the end of `_pytest.runner.runtestprotocol`
-            self._call_and_report_robot_edition(
-                item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
+            item.stash[original_setup_key] = test.setup
+            test.setup = running.Keyword(  # type:ignore[assignment]
+                name=self._register_keyword(suite, setup), type=model.Keyword.SETUP
             )
 
-        item.stash[original_teardown_key] = test.teardown
-        test.teardown = running.Keyword(
-            name=self._register_keyword(test_suite, teardown),
-            type=model.Keyword.TEARDOWN,
-        )
+            def run_test(item: Item = item):  # type:ignore[assignment]
+                # mostly copied from the middle of `_pytest.runner.runtestprotocol`
+                # TODO: this function never gets run if the test is skipped, which deviates from runtestprotocol's behavior
+                reports = item.stash[self.report_key]
+                if reports[0].passed:
+                    if item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
+                        "setupshow", False
+                    ):
+                        show_test_item(item)
+                    if not item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
+                        "setuponly", False
+                    ):
+                        self._call_and_report_robot_edition(item, "call")
+
+            # TODO: what is this mypy error
+            item.stash[original_body_key] = test.body  # type:ignore[misc]
+            test.body = Body(
+                items=[running.Keyword(name=self._register_keyword(suite, run_test))]
+            )
+
+            def teardown(item: Item = item):  # type:ignore[assignment]
+                # mostly copied from the end of `_pytest.runner.runtestprotocol`
+                self._call_and_report_robot_edition(
+                    item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
+                )
+
+            item.stash[original_teardown_key] = test.teardown
+            test.teardown = running.Keyword(
+                name=self._register_keyword(suite, teardown),
+                type=model.Keyword.TEARDOWN,
+            )
 
 
 class PytestRuntestLogListener(ListenerV3):
@@ -195,13 +197,19 @@ class PytestRuntestLogListener(ListenerV3):
     def __init__(self, session: Session):
         self.session = session
 
+    def _get_item(self, data: running.TestCase) -> Item:
+        item = get_item_from_robot_test(self.session, data)
+        if not item:
+            raise Exception(f"faild to find pytest item for robot test: {data.name}")
+        return item
+
     @override
     def start_test(
         self,
         data: running.TestCase,
         result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
-        item = get_item_from_robot_test(self.session, data)
+        item = self._get_item(data)
         item.ihook.pytest_runtest_logstart(  # type:ignore[no-any-expr]
             nodeid=item.nodeid, location=item.location
         )
@@ -212,7 +220,7 @@ class PytestRuntestLogListener(ListenerV3):
         data: running.TestCase,
         result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
-        item = get_item_from_robot_test(self.session, data)
+        item = self._get_item(data)
         item.ihook.pytest_runtest_logfinish(  # type:ignore[no-any-expr]
             nodeid=item.nodeid, location=item.location
         )
