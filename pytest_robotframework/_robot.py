@@ -57,8 +57,15 @@ class RobotItem(Item):
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
             self.add_marker(
+                # TODO: figure out if theres an official way to do this insted of pretending to be pytest
                 MarkDecorator(
-                    Mark(tag, tuple[object, ...](args), kwargs=dict[str, object]())
+                    Mark(
+                        tag,
+                        tuple[object, ...](args),
+                        kwargs=dict[str, object](),
+                        _ispytest=True,
+                    ),
+                    _ispytest=True,
                 )
             )
 
