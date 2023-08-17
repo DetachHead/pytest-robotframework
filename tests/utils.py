@@ -41,12 +41,13 @@ def run_and_assert_result(
     pytester: Pytester,
     *,
     pytest_args: list[str] | None = None,
-    passed: int = 0,
-    skipped: int = 0,
-    failed: int = 0,
+    passed=0,
+    skipped=0,
+    failed=0,
+    errors=0,
 ):
     result = run_pytest(pytester, *(pytest_args or []))
-    result.assert_outcomes(passed=passed, skipped=skipped, failed=failed)
+    result.assert_outcomes(passed=passed, skipped=skipped, failed=failed, errors=errors)
     assert get_robot_total_stats(pytester) == {
         "pass": str(passed),
         "fail": str(failed),
