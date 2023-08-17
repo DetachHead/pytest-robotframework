@@ -38,6 +38,7 @@ def pytest_collectstart(collector: Collector):
             nonlocal collected_suite
             collected_suite = suite
 
+    # TODO: this dryruns during collection. should it?
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot.main(  # type:ignore[no-untyped-call]
         [collector.session.path],  # type:ignore[no-any-expr]
