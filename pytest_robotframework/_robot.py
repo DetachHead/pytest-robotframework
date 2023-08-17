@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from os import PathLike
+from typing import cast
 
-from pytest import Config, File, Item, Mark, MarkDecorator, Session, StashKey
+from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark
 from robot import running
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model import TestSuite
@@ -56,18 +57,7 @@ class RobotItem(Item):
         self.stash[test_case_key] = robot_test
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
-            self.add_marker(
-                # TODO: figure out if theres an official way to do this insted of pretending to be pytest
-                MarkDecorator(
-                    Mark(
-                        tag,
-                        tuple[object, ...](args),
-                        kwargs=dict[str, object](),
-                        _ispytest=True,
-                    ),
-                    _ispytest=True,
-                )
-            )
+            self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
 
     @override
     def setup(self):
