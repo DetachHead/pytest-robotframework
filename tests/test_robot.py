@@ -1,6 +1,11 @@
 from pytest import Pytester
 
-from tests.utils import assert_log_file_exists, output_xml, run_and_assert_result
+from tests.utils import (
+    assert_log_file_exists,
+    output_xml,
+    run_and_assert_result,
+    run_pytest,
+)
 
 
 def make_robot_file(pytester: Pytester, content: str):
@@ -51,3 +56,17 @@ def test_tags(pytester: Pytester):
     xml = output_xml(pytester)
     assert xml.xpath(".//test[@name='foo']/tag[.='m1']")
     assert not xml.xpath(".//test[@name='bar']")
+
+
+def test_doesnt_run_when_collecting(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** test cases ***
+        foo
+            asdfadsf
+        """,
+    )
+    result = run_pytest(pytester, "--collect-only")
+    result.assert_outcomes()
+    assert not (pytester.path / "log.html").exists()
