@@ -38,6 +38,22 @@ def test_one_test_fails(pytester: Pytester):
     assert_log_file_exists(pytester)
 
 
+def test_one_test_skipped(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** test cases ***
+        foo
+            skip
+        """,
+    )
+    run_and_assert_result(pytester, skipped=1)
+    assert_log_file_exists(pytester)
+    assert output_xml(pytester).xpath(
+        "./suite//test[@name='foo']/kw/msg[@level='SKIP']"
+    )
+
+
 def test_tags(pytester: Pytester):
     make_robot_file(
         pytester,
