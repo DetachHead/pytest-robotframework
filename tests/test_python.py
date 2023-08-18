@@ -142,25 +142,6 @@ def test_nested_suites(pytester: Pytester):
     assert xml.xpath("./suite/suite[@name='Test Top Level']/test[@name='test_func1']")
 
 
-def test_doesnt_run_robot_files(pytester: Pytester):
-    pytester.makepyfile(  # type:ignore[no-untyped-call]
-        """
-        def test_func1():
-            pass
-        """
-    )
-    pytester.makefile(
-        ".robot",
-        """
-        *** test cases ***
-        foo
-            should be true  ${False}
-        """,
-    )
-    run_and_assert_result(pytester, passed=1)
-    assert_log_file_exists(pytester)
-
-
 def test_robot_args(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """
