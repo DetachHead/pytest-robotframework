@@ -139,12 +139,13 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
     @override
     def start_suite(self, suite: running.TestSuite):
+        # need to copy when iterating since we are removing items from the original
         for test in suite.tests:
             item = get_item_from_robot_test(self.session, test)
             if not item:
-                # happens when running .robot tests that were filtered out by pytest
-                suite.tests.remove(test)
-                continue
+                raise Exception(
+                    f"this should NEVER happen, `CollectedTestsFilterer` failed to filter out {test.name}"
+                )
 
             # https://github.com/python/mypy/issues/15894
             def setup(item: Item = item):  # type:ignore[assignment]
@@ -191,11 +192,6 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                 name=self._register_keyword(suite, teardown),
                 type=model.Keyword.TEARDOWN,
             )
-
-    @override
-    def end_suite(self, suite: model.TestSuite):
-        """Remove suites that are empty after removing tests."""
-        suite.suites = [s for s in suite.suites if s.test_count > 0]
 
 
 class PytestRuntestLogListener(ListenerV3):

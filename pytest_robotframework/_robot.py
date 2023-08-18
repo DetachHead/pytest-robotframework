@@ -6,6 +6,7 @@ from typing import cast
 
 from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark, skip
 from robot import running
+from robot.api import SuiteVisitor
 from robot.errors import ExecutionFailures
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model import TestSuite
@@ -14,6 +15,7 @@ from robot.running.context import EXECUTION_CONTEXTS, _ExecutionContext
 from typing_extensions import override
 
 from pytest_robotframework._common import (
+    get_item_from_robot_test,
     original_body_key,
     original_setup_key,
     original_teardown_key,
@@ -90,3 +92,26 @@ class RobotItem(Item):
     @override
     def reportinfo(self) -> (PathLike[str] | str, int | None, str):
         return (self.path, self.stash[running_test_case_key].lineno, self.name)
+
+
+class CollectedTestsFilterer(SuiteVisitor):
+    """filters out any tests/suites from the collected robot tests that are not included in the collected
+    pytest tests"""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    @override
+    def start_suite(self, suite: running.TestSuite):
+        # need to copy when iterating since we are removing items from the original
+        for test in suite.tests[:]:
+            item = get_item_from_robot_test(self.session, test)
+            if not item:
+                # happens when running .robot tests that were filtered out by pytest
+                suite.tests.remove(test)
+                continue
+
+    @override
+    def end_suite(self, suite: running.TestSuite):
+        """Remove suites that are empty after removing tests."""
+        suite.suites = [s for s in suite.suites if s.test_count > 0]

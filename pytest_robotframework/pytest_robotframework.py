@@ -19,7 +19,12 @@ from pytest_robotframework._common import (
     parse_robot_args,
 )
 from pytest_robotframework._python import PythonParser
-from pytest_robotframework._robot import RobotFile, RobotItem, collected_robot_suite_key
+from pytest_robotframework._robot import (
+    CollectedTestsFilterer,
+    RobotFile,
+    RobotItem,
+    collected_robot_suite_key,
+)
 
 
 def pytest_addoption(parser: Parser):
@@ -51,7 +56,10 @@ def pytest_collection(session: Session):
         report=None,
         output=None,
         log=None,
-        prerunmodifier=[RobotTestCollector()],  # type:ignore[no-any-expr]
+        prerunmodifier=[
+            CollectedTestsFilterer(session),
+            RobotTestCollector(),
+        ],  # type:ignore[no-any-expr]
     )
     if not collected_suite:
         raise Exception("failed to collect .robot tests")
@@ -89,7 +97,10 @@ def pytest_runtestloop(session: Session) -> object:
                 parse_robot_args(robot, session),
                 dict[str, object](
                     parser=[PythonParser(session)],
-                    prerunmodifier=[PytestRuntestProtocolInjector(session)],
+                    prerunmodifier=[
+                        CollectedTestsFilterer(session),
+                        PytestRuntestProtocolInjector(session),
+                    ],
                     prerebotmodifier=[KeywordNameFixer()],
                     listener=[PytestRuntestLogListener(session)],
                 ),
