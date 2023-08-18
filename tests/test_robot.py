@@ -54,6 +54,33 @@ def test_one_test_skipped(pytester: Pytester):
     )
 
 
+def test_two_files_run_one_test(pytester: Pytester):
+    pytester.makefile(
+        ".robot",
+        **{
+            "foo.robot": """
+                *** test cases ***
+                foo
+                    log  1
+                bar
+                    log  1
+            """,
+            "bar.robot": """
+                *** test cases ***
+                baz
+                    log  1
+            """,
+        },
+    )
+    run_and_assert_result(pytester, pytest_args=["foo.robot::foo"], passed=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath("./suite//test[@name='foo']/status[@status='PASS']")
+    assert xml.xpath("./suite//test[@name='foo']/kw/status[@status='PASS']")
+    assert not xml.xpath("./suite//test[@name='bar']")
+    assert not xml.xpath("./suite//test[@name='baz']")
+
+
 def test_tags(pytester: Pytester):
     make_robot_file(
         pytester,

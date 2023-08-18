@@ -46,7 +46,9 @@ def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item |
         return next(
             item
             for item in session.items
-            if item.stash[running_test_case_key].id == test.id
+            # TODO: can there be multiple tests with the same long name? is there a better way to match the tests?
+            #  tried using id but that changes when tests/suites get removed
+            if item.stash[running_test_case_key].longname == test.longname
         )
     except StopIteration:
         # the robot test was found but got filtered out by pytest
@@ -189,6 +191,11 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                 name=self._register_keyword(suite, teardown),
                 type=model.Keyword.TEARDOWN,
             )
+
+    @override
+    def end_suite(self, suite: model.TestSuite):
+        """Remove suites that are empty after removing tests."""
+        suite.suites = [s for s in suite.suites if s.test_count > 0]
 
 
 class PytestRuntestLogListener(ListenerV3):
