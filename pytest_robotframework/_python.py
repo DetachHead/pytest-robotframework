@@ -11,7 +11,7 @@ from robot.api.interfaces import Parser as RobotParser, TestDefaults
 from robot.running.model import Body
 from typing_extensions import override
 
-from pytest_robotframework._common import test_case_key
+from pytest_robotframework._common import running_test_case_key
 
 
 class PythonParser(RobotParser):
@@ -47,7 +47,7 @@ class PythonParser(RobotParser):
                 doc=cast(Function, item.function).__doc__ or "",
                 tags=[marker.name for marker in item.iter_markers()],
             )
-            item.stash[test_case_key] = test_case
+            item.stash[running_test_case_key] = test_case
             module = cast(ModuleType, item.module)
             if module.__doc__ and not suite.doc:
                 suite.doc = module.__doc__

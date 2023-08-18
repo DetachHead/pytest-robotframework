@@ -21,7 +21,7 @@ KeywordFunction = Callable[[], None]
 
 RobotArgs = dict[str, object]
 
-test_case_key = StashKey[running.TestCase]()
+running_test_case_key = StashKey[running.TestCase]()
 
 
 def parse_robot_args(robot: RobotFramework, session: Session) -> RobotArgs:
@@ -44,7 +44,9 @@ def parse_robot_args(robot: RobotFramework, session: Session) -> RobotArgs:
 def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
     try:
         return next(
-            item for item in session.items if item.stash[test_case_key].id == test.id
+            item
+            for item in session.items
+            if item.stash[running_test_case_key].id == test.id
         )
     except StopIteration:
         # the robot test was found but got filtered out by pytest
@@ -134,7 +136,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             raise Exception(f"Unknown exception type appeared, {error_text}")
 
     @override
-    def start_suite(self, suite: model.TestSuite):
+    def start_suite(self, suite: running.TestSuite):
         for test in suite.tests:
             item = get_item_from_robot_test(self.session, test)
             if not item:
@@ -192,6 +194,8 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 class PytestRuntestLogListener(ListenerV3):
     """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from `pytest_runtest_protocol`.
     since all the other parts of `_pytest.runner.runtestprotocol` are re-implemented in `PythonParser`
+
+    also adds the `result.TestCase` to the pytest item's
     """
 
     def __init__(self, session: Session):

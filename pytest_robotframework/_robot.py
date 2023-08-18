@@ -4,19 +4,20 @@ from collections.abc import Iterable
 from os import PathLike
 from typing import cast
 
-from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark
+from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark, skip
 from robot import running
+from robot.errors import ExecutionFailures
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model import TestSuite
 from robot.running.bodyrunner import BodyRunner
-from robot.running.context import EXECUTION_CONTEXTS
+from robot.running.context import EXECUTION_CONTEXTS, _ExecutionContext
 from typing_extensions import override
 
 from pytest_robotframework._common import (
     original_body_key,
     original_setup_key,
     original_teardown_key,
-    test_case_key,
+    running_test_case_key,
 )
 
 collected_robot_suite_key = StashKey[TestSuite]()
@@ -54,7 +55,7 @@ class RobotItem(Item):
         )
         # ideally this would just be stored on a normal attribute but we want a consistent way
         # of accessing the robot test from both `RobotItem`s and regular `Item`s
-        self.stash[test_case_key] = robot_test
+        self.stash[running_test_case_key] = robot_test
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
             self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
@@ -67,13 +68,18 @@ class RobotItem(Item):
 
     @override
     def runtest(self):
-        test = self.stash[test_case_key]
-        BodyRunner(
-            EXECUTION_CONTEXTS.current,  # type:ignore[no-any-expr]
-            templated=bool(test.template),
-        ).run(  # type:ignore[no-untyped-call]
-            self.stash[original_body_key]
-        )
+        test = self.stash[running_test_case_key]
+        context = cast(_ExecutionContext, EXECUTION_CONTEXTS.current)
+        try:
+            BodyRunner(
+                context=context, templated=bool(test.template)
+            ).run(  # type:ignore[no-untyped-call]
+                self.stash[original_body_key]
+            )
+        except ExecutionFailures as e:
+            if e.status == "SKIP":  # type:ignore[no-any-expr]
+                skip(e.message)  # type:ignore[no-any-expr]
+            raise
 
     @override
     def teardown(self):
@@ -83,4 +89,4 @@ class RobotItem(Item):
 
     @override
     def reportinfo(self) -> (PathLike[str] | str, int | None, str):
-        return (self.path, self.stash[test_case_key].lineno, self.name)
+        return (self.path, self.stash[running_test_case_key].lineno, self.name)
