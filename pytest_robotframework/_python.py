@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 from types import ModuleType
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from basedtyping import Function
 from pytest import Function as PytestFunction, Session
@@ -12,6 +11,9 @@ from robot.running.model import Body
 from typing_extensions import override
 
 from pytest_robotframework._common import running_test_case_key
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class PythonParser(RobotParser):

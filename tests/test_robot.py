@@ -302,6 +302,7 @@ def test_warning_on_unknown_tag(pytester: Pytester):
         """,
     )
     # TODO: figure out why the error message is wack
+    #  https://github.com/DetachHead/pytest-robotframework/issues/37
     result = run_pytest(pytester, "--strict-markers", "-m", "m1")
     result.assert_outcomes(errors=1)
 

@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
-from os import PathLike
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark, skip
-from robot import running
 from robot.api import SuiteVisitor
 from robot.errors import ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
@@ -22,6 +19,12 @@ from pytest_robotframework._common import (
     original_teardown_key,
     running_test_case_key,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
+    from os import PathLike
+
+    from robot import running
 
 collected_robot_suite_key = StashKey[TestSuite]()
 

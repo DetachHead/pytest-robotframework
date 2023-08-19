@@ -48,6 +48,7 @@ def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item |
             for item in session.items
             # TODO: can there be multiple tests with the same long name? is there a better way to match the tests?
             #  tried using id but that changes when tests/suites get removed
+            #  https://github.com/DetachHead/pytest-robotframework/issues/34
             if item.stash[running_test_case_key].longname == test.longname
         )
     except StopIteration:
@@ -125,6 +126,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             # make robot show the exception:
             # TODO: whats up with longrepr why is it such a pain in the ass to use?
             #  is there an easier way to just get the exception/error message?
+            #  https://github.com/DetachHead/pytest-robotframework/issues/35
             longrepr = report.longrepr
             if isinstance(longrepr, ExceptionInfo):
                 raise longrepr.value
@@ -150,10 +152,10 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             # https://github.com/python/mypy/issues/15894
             def setup(item: Item = item):  # type:ignore[assignment]
                 # mostly copied from the start of `_pytest.runner.runtestprotocol`
-                if hasattr(item, "_request") and not item._request:  # type: ignore[no-any-expr]
+                if hasattr(item, "_request") and not item._request:  # type: ignore[no-any-expr] # noqa: SLF001
                     # This only happens if the item is re-run, as is done by
                     # pytest-rerunfailures.
-                    item._initrequest()  # type: ignore[attr-defined]
+                    item._initrequest()  # type: ignore[attr-defined] # noqa: SLF001
                 self._call_and_report_robot_edition(item, "setup")
 
             item.stash[original_setup_key] = test.setup
@@ -163,19 +165,19 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
             def run_test(item: Item = item):  # type:ignore[assignment]
                 # mostly copied from the middle of `_pytest.runner.runtestprotocol`
-                # TODO: this function never gets run if the test is skipped, which deviates from runtestprotocol's behavior
                 reports = item.stash[self.report_key]
                 if reports[0].passed:
                     if item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                        "setupshow", False
+                        "setupshow", default=False
                     ):
                         show_test_item(item)
                     if not item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                        "setuponly", False
+                        "setuponly", default=False
                     ):
                         self._call_and_report_robot_edition(item, "call")
 
             # TODO: what is this mypy error
+            #  https://github.com/DetachHead/pytest-robotframework/issues/36
             item.stash[original_body_key] = test.body  # type:ignore[misc]
             test.body = Body(
                 items=[running.Keyword(name=self._register_keyword(suite, run_test))]

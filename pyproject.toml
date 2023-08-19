@@ -175,7 +175,6 @@ enable = [
     "undefined-loop-variable",
     "unnecessary-ellipsis",
     "unnecessary-lambda",
-    "unnecessary-pass",
     "unreachable",
     "unused-private-member",
     "unused-wildcard-import",
@@ -276,6 +275,30 @@ extend-select = [
     "TRY",
     "D",
     "PT",
+    "YTT",
+    "ASYNC",
+    "BLE",
+    "FBT",
+    "C4",
+    "DTZ",
+    "T10",
+    "FA",
+    "INP",
+    "PIE",
+    "G",
+    "T20",
+    "RSE",
+    "RET",
+    "SLF",
+    "TID",
+    "TCH",
+    "PTH",
+    "TD",
+    "PD",
+    "FLY",
+    "NPY",
+    "AIR",
+    "PERF",
 ]
 ignore = [
     "E501",    # Doc line too long
@@ -312,6 +335,8 @@ ignore = [
     "D415",    # First line should end with a period, question mark, or exclamation point
     "D418",    # Function/Method decorated with @overload shouldn't contain a docstring (vscode supports it)
     "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
+    "TD002",   # Missing author in TODO
+    "PGH003",  # Use specific rule codes when ignoring type issues (covered by mypy)
 ]
 target-version = "py311"
 respect-gitignore = true

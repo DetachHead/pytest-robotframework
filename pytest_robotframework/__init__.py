@@ -40,7 +40,7 @@ def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
         with StatusReporter(
             running.Keyword(name=fn.__name__),
             result.Keyword(kwname=fn.__name__, doc=fn.__doc__ or ""),
-            cast(_ExecutionContext, BuiltIn()._context),
+            cast(_ExecutionContext, BuiltIn()._context),  # noqa: SLF001
         ):
             return fn(*args, **kwargs)
 

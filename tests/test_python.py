@@ -66,16 +66,14 @@ def test_two_tests_one_fail_one_pass(pytester: Pytester):
 
 def test_two_tests_two_files_one_fail_one_pass(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
-        **{
-            "test_one": """
-                def test_func1():
-                    pass
-            """,
-            "test_two": """
-                def test_func2():
-                    raise Exception("asdf")
-            """,
-        }
+        test_one="""
+            def test_func1():
+                pass
+        """,
+        test_two="""
+            def test_func2():
+                raise Exception("asdf")
+        """,
     )
     run_and_assert_result(pytester, passed=1, failed=1)
     assert_log_file_exists(pytester)
@@ -83,16 +81,14 @@ def test_two_tests_two_files_one_fail_one_pass(pytester: Pytester):
 
 def test_two_tests_with_same_name_one_fail_one_pass(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
-        **{
-            "test_one": """
+        test_one="""
                 def test_func():
                     pass
             """,
-            "test_two": """
+        test_two="""
                 def test_func():
                     raise Exception("asdf")
             """,
-        }
     )
     run_and_assert_result(pytester, passed=1, failed=1)
     assert_log_file_exists(pytester)
@@ -447,23 +443,21 @@ def test_variables_list(pytester: Pytester):
 
 def test_variables_not_in_scope_in_other_suites(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
-        **{
-            "test_one": """
-                from pytest_robotframework import set_variables
-                from robot.libraries.BuiltIn import BuiltIn
+        test_one="""
+            from pytest_robotframework import set_variables
+            from robot.libraries.BuiltIn import BuiltIn
 
-                set_variables({"foo": "bar"})
+            set_variables({"foo": "bar"})
 
-                def test_asdf():
-                    assert BuiltIn().get_variable_value("$foo") == "bar"
-            """,
-            "test_two": """
-                from robot.libraries.BuiltIn import BuiltIn
+            def test_asdf():
+                assert BuiltIn().get_variable_value("$foo") == "bar"
+        """,
+        test_two="""
+            from robot.libraries.BuiltIn import BuiltIn
 
-                def test_func():
-                    assert BuiltIn().get_variable_value("$foo") is None
-            """,
-        }
+            def test_func():
+                assert BuiltIn().get_variable_value("$foo") is None
+        """,
     )
     run_and_assert_result(pytester, passed=2)
     assert_log_file_exists(pytester)

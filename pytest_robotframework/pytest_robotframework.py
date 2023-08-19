@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from deepmerge import always_merger
-from pytest import Collector, Item, Parser, Session
-from robot import model
 from robot.api import SuiteVisitor
 from robot.libraries.BuiltIn import BuiltIn
 from robot.run import RobotFramework
@@ -26,6 +23,12 @@ from pytest_robotframework._robot import (
     RobotItem,
     collected_robot_suite_key,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from pytest import Collector, Item, Parser, Session
+    from robot import model
 
 
 def pytest_addoption(parser: Parser):
