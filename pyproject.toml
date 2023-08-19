@@ -41,7 +41,6 @@ bad-names = ["foo", "bar", "baz", "retval"]
 disable = ["R", "C", "E", "F", "W", "I"]
 enable = [
     "useless-suppression",
-    "unidiomatic-typecheck", # https://github.com/astral-sh/ruff/issues/6260
     # rules that have not yet been implemented in ruff. once all of these are implemented in ruff, we should remove pylint
     # (see https://github.com/astral-sh/ruff/issues/970):
     "access-member-before-definition",
@@ -302,7 +301,6 @@ extend-select = [
 ]
 ignore = [
     "E501",    # Doc line too long
-    "E721",    # unidiomatic typecheck (using pylint's one for now due to https://github.com/astral-sh/ruff/issues/6260)
     "PLR0913", # Too many arguments to function call
     "PLR0912", # Too many branches
     "PLR0915", # Too many statements
