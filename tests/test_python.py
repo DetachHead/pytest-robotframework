@@ -492,3 +492,27 @@ def test_unittest_class(pytester: Pytester):
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
+
+
+def test_robot_keyword_in_python_test(pytester: Pytester):
+    pytester.makefile(
+        ".resource",
+        bar="""
+            *** keywords ***
+            bar
+                log  1
+        """,
+    )
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest_robotframework import import_resource
+        from robot.libraries.BuiltIn import BuiltIn
+
+        import_resource("bar.resource")
+
+        def test_foo():
+            BuiltIn().run_keyword('bar')
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
