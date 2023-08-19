@@ -9,6 +9,7 @@ from typing import Callable, ParamSpec, cast  # noqa: UP035
 from basedtyping import T
 from robot import result, running
 from robot.libraries.BuiltIn import BuiltIn
+from robot.running import EXECUTION_CONTEXTS
 from robot.running.context import (  # pylint:disable=import-private-name
     _ExecutionContext,
 )
@@ -26,6 +27,20 @@ def set_variables(variables: RobotVariables):
     type matching its prefix."""
     suite_path = Path(inspect.stack()[1].filename)
     _suite_variables[suite_path] = variables
+
+
+_resources = list[Path]()
+
+
+def import_resource(path: Path | str):
+    """imports the specified robot `.resource` file when the suite execution begins.
+    use this when specifying robot resource imports at the top of the file.
+
+    to import libraries, use a regular python import"""
+    if cast(_ExecutionContext | None, EXECUTION_CONTEXTS.current):
+        BuiltIn().import_resource(str(path))
+    else:
+        _resources.append(Path(path))
 
 
 _P = ParamSpec("_P")

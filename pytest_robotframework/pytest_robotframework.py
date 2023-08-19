@@ -8,7 +8,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.run import RobotFramework
 from typing_extensions import override
 
-from pytest_robotframework import _suite_variables
+from pytest_robotframework import _resources, _suite_variables, import_resource
 from pytest_robotframework._common import (
     KeywordNameFixer,
     PytestRuntestLogListener,
@@ -81,12 +81,15 @@ def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
 
 def pytest_runtest_setup(item: Item):
     if isinstance(item, RobotItem):
-        # setting suite variables with the `set_variables` function is only supported in python files.
+        # `set_variables` and `import_resource` is only supported in python files.
         # when running robot files, suite variables should be set using the `*** Variables ***` section
+        # and resources should be imported with `Resource` in the `*** Settings***` section
         return
     builtin = BuiltIn()
     for key, value in _suite_variables[item.path].items():
         builtin.set_suite_variable(r"${" + key + "}", value)
+    for resource in _resources:
+        import_resource(resource)
 
 
 def pytest_runtestloop(session: Session) -> object:
