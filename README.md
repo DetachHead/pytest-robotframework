@@ -1,18 +1,20 @@
 # pytest-robotframework
 
-a pytest plugin to generate robotframework reports without having to write your tests in the robot langauge
+a pytest plugin for robotframework that can run tests written in either python or robot
 
 ![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/9caabc2e-450e-4db6-bb63-e149a38d49a2)
 
 ## install
 
+pytest should automatically find and activate the plugin once you install it.
+
 ```
 poetry add pytest-robotframework --group=dev
 ```
 
-## usage
+## features
 
-pytest should automatically find and activate the plugin once you install it, so all you should have to do is write tests with pytest like you would normally:
+### write robot tests in python
 
 ```py
 # you can use both robot and pytest features
@@ -25,9 +27,52 @@ from pytest_robotframework import keyword
 def foo():
     ...
 
-
+@mark.slow  # gets converted to robot tags
 def test_foo(cache: Cache):
     foo()
+```
+
+### run `.robot` tests
+
+to allow for gradual adoption, the plugin also runs regular robot tests as well:
+
+```robot
+*** Settings ***
+test setup  setup
+
+*** Test Cases ***
+bar
+    [Tags]  asdf  key:value
+    no operation
+
+*** Keywords ***
+setup
+    log  ran setup
+```
+
+which is roughly equivalent to the following python code:
+
+```py
+# conftest.py
+from robot.api import logger
+from pytest_robotframework import keyword
+
+def pytest_runtet_setup():
+    foo()
+
+@keyword
+def foo():
+    logger.info("ran setup")
+```
+
+```py
+# test_foo.py
+from pytest import mark
+
+@mark.asdf
+@mark.key("value")
+def test_bar():
+    ...
 ```
 
 ### robot command line arguments
@@ -38,7 +83,7 @@ specify robot CLI arguments with the `--robotargs` argument:
 pytest --robotargs="-d results --listener foo.Foo"
 ```
 
-some arguments such as `--extension` obviously won't work .
+arguments that have pytest equivalents should not be used, however. for example, instead of `pytest --robotargs="--include some_tag"` you should use `pytest -m some_tag`.
 
 ### setup/teardown and other hooks
 
