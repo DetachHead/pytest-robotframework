@@ -2,6 +2,7 @@ from pytest import Mark, Pytester, Session
 
 from tests.utils import (
     assert_log_file_exists,
+    assert_robot_total_stats,
     output_xml,
     run_and_assert_result,
     run_pytest,
@@ -52,6 +53,166 @@ def test_one_test_skipped(pytester: Pytester):
     assert output_xml(pytester).xpath(
         "./suite//test[@name='foo']/kw/msg[@level='SKIP']"
     )
+
+
+def test_two_tests_one_fail_one_pass(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** test cases ***
+        foo
+            log  1
+        bar
+            fail  2
+        """,
+    )
+    run_and_assert_result(pytester, passed=1, failed=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath("./suite//test[@name='foo']//kw/msg[@level='INFO' and .='1']")
+    assert xml.xpath("./suite//test[@name='bar']//kw/msg[@level='FAIL' and .='2']")
+
+
+def test_setup_passes(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** settings ***
+        test setup  bar
+        *** test cases ***
+        foo
+            log  1
+        *** keywords ***
+        bar
+            log  2
+        """,
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+    assert output_xml(pytester).xpath(
+        "./suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar']/kw[@name='Log']/arg[.='2']"
+    )
+
+
+def test_setup_fails(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** settings ***
+        test setup  bar
+        *** test cases ***
+        foo
+            log  1
+        *** keywords ***
+        bar
+            fail  asdf
+        """,
+    )
+    run_and_assert_result(pytester, errors=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath(
+        "//suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar' and .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
+    )
+    # make sure the test didnt run when setup failed
+    assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
+
+
+def test_setup_skipped(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** settings ***
+        test setup  bar
+        *** test cases ***
+        foo
+            log  1
+        *** keywords ***
+        bar
+            skip
+        """,
+    )
+    run_and_assert_result(pytester, skipped=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath(
+        "//suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar' and .//msg[@level='SKIP']]"
+    )
+    # make sure the test didnt run when setup was skipped
+    assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
+
+
+def test_teardown_passes(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** settings ***
+        test teardown  bar
+        *** test cases ***
+        foo
+            log  1
+        *** keywords ***
+        bar
+            log  2
+        """,
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+    assert output_xml(pytester).xpath(
+        "./suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar']/kw[@name='Log']/arg[.='2']"
+    )
+
+
+def test_teardown_fails(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** settings ***
+        test teardown  bar
+        *** test cases ***
+        foo
+            log  1
+        *** keywords ***
+        bar
+            fail  asdf
+        """,
+    )
+    result = run_pytest(pytester)
+    result.assert_outcomes(passed=1, errors=1)
+    # unlike pytest, teardown failures in robot count as a test failure
+    assert_robot_total_stats(pytester, failed=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath(
+        "//suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar' and .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
+    )
+    assert xml.xpath("//kw[contains(@name, 'Run Test')]")
+
+
+def test_teardown_skipped(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** settings ***
+        test teardown  bar
+        *** test cases ***
+        foo
+            log  1
+        *** keywords ***
+        bar
+            skip
+        """,
+    )
+    result = run_pytest(pytester)
+    result.assert_outcomes(passed=1, skipped=1)
+    # unlike pytest, teardown skips in robot count as a test skip
+    assert_robot_total_stats(pytester, skipped=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath(
+        "//suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar' and .//msg[@level='SKIP']]"
+    )
+    assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
 
 def test_two_files_run_one_test(pytester: Pytester):

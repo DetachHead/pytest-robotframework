@@ -13,14 +13,15 @@ def output_xml(pytester: Pytester) -> _Element:
     return XML((pytester.path / "output.xml").read_bytes())
 
 
-def get_robot_total_stats(pytester: Pytester) -> dict[str, str]:
+def assert_robot_total_stats(pytester: Pytester, *, passed=0, skipped=0, failed=0):
     root = output_xml(pytester)
     statistics = next(child for child in root if child.tag == "statistics")
     total = next(child for child in statistics if child.tag == "total")
-    return cast(
+    result = cast(
         dict[str, str],
         next(child for child in total if child.tag == "stat").attrib.__copy__(),
     )
+    assert result == {"pass": str(passed), "fail": str(failed), "skip": str(skipped)}
 
 
 def assert_log_file_exists(pytester: Pytester):
@@ -48,8 +49,11 @@ def run_and_assert_result(
 ):
     result = run_pytest(pytester, *(pytest_args or []))
     result.assert_outcomes(passed=passed, skipped=skipped, failed=failed, errors=errors)
-    assert get_robot_total_stats(pytester) == {
-        "pass": str(passed),
-        "fail": str(failed),
-        "skip": str(skipped),
-    }
+    assert_robot_total_stats(
+        pytester,
+        passed=passed,
+        # most things that are errors in pytest are failures in robot. also robot doesn't store errors here
+        # TODO: a way to check for robot errors, i think they currently go undetected
+        failed=failed + errors,
+        skipped=skipped,
+    )
