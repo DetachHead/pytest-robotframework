@@ -327,7 +327,8 @@ def test_parameterized_tags(pytester: Pytester):
     markers: list[Mark] | None = None
 
     class TagGetter:
-        def pytest_collection_finish(self, session: Session):
+        @staticmethod
+        def pytest_collection_finish(session: Session):
             nonlocal markers
             for item in session.items:
                 markers = item.own_markers
