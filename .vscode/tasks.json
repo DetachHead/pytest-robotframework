@@ -36,8 +36,7 @@
     {
       "label": "basedmypy - all files",
       "type": "shell",
-      "command": "${command:python.interpreterPath}",
-      "args": ["-m", "mypy", "."],
+      "command": "${command:python.interpreterPath} -m mypy -p pytest_robotframework; ${command:python.interpreterPath} -m mypy tests",
       "presentation": {
         "clear": true
       },
