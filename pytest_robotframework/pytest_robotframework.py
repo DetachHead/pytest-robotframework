@@ -9,6 +9,7 @@ from robot import model
 from robot.api import SuiteVisitor
 from robot.libraries.BuiltIn import BuiltIn
 from robot.run import RobotFramework
+from typing_extensions import override
 
 from pytest_robotframework import _suite_variables
 from pytest_robotframework._common import (
@@ -39,6 +40,7 @@ def pytest_collection(session: Session):
     collected_suite: model.TestSuite | None = None
 
     class RobotTestCollector(SuiteVisitor):
+        @override
         def visit_suite(self, suite: model.TestSuite):
             nonlocal collected_suite
             # copy the suite since we want to remove everything from it to prevent robot from running anything
