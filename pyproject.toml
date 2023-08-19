@@ -13,7 +13,7 @@ deepmerge = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23"
-basedmypy = "^2"
+basedmypy = "^2.1"
 lxml = "^4.9.3"
 lxml-stubs = "^0.4.0"
 pylint = "^2.15"
@@ -116,7 +116,6 @@ enable = [
     "arguments-renamed",
     "attribute-defined-outside-init",
     "bad-builtin",
-    "bad-dunder-name",
     "bad-indentation",
     "bad-open-mode",
     "bad-staticmethod-argument",
@@ -169,7 +168,6 @@ enable = [
     "shallow-copy-environ",
     "signature-differs",
     "subclassed-final-class",
-    "subprocess-run-check",
     "super-init-not-called",
     "super-without-brackets",
     "unbalanced-dict-unpacking",
