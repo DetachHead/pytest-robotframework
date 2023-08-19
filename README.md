@@ -83,7 +83,7 @@ specify robot CLI arguments with the `--robotargs` argument:
 pytest --robotargs="-d results --listener foo.Foo"
 ```
 
-arguments that have pytest equivalents should not be used, however. for example, instead of `pytest --robotargs="--include some_tag"` you should use `pytest -m some_tag`.
+however, arguments that have pytest equivalents should not be used. for example, instead of `pytest --robotargs="--include some_tag"` you should use `pytest -m some_tag`.
 
 ### setup/teardown and other hooks
 
