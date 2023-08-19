@@ -66,7 +66,7 @@
       "label": "pylint - all files",
       "type": "shell",
       "command": "${command:python.interpreterPath}",
-      "args": ["-m", "pylint", "pytest_robotframework"],
+      "args": ["-m", "pylint", "pytest_robotframework", "tests"],
       "presentation": {
         "clear": true
       },
