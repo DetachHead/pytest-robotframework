@@ -332,7 +332,8 @@ def test_parameterized_tags(pytester: Pytester):
                 markers = item.own_markers
 
     run_pytest(pytester, "--collectonly", "--strict-markers", plugins=[TagGetter()])
-    assert markers and len(markers) == 1
+    assert markers
+    assert len(markers) == 1
     assert markers[0].name == "key"
     assert markers[0].args == ("hi",)  # type:ignore[no-any-expr]
 

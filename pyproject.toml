@@ -275,6 +275,7 @@ extend-select = [
     "ISC",
     "TRY",
     "D",
+    "PT",
 ]
 ignore = [
     "E501",    # Doc line too long
@@ -310,6 +311,7 @@ ignore = [
     "D406",    # Section name should end with a newline
     "D415",    # First line should end with a period, question mark, or exclamation point
     "D418",    # Function/Method decorated with @overload shouldn't contain a docstring (vscode supports it)
+    "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
 ]
 target-version = "py311"
 respect-gitignore = true
