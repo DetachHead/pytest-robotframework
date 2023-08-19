@@ -1,6 +1,6 @@
 # pytest-robotframework
 
-a pytest plugin for robotframework that can run tests written in either python or robot
+a pytest plugin that can run both python and robotframework tests while generating robot reports for them
 
 ![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/9caabc2e-450e-4db6-bb63-e149a38d49a2)
 
