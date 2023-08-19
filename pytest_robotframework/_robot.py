@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from os import PathLike
 from typing import cast
 
 from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark, skip
 from robot import running
 from robot.api import SuiteVisitor
-from robot.errors import ExecutionFailures
+from robot.errors import ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model import TestSuite
 from robot.running.bodyrunner import BodyRunner
@@ -62,32 +63,40 @@ class RobotItem(Item):
             tag, *args = tag.split(":")
             self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
 
-    @override
-    def setup(self):
-        setup_keyword = self.stash[original_setup_key]
-        if setup_keyword:
-            BuiltIn().run_keyword(setup_keyword.name)
-
-    @override
-    def runtest(self):
-        test = self.stash[running_test_case_key]
-        context = cast(_ExecutionContext, EXECUTION_CONTEXTS.current)
+    @contextmanager
+    def _check_skipped(self) -> Iterator[None]:
+        """since robot and pytest skips are different, we need to catch robot skips and convert them to pytest skips"""
         try:
-            BodyRunner(
-                context=context, templated=bool(test.template)
-            ).run(  # type:ignore[no-untyped-call]
-                self.stash[original_body_key]
-            )
-        except ExecutionFailures as e:
+            yield
+        except ExecutionFailed as e:
             if e.status == "SKIP":  # type:ignore[no-any-expr]
                 skip(e.message)  # type:ignore[no-any-expr]
             raise
 
     @override
+    def setup(self):
+        setup_keyword = self.stash[original_setup_key]
+        if setup_keyword:
+            with self._check_skipped():
+                BuiltIn().run_keyword(setup_keyword.name)
+
+    @override
+    def runtest(self):
+        test = self.stash[running_test_case_key]
+        context = cast(_ExecutionContext, EXECUTION_CONTEXTS.current)
+        with self._check_skipped():
+            BodyRunner(
+                context=context, templated=bool(test.template)
+            ).run(  # type:ignore[no-untyped-call]
+                self.stash[original_body_key]
+            )
+
+    @override
     def teardown(self):
         teardown_keyword = self.stash[original_teardown_key]
         if teardown_keyword:
-            BuiltIn().run_keyword(teardown_keyword.name)
+            with self._check_skipped():
+                BuiltIn().run_keyword(teardown_keyword.name)
 
     @override
     def reportinfo(self) -> (PathLike[str] | str, int | None, str):
