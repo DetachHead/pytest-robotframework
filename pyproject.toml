@@ -109,7 +109,6 @@ enable = [
     "unsupported-assignment-operation",
     "unsupported-binary-operation",
     "unsupported-delete-operation",
-    "unsupported-membership-test",
     "used-before-assignment",
     "abstract-method",
     "anomalous-unicode-escape-in-string",
