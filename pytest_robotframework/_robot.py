@@ -69,8 +69,8 @@ class RobotItem(Item):
             tag, *args = tag.split(":")
             self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
 
-    @contextmanager
     @staticmethod
+    @contextmanager
     def _check_skipped() -> Iterator[None]:
         """since robot and pytest skips are different, we need to catch robot skips and convert them to pytest skips"""
         try:
