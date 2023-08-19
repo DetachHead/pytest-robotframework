@@ -9,7 +9,9 @@ from typing import Callable, ParamSpec, cast  # noqa: UP035
 from basedtyping import T
 from robot import result, running
 from robot.libraries.BuiltIn import BuiltIn
-from robot.running.context import _ExecutionContext
+from robot.running.context import (  # pylint:disable=import-private-name
+    _ExecutionContext,
+)
 from robot.running.statusreporter import StatusReporter
 
 RobotVariables = dict[str, object]

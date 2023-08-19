@@ -3,8 +3,14 @@ import re
 # callable isnt a collection
 from typing import Callable, Literal, cast  # noqa: UP035
 
-from _pytest._code.code import ExceptionInfo, ExceptionRepr
-from _pytest.runner import call_and_report, show_test_item
+from _pytest._code.code import (  # pylint:disable=import-private-name
+    ExceptionInfo,
+    ExceptionRepr,
+)
+from _pytest.runner import (  # pylint:disable=import-private-name
+    call_and_report,
+    show_test_item,
+)
 from pytest import Item, Session, StashKey, TestReport
 from robot import model, result, running
 from robot.api import ResultVisitor, SuiteVisitor
@@ -75,6 +81,22 @@ original_body_key = StashKey[Body]()
 original_teardown_key = StashKey[model.Keyword]()
 
 
+def register_keyword(suite: running.TestSuite, fn: KeywordFunction) -> str:
+    """when robot parses a test suite, there's no way to specify function references for the keywords, only the name.
+    then when the test is executed, the execution context creates a handler which imports the modules used by the
+    suite, which is where it resolves the keywords by name.
+
+    so since we are defining arbitrary functions here that robot needs to be able to find in a module, we have to
+    dynamically add it to the specified module with a unique name.
+
+    after the test suite is run, `_KeywordNameFixer` modifies the run results to change the keyword names back to
+    non-unique user friendly ones"""
+    suite.resource.imports.library(_fake_robot_library.__name__)
+    name = f"pytestrobotkeyword{hash(fn)}_{fn.__name__}"
+    setattr(_fake_robot_library, name, keyword(fn))  # type:ignore[no-any-expr]
+    return name
+
+
 class PytestRuntestProtocolInjector(SuiteVisitor):
     """injects the hooks from `pytest_runtest_protocol` into the robot test suite. this replaces any existing
     setup/body/teardown with said hooks, which may or may not be an issue depending on whether a python or robot
@@ -90,21 +112,6 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     def __init__(self, session: Session):
         self.session = session
         self.report_key = StashKey[list[TestReport]]()
-
-    def _register_keyword(self, suite: running.TestSuite, fn: KeywordFunction) -> str:
-        """when robot parses a test suite, there's no way to specify function references for the keywords, only the name.
-        then when the test is executed, the execution context creates a handler which imports the modules used by the
-        suite, which is where it resolves the keywords by name.
-
-        so since we are defining arbitrary functions here that robot needs to be able to find in a module, we have to
-        dynamically add it to the specified module with a unique name.
-
-        after the test suite is run, `_KeywordNameFixer` modifies the run results to change the keyword names back to
-        non-unique user friendly ones"""
-        suite.resource.imports.library(_fake_robot_library.__name__)
-        name = f"pytestrobotkeyword{hash(fn)}_{fn.__name__}"
-        setattr(_fake_robot_library, name, keyword(fn))  # type:ignore[no-any-expr]
-        return name
 
     def _call_and_report_robot_edition(
         self, item: Item, when: Literal["setup", "call", "teardown"], **kwargs: object
@@ -160,7 +167,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
             item.stash[original_setup_key] = test.setup
             test.setup = running.Keyword(  # type:ignore[assignment]
-                name=self._register_keyword(suite, setup), type=model.Keyword.SETUP
+                name=register_keyword(suite, setup), type=model.Keyword.SETUP
             )
 
             def run_test(item: Item = item):  # type:ignore[assignment]
@@ -180,7 +187,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             #  https://github.com/DetachHead/pytest-robotframework/issues/36
             item.stash[original_body_key] = test.body  # type:ignore[misc]
             test.body = Body(
-                items=[running.Keyword(name=self._register_keyword(suite, run_test))]
+                items=[running.Keyword(name=register_keyword(suite, run_test))]
             )
 
             def teardown(item: Item = item):  # type:ignore[assignment]
@@ -191,8 +198,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
             item.stash[original_teardown_key] = test.teardown
             test.teardown = running.Keyword(
-                name=self._register_keyword(suite, teardown),
-                type=model.Keyword.TEARDOWN,
+                name=register_keyword(suite, teardown), type=model.Keyword.TEARDOWN
             )
 
 

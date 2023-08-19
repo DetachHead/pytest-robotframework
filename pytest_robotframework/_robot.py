@@ -9,7 +9,10 @@ from robot.errors import ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model import TestSuite
 from robot.running.bodyrunner import BodyRunner
-from robot.running.context import EXECUTION_CONTEXTS, _ExecutionContext
+from robot.running.context import (  # pylint:disable=import-private-name
+    EXECUTION_CONTEXTS,
+    _ExecutionContext,
+)
 from typing_extensions import override
 
 from pytest_robotframework._common import (
@@ -67,7 +70,8 @@ class RobotItem(Item):
             self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
 
     @contextmanager
-    def _check_skipped(self) -> Iterator[None]:
+    @staticmethod
+    def _check_skipped() -> Iterator[None]:
         """since robot and pytest skips are different, we need to catch robot skips and convert them to pytest skips"""
         try:
             yield
