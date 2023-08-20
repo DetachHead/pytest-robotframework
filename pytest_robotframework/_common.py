@@ -87,9 +87,9 @@ def register_keyword(suite: running.TestSuite, fn: KeywordFunction) -> str:
     suite, which is where it resolves the keywords by name.
 
     so since we are defining arbitrary functions here that robot needs to be able to find in a module, we have to
-    dynamically add it to the specified module with a unique name.
+    dynamically add it to our fake module with a unique name.
 
-    after the test suite is run, `_KeywordNameFixer` modifies the run results to change the keyword names back to
+    after the test suite is run, `KeywordNameFixer` modifies the run results to change the keyword names back to
     non-unique user friendly ones"""
     suite.resource.imports.library(_fake_robot_library.__name__)
     name = f"pytestrobotkeyword{hash(fn)}_{fn.__name__}"
@@ -205,8 +205,6 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 class PytestRuntestLogListener(ListenerV3):
     """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from `pytest_runtest_protocol`.
     since all the other parts of `_pytest.runner.runtestprotocol` are re-implemented in `PythonParser`
-
-    also adds the `result.TestCase` to the pytest item's
     """
 
     def __init__(self, session: Session):
