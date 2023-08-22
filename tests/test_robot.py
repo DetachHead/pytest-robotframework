@@ -291,6 +291,26 @@ def test_tags(pytester: Pytester):
     assert not xml.xpath(".//test[@name='bar']")
 
 
+def test_tags_in_settings(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** settings ***
+        test tags  m1
+        *** test cases ***
+        foo
+            no operation
+        bar
+            no operation
+        """,
+    )
+    run_and_assert_result(pytester, pytest_args=["-m", "m1"], passed=2)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath(".//test[@name='foo']/tag[.='m1']")
+    assert xml.xpath(".//test[@name='bar']/tag[.='m1']")
+
+
 def test_warning_on_unknown_tag(pytester: Pytester):
     make_robot_file(
         pytester,
@@ -375,3 +395,42 @@ def test_doesnt_run_tests_outside_path(pytester: Pytester):
     xml = output_xml(pytester)
     assert xml.xpath(".//test[@name='foo']")
     assert not xml.xpath(".//test[@name='bar']")
+
+
+def test_run_keyword_and_ignore_error(pytester: Pytester):
+    pytester.makefile(
+        ".py",
+        foo="""
+            from pytest_robotframework import keyword
+                            
+            @keyword
+            def bar():
+                raise Exception
+        """,
+    )
+    make_robot_file(
+        pytester,
+        """
+        library  foo
+        *** test cases ***
+        foo
+            run keyword and ignore error  bar
+        """,
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+
+
+def test_init_file(pytester: Pytester):
+    make_robot_file(
+        pytester,
+        """
+        *** test cases ***
+        foo
+            no operation
+        """,
+    )
+    pytester.makefile(".py", __init__="")
+    result = run_pytest(pytester)
+    result.assert_outcomes(passed=1)
+    assert (pytester.path / "log.html").exists()
