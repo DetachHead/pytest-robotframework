@@ -148,7 +148,6 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
     @override
     def start_suite(self, suite: running.TestSuite):
-        # need to copy when iterating since we are removing items from the original
         for test in suite.tests:
             item = get_item_from_robot_test(self.session, test)
             if not item:
