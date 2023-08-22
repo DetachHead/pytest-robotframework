@@ -514,5 +514,32 @@ def test_robot_keyword_in_python_test(pytester: Pytester):
             BuiltIn().run_keyword('bar')
         """
     )
-    run_and_assert_result(pytester, passed=1)
+    run_and_assert_result(pytester, errors=1, pytest_args=["--import-mode=importlib"])
+    # we add the current directory to the syspath to simulate `py -m pytest`
+    pytester.syspathinsert(".")
+    run_and_assert_result(pytester, passed=1, pytest_args=["--import-mode=importlib"])
+    assert_log_file_exists(pytester)
+
+
+def test_robot_keyword_in_python_test_prepend(pytester: Pytester):
+    pytester.makefile(
+        ".resource",
+        bar="""
+            *** keywords ***
+            bar
+                log  1
+        """,
+    )
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest_robotframework import import_resource
+        from robot.libraries.BuiltIn import BuiltIn
+
+        import_resource("bar.resource")
+
+        def test_foo():
+            BuiltIn().run_keyword('bar')
+        """
+    )
+    run_and_assert_result(pytester, passed=1, pytest_args=["--import-mode=prepend"])
     assert_log_file_exists(pytester)
