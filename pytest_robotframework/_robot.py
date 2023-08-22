@@ -125,7 +125,6 @@ class CollectedTestsFilterer(SuiteVisitor):
             if not item:
                 # happens when running .robot tests that were filtered out by pytest
                 suite.tests.remove(test)
-                continue
 
     @override
     def end_suite(self, suite: running.TestSuite):
