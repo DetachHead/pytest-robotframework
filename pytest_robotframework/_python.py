@@ -60,4 +60,6 @@ class PythonParser(RobotParser):
 
     @override
     def parse_init(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
-        return running.TestSuite()
+        return running.TestSuite(
+            running.TestSuite.name_from_source(source), source=source
+        )

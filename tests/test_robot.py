@@ -434,3 +434,25 @@ def test_init_file(pytester: Pytester):
     result = run_pytest(pytester)
     result.assert_outcomes(passed=1)
     assert (pytester.path / "log.html").exists()
+
+
+def test_init_file_nested(pytester: Pytester):
+    pytester.makefile(
+        ".robot",
+        **{
+            "foo/foo": """
+                *** test cases ***
+                foo
+                    no operation
+            """,
+            "foo/bar": """
+                *** test cases ***
+                bar
+                    no operation
+            """,
+        },
+    )
+    pytester.makefile(".py", **{"foo/__init__": "", "__init__": ""})
+    result = run_pytest(pytester, "foo")
+    result.assert_outcomes(passed=2)
+    assert (pytester.path / "log.html").exists()
