@@ -55,12 +55,16 @@ def pytest_collection(session: Session):
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot.main(  # type:ignore[no-untyped-call]
         [session.path],  # type:ignore[no-any-expr]
-        extension="robot",
+        extension="py:robot",
         runemptysuite=True,
         console="none",
         report=None,
         output=None,
         log=None,
+        # the python parser is not actually used here, but required because collection needs to be run with the
+        # same settings as the actual run, otherwise test longnames could be different (see the TODO in
+        # get_item_from_robot_test)
+        parser=[PythonParser(session)],  # type:ignore[no-any-expr]
         prerunmodifier=[
             CollectedTestsFilterer(session),
             RobotTestCollector(),
