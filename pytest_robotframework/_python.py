@@ -36,25 +36,26 @@ class PythonParser(RobotParser):
         suite = running.TestSuite(
             running.TestSuite.name_from_source(source), source=source
         )
-        for item in self.session.items:
-            if (
-                # don't include RobotItems as .robot files are parsed by robot's default parser
-                not isinstance(item, PytestFunction)
-                # only add tests from the pytest session that are in the suite robot is parsing
-                or item.path != source
-            ):
-                continue
-            test_case = running.TestCase(
-                name=item.name,
-                doc=cast(Function, item.function).__doc__ or "",
-                tags=[marker.name for marker in item.iter_markers()],
-            )
-            item.stash[running_test_case_key] = test_case
-            module = cast(ModuleType, item.module)
-            if module.__doc__ and not suite.doc:
-                suite.doc = module.__doc__
-            test_case.body = Body()
-            suite.tests.append(test_case)
+        if hasattr(self.session, "items"):
+            for item in self.session.items:
+                if (
+                    # don't include RobotItems as .robot files are parsed by robot's default parser
+                    not isinstance(item, PytestFunction)
+                    # only add tests from the pytest session that are in the suite robot is parsing
+                    or item.path != source
+                ):
+                    continue
+                test_case = running.TestCase(
+                    name=item.name,
+                    doc=cast(Function, item.function).__doc__ or "",
+                    tags=[marker.name for marker in item.iter_markers()],
+                )
+                item.stash[running_test_case_key] = test_case
+                module = cast(ModuleType, item.module)
+                if module.__doc__ and not suite.doc:
+                    suite.doc = module.__doc__
+                test_case.body = Body()
+                suite.tests.append(test_case)
         return suite
 
     @override
