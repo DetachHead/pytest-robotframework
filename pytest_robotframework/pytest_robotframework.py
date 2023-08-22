@@ -65,10 +65,7 @@ def pytest_collection(session: Session):
         # same settings as the actual run, otherwise test longnames could be different (see the TODO in
         # get_item_from_robot_test)
         parser=[PythonParser(session)],  # type:ignore[no-any-expr]
-        prerunmodifier=[
-            CollectedTestsFilterer(session),
-            RobotTestCollector(),
-        ],  # type:ignore[no-any-expr]
+        prerunmodifier=[RobotTestCollector()],  # type:ignore[no-any-expr]
     )
     if not collected_suite:
         raise Exception("failed to collect .robot tests")
@@ -103,6 +100,8 @@ def pytest_runtestloop(session: Session) -> object:
     robot.main(  # type:ignore[no-untyped-call]
         [session.path],  # type:ignore[no-any-expr]
         extension="py:robot",
+        # needed because PythonParser.visit_init creates an empty suite
+        runemptysuite=True,
         **cast(
             RobotArgs,
             always_merger.merge(  # type:ignore[no-untyped-call]
