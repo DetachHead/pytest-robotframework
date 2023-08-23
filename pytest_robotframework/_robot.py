@@ -62,9 +62,10 @@ class RobotItem(Item):
             nodeid=nodeid,
             **kwargs,
         )
-        # ideally this would just be stored on a normal attribute but we want a consistent way
+        # ideally this would only be stored on a normal attribute but we want a consistent way
         # of accessing the robot test from both `RobotItem`s and regular `Item`s
         self.stash[running_test_case_key] = robot_test
+        self.robot_test = robot_test
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
             self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
