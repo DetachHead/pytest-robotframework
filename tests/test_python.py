@@ -388,6 +388,22 @@ def test_tags(pytester: Pytester):
     assert xml.xpath(".//test[@name='test_tags']/tag[.='slow']")
 
 
+def test_parameterized_tags(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        from pytest import mark
+
+        @mark.foo("bar")
+        def test_tags():
+            ...
+        """
+    )
+    run_and_assert_result(pytester, passed=1)
+    assert_log_file_exists(pytester)
+    xml = output_xml(pytester)
+    assert xml.xpath(".//test[@name='test_tags']/tag[.='foo:bar']")
+
+
 @mark.xfail(
     reason="TODO: figure out how to modify the keyword names before the xml is written or read the html file instead"
 )
