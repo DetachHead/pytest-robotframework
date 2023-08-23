@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from pytest import Pytester, mark
 
 from tests.utils import (
@@ -150,6 +152,85 @@ def test_robot_args(pytester: Pytester):
     result = pytester.runpytest("--robotargs", f"-d {results_path}")
     result.assert_outcomes(passed=1)
     assert (results_path / "log.html").exists()
+
+
+def test_robot_options_variable(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        """
+        def test_func1():
+            pass
+        """
+    )
+    results_path = pytester.path / "results"
+    env_variable = "ROBOT_OPTIONS"
+    try:
+        os.environ[env_variable] = f"-d {results_path}"
+        result = pytester.runpytest()
+    finally:
+        del os.environ[env_variable]
+    result.assert_outcomes(passed=1)
+    assert (results_path / "log.html").exists()
+
+
+def test_robot_options_merge_listeners(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        Listener="""
+            from robot import result, running
+            from robot.api.interfaces import ListenerV3
+            from typing_extensions import override
+            
+            called = False
+            class Listener(ListenerV3):
+                @override
+                def start_suite(self, data: running.TestSuite, result: result.TestSuite):
+                    global called
+                    called = True
+        """
+    )
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        test_foo="""
+            import Listener
+            def test_func1():
+                assert Listener.called
+        """
+    )
+    result = pytester.runpytest(
+        "--robotargs", f"--listener {pytester.path / 'Listener.py'}"
+    )
+    result.assert_outcomes(passed=1)
+    assert_log_file_exists(pytester)
+
+
+def test_robot_options_variable_merge_listeners(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        Listener="""
+            from robot import result, running
+            from robot.api.interfaces import ListenerV3
+            from typing_extensions import override
+            
+            called = False
+            class Listener(ListenerV3):
+                @override
+                def start_suite(self, data: running.TestSuite, result: result.TestSuite):
+                    global called
+                    called = True
+        """
+    )
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        test_foo="""
+            import Listener
+            def test_func1():
+                assert Listener.called
+        """
+    )
+    env_variable = "ROBOT_OPTIONS"
+    try:
+        os.environ[env_variable] = f"--listener {pytester.path / 'Listener.py'}"
+        result = pytester.runpytest()
+    finally:
+        del os.environ[env_variable]
+    result.assert_outcomes(passed=1)
+    assert_log_file_exists(pytester)
 
 
 def test_doesnt_run_when_collecting(pytester: Pytester):
