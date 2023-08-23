@@ -75,7 +75,7 @@ def test_bar():
     ...
 ```
 
-### robot command line arguments
+### robot options
 
 specify robot CLI arguments with the `--robotargs` argument:
 
@@ -83,7 +83,14 @@ specify robot CLI arguments with the `--robotargs` argument:
 pytest --robotargs="-d results --listener foo.Foo"
 ```
 
-however, arguments that have pytest equivalents should not be used. for example, instead of `pytest --robotargs="--include some_tag"` you should use `pytest -m some_tag`.
+or you could use the `ROBOT_OPTIONS` environment variable:
+
+```
+ROBOT_OPTIONS="-d results --listener foo.Foo"
+```
+
+however, arguments that have pytest equivalents should not set with robot as they will probably cause the plugin to behave incorrectly.
+for example, instead of `pytest --robotargs="--include some_tag"` you should use `pytest -m some_tag`.
 
 ### setup/teardown and other hooks
 
