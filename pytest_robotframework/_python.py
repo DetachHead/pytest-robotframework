@@ -48,7 +48,18 @@ class PythonParser(RobotParser):
                 test_case = running.TestCase(
                     name=item.name,
                     doc=cast(Function, item.function).__doc__ or "",
-                    tags=[marker.name for marker in item.iter_markers()],
+                    tags=[
+                        ":".join(
+                            [
+                                marker.name,
+                                *(
+                                    str(arg)
+                                    for arg in cast(tuple[object, ...], marker.args)
+                                ),
+                            ]
+                        )
+                        for marker in item.iter_markers()
+                    ],
                 )
                 item.stash[running_test_case_key] = test_case
                 module = cast(ModuleType, item.module)
