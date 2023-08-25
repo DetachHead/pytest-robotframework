@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, cast
 from deepmerge import always_merger
 from robot.api import SuiteVisitor
 from robot.libraries.BuiltIn import BuiltIn
+from robot.output import LOGGER
 from robot.run import RobotFramework
 from typing_extensions import override
 
@@ -96,26 +97,28 @@ def pytest_runtest_setup(item: Item):
 def pytest_runtestloop(session: Session) -> object:
     if session.config.option.collectonly:  # type:ignore[no-any-expr]
         return None
-    robot = RobotFramework()  # type:ignore[no-untyped-call]
-    robot.main(  # type:ignore[no-untyped-call]
-        [session.path],  # type:ignore[no-any-expr]
-        extension="py:robot",
-        # needed because PythonParser.visit_init creates an empty suite
-        runemptysuite=True,
-        **cast(
-            RobotArgs,
-            always_merger.merge(  # type:ignore[no-untyped-call]
-                parse_robot_args(robot, session),
-                dict[str, object](
-                    parser=[PythonParser(session)],
-                    prerunmodifier=[
-                        CollectedTestsFilterer(session),
-                        PytestRuntestProtocolInjector(session),
-                    ],
-                    prerebotmodifier=[KeywordNameFixer()],
-                    listener=[PytestRuntestLogListener(session)],
+    # needed for log_file listener methods to prevent logger from deactivating after the test is over
+    with LOGGER:
+        robot = RobotFramework()  # type:ignore[no-untyped-call]
+        robot.main(  # type:ignore[no-untyped-call]
+            [session.path],  # type:ignore[no-any-expr]
+            extension="py:robot",
+            # needed because PythonParser.visit_init creates an empty suite
+            runemptysuite=True,
+            **cast(
+                RobotArgs,
+                always_merger.merge(  # type:ignore[no-untyped-call]
+                    parse_robot_args(robot, session),
+                    dict[str, object](
+                        parser=[PythonParser(session)],
+                        prerunmodifier=[
+                            CollectedTestsFilterer(session),
+                            PytestRuntestProtocolInjector(session),
+                        ],
+                        prerebotmodifier=[KeywordNameFixer()],
+                        listener=[PytestRuntestLogListener(session)],
+                    ),
                 ),
             ),
-        ),
-    )
+        )
     return True

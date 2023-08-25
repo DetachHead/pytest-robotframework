@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from pytest import Pytester, mark
 
@@ -231,6 +232,36 @@ def test_robot_options_variable_merge_listeners(pytester: Pytester):
         del os.environ[env_variable]
     result.assert_outcomes(passed=1)
     assert_log_file_exists(pytester)
+
+
+def test_listener_calls_log_file(pytester: Pytester):
+    # TODO: this doesnt log to the console so no other way to verify that it ran
+    #  https://github.com/DetachHead/pytest-robotframework/issues/39
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        Listener="""
+            from robot.api.interfaces import ListenerV3
+            from typing_extensions import override
+            from pathlib import Path
+            
+            class Listener(ListenerV3):
+                @override
+                def log_file(self, path: str):
+                    Path("hi").write_text("")
+        """
+    )
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        test_foo="""
+            import Listener
+            def test_func1():
+                pass
+        """
+    )
+    result = pytester.runpytest(
+        "--robotargs", f"--listener {pytester.path / 'Listener.py'}"
+    )
+    result.assert_outcomes(passed=1)
+    assert_log_file_exists(pytester)
+    assert Path("hi").exists()
 
 
 def test_doesnt_run_when_collecting(pytester: Pytester):
