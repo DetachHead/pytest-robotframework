@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pytest import Mark, Pytester, Session
 
 from tests.utils import (
@@ -71,6 +73,37 @@ def test_two_tests_one_fail_one_pass(pytester: Pytester):
     xml = output_xml(pytester)
     assert xml.xpath("./suite//test[@name='foo']//kw/msg[@level='INFO' and .='1']")
     assert xml.xpath("./suite//test[@name='bar']//kw/msg[@level='FAIL' and .='2']")
+
+
+def test_listener_calls_log_file(pytester: Pytester):
+    # TODO: this doesnt log to the console so no other way to verify that it ran
+    #  https://github.com/DetachHead/pytest-robotframework/issues/39
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        Listener="""
+            from robot.api.interfaces import ListenerV3
+            from typing_extensions import override
+            from pathlib import Path
+            
+            class Listener(ListenerV3):
+                @override
+                def log_file(self, path: str):
+                    Path("hi").write_text("")
+        """
+    )
+    pytester.makefile(
+        ".robot",
+        foo="""
+            *** test cases ***
+            foo
+                no operation
+        """,
+    )
+    result = pytester.runpytest(
+        "--robotargs", f"--listener {pytester.path / 'Listener.py'}"
+    )
+    result.assert_outcomes(passed=1)
+    assert_log_file_exists(pytester)
+    assert Path("hi").exists()
 
 
 def test_setup_passes(pytester: Pytester):
