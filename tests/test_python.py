@@ -276,6 +276,22 @@ def test_doesnt_run_when_collecting(pytester: Pytester):
     assert not (pytester.path / "log.html").exists()
 
 
+def test_correct_items_collected_when_collect_only(pytester: Pytester):
+    pytester.makepyfile(  # type:ignore[no-untyped-call]
+        foo="""
+            def test_func1():
+                pass
+        """,
+        bar="""
+            def test_func2():
+                pass
+        """,
+    )
+    result = run_pytest(pytester, "--collect-only", "bar.py")
+    assert result.parseoutcomes() == {"test": 1}
+    assert "<Function test_func2>" in (line.strip() for line in result.outlines)
+
+
 def test_setup_passes(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
         """

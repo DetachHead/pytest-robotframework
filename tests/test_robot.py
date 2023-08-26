@@ -407,6 +407,25 @@ def test_doesnt_run_when_collecting(pytester: Pytester):
     assert not (pytester.path / "log.html").exists()
 
 
+def test_correct_items_collected_when_collect_only(pytester: Pytester):
+    pytester.makefile(
+        ".robot",
+        foo="""
+            *** test cases ***
+            foo
+                asdfadsf
+        """,
+        bar="""
+            *** test cases ***
+            bar
+                asdfadsf
+        """,
+    )
+    result = run_pytest(pytester, "--collect-only", "bar.robot")
+    assert result.parseoutcomes() == {"test": 1}
+    assert "<RobotItem bar>" in (line.strip() for line in result.outlines)
+
+
 def test_doesnt_run_tests_outside_path(pytester: Pytester):
     pytester.makefile(
         ".robot",

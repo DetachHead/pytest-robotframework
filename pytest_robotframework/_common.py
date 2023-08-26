@@ -1,4 +1,5 @@
 import re
+from types import ModuleType
 
 # callable isnt a collection
 from typing import Callable, Literal, cast  # noqa: UP035
@@ -11,13 +12,12 @@ from _pytest.runner import (  # pylint:disable=import-private-name
     call_and_report,
     show_test_item,
 )
-from pytest import Item, Session, StashKey, TestReport
+from pytest import Function, Item, Session, StashKey, TestReport
 from robot import model, result, running
 from robot.api import ResultVisitor, SuiteVisitor
 from robot.api.deco import keyword
 from robot.api.interfaces import ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
-from robot.run import RobotFramework
 from robot.running.model import Body
 from typing_extensions import override
 
@@ -25,41 +25,102 @@ from pytest_robotframework import _fake_robot_library
 
 KeywordFunction = Callable[[], None]
 
-RobotArgs = dict[str, object]
 
+collected_robot_suite_key = StashKey[model.TestSuite]()
 running_test_case_key = StashKey[running.TestCase]()
 
 
-def parse_robot_args(robot: RobotFramework, session: Session) -> RobotArgs:
-    return cast(
-        dict[str, object],
-        robot.parse_arguments(  # type:ignore[no-any-expr]
-            [
-                *cast(
-                    str,
-                    session.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                        "--robotargs"
-                    ),
-                ).split(" "),
-                session.path,  # not actually used here, but the argument parser requires at least one path
-            ]
-        )[0],
-    )
+class PytestRobotFrameworkError(Exception):
+    def __init__(self, message: str) -> None:
+        super().__init__(
+            "something went wrong with the pytest-robotframework plugin. please raise"
+            " an issue at https://github.com/detachhead/pytest-robotframework with the"
+            f" following information:\n\n{message}"
+        )
 
 
 def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
     try:
         return next(
-            item
-            for item in session.items
-            # TODO: can there be multiple tests with the same long name? is there a better way to match the tests?
-            #  tried using id but that changes when tests/suites get removed
-            #  https://github.com/DetachHead/pytest-robotframework/issues/34
-            if item.stash[running_test_case_key].longname == test.longname
+            item for item in session.items if item.stash[running_test_case_key] == test
         )
     except StopIteration:
         # the robot test was found but got filtered out by pytest
         return None
+
+
+class PytestCollector(SuiteVisitor):
+    """
+    calls the pytest collection hooks.
+
+    if `collect_only` is `False`, it also does the following to prepare the tests for execution:
+
+    - filters out any `.robot` tests/suites that are not included in the collected pytest tests
+    - adds the collected `.py` test cases to the robot test suites (with empty bodies. bodies are added later by `PytestRuntestProtocolInjector`)
+    """
+
+    def __init__(self, session: Session, *, collect_only: bool):
+        self.session = session
+        self.collect_only = collect_only
+
+    @override
+    def visit_suite(self, suite: running.TestSuite):
+        if not suite.parent:
+            self.session.stash[collected_robot_suite_key] = suite
+            self.session.perform_collect()
+            # create robot test cases for python tests:
+            for item in self.session.items:
+                if (
+                    # don't include RobotItems as .robot files are parsed by robot's default parser
+                    not isinstance(item, Function)
+                ):
+                    continue
+                test_case = running.TestCase(
+                    name=item.name,
+                    doc=cast(Function, item.function).__doc__ or "",
+                    tags=[
+                        ":".join(
+                            [
+                                marker.name,
+                                *(
+                                    str(arg)
+                                    for arg in cast(tuple[object, ...], marker.args)
+                                ),
+                            ]
+                        )
+                        for marker in item.iter_markers()
+                    ],
+                )
+                test_case.body = Body()
+                item.stash[running_test_case_key] = test_case
+        if self.collect_only:
+            suite.suites.clear()  # type:ignore[no-untyped-call]
+            suite.tests.clear()  # type:ignore[no-untyped-call]
+            return
+        if suite.source and suite.source.suffix != ".robot":
+            # remove the fake test (required so that the parser doesn't delete suites for being empty)
+            suite.tests.clear()  # type:ignore[no-untyped-call]
+
+        # remove any .robot tests that were filtered out by pytest:
+        for test in suite.tests[:]:
+            if not get_item_from_robot_test(self.session, test):
+                # happens when running .robot tests that were filtered out by pytest
+                suite.tests.remove(test)
+
+        # add any .py tests that were collected by pytest
+        for item in self.session.items:
+            if isinstance(item, Function):
+                module = cast(ModuleType, item.module)
+                if module.__doc__ and not suite.doc:
+                    suite.doc = module.__doc__
+                if item.path == suite.source:
+                    suite.tests.append(item.stash[running_test_case_key])
+        super().visit_suite(suite)
+
+    @override
+    def end_suite(self, suite: running.TestSuite):
+        """Remove suites that are empty after removing tests."""
+        suite.suites = [s for s in suite.suites if s.test_count > 0]
 
 
 class KeywordNameFixer(ResultVisitor):
@@ -137,22 +198,28 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             longrepr = report.longrepr
             if isinstance(longrepr, ExceptionInfo):
                 raise longrepr.value
-            error_text = f"please report this on the pytest-robotframework github repo: {longrepr}"
+            error_text = (
+                "please report this on the pytest-robotframework github repo:"
+                f" {longrepr}"
+            )
             if isinstance(longrepr, ExceptionRepr):
-                raise Exception(
-                    longrepr.reprcrash.message
-                    if longrepr.reprcrash
-                    else f"pytest exception was `None`, {error_text}"
+                if longrepr.reprcrash:
+                    raise Exception(longrepr.reprcrash.message)
+                raise PytestRobotFrameworkError(
+                    f"pytest exception was `None`, {error_text}"
                 )
-            raise Exception(f"Unknown exception type appeared, {error_text}")
+            raise PytestRobotFrameworkError(
+                f"Unknown exception type appeared, {error_text}"
+            )
 
     @override
     def start_suite(self, suite: running.TestSuite):
         for test in suite.tests:
             item = get_item_from_robot_test(self.session, test)
             if not item:
-                raise Exception(
-                    f"this should NEVER happen, `CollectedTestsFilterer` failed to filter out {test.name}"
+                raise PytestRobotFrameworkError(
+                    "this should NEVER happen, `PytestCollector` failed to filter out"
+                    f" {test.name}"
                 )
 
             # https://github.com/python/mypy/issues/15894
@@ -212,7 +279,9 @@ class PytestRuntestLogListener(ListenerV3):
     def _get_item(self, data: running.TestCase) -> Item:
         item = get_item_from_robot_test(self.session, data)
         if not item:
-            raise Exception(f"faild to find pytest item for robot test: {data.name}")
+            raise PytestRobotFrameworkError(
+                f"failed to find pytest item for robot test: {data.name}"
+            )
         return item
 
     @override

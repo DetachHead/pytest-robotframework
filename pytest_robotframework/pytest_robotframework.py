@@ -3,33 +3,72 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from deepmerge import always_merger
-from robot.api import SuiteVisitor
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.run import RobotFramework
-from typing_extensions import override
 
 from pytest_robotframework import _resources, _suite_variables, import_resource
 from pytest_robotframework._common import (
     KeywordNameFixer,
+    PytestCollector,
     PytestRuntestLogListener,
     PytestRuntestProtocolInjector,
-    RobotArgs,
-    parse_robot_args,
 )
 from pytest_robotframework._python import PythonParser
-from pytest_robotframework._robot import (
-    CollectedTestsFilterer,
-    RobotFile,
-    RobotItem,
-    collected_robot_suite_key,
-)
+from pytest_robotframework._robot import RobotFile, RobotItem
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from pytest import Collector, Item, Parser, Session
-    from robot import model
+
+
+def _collect_slash_run(session: Session, *, collect_only: bool):
+    """this is called either by `pytest_collection` or `pytest_runtestloop` depending on whether `collect_only`
+    is `True`, because to avoid having to run robot multiple times for both the collection and running, it's
+    more efficient to just have `pytest_runtestloop` handle the collection as well if possible.
+    """
+    robot = RobotFramework()  # type:ignore[no-untyped-call]
+    robot_args = cast(
+        dict[str, object],
+        always_merger.merge(  # type:ignore[no-untyped-call]
+            robot.parse_arguments(  # type:ignore[no-any-expr]
+                [
+                    *cast(
+                        str,
+                        session.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
+                            "--robotargs"
+                        ),
+                    ).split(" "),
+                    session.path,  # not actually used here, but the argument parser requires at least one path
+                ]
+            )[0],
+            dict[str, object](
+                parser=[PythonParser(session)],
+                prerunmodifier=[PytestCollector(session, collect_only=collect_only)],
+            ),
+        ),
+    )
+    if collect_only:
+        robot_args |= {"report": None, "output": None, "log": None}
+    else:
+        robot_args = always_merger.merge(  # type:ignore[no-untyped-call]
+            robot_args,
+            dict[str, object](
+                prerunmodifier=[PytestRuntestProtocolInjector(session)],
+                listener=[PytestRuntestLogListener(session)],
+                prerebotmodifier=[KeywordNameFixer()],
+            ),
+        )
+    # needed for log_file listener methods to prevent logger from deactivating after the test is over
+    with LOGGER:
+        robot.main(  # type:ignore[no-untyped-call]
+            [session.path],  # type:ignore[no-any-expr]
+            extension="py:robot",
+            # needed because PythonParser.visit_init creates an empty suite
+            runemptysuite=True,
+            **robot_args,
+        )
 
 
 def pytest_addoption(parser: Parser):
@@ -40,37 +79,10 @@ def pytest_addoption(parser: Parser):
     )
 
 
-def pytest_collection(session: Session):
-    collected_suite: model.TestSuite | None = None
-
-    class RobotTestCollector(SuiteVisitor):
-        @override
-        def visit_suite(self, suite: model.TestSuite):
-            nonlocal collected_suite
-            # copy the suite since we want to remove everything from it to prevent robot from running anything
-            # but still want to preserve them in `collected_suite`
-            collected_suite = suite.deepcopy()  # type:ignore[no-untyped-call]
-            suite.suites.clear()  # type:ignore[no-untyped-call]
-            suite.tests.clear()  # type:ignore[no-untyped-call]
-
-    robot = RobotFramework()  # type:ignore[no-untyped-call]
-    robot.main(  # type:ignore[no-untyped-call]
-        [session.path],  # type:ignore[no-any-expr]
-        extension="py:robot",
-        runemptysuite=True,
-        console="none",
-        report=None,
-        output=None,
-        log=None,
-        # the python parser is not actually used here, but required because collection needs to be run with the
-        # same settings as the actual run, otherwise test longnames could be different (see the TODO in
-        # get_item_from_robot_test)
-        parser=[PythonParser(session)],  # type:ignore[no-any-expr]
-        prerunmodifier=[RobotTestCollector()],  # type:ignore[no-any-expr]
-    )
-    if not collected_suite:
-        raise Exception("failed to collect .robot tests")
-    session.stash[collected_robot_suite_key] = collected_suite
+def pytest_collection(session: Session) -> object:
+    if session.config.option.collectonly:  # type:ignore[no-any-expr]
+        _collect_slash_run(session, collect_only=True)
+    return True
 
 
 def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
@@ -97,28 +109,5 @@ def pytest_runtest_setup(item: Item):
 def pytest_runtestloop(session: Session) -> object:
     if session.config.option.collectonly:  # type:ignore[no-any-expr]
         return None
-    # needed for log_file listener methods to prevent logger from deactivating after the test is over
-    with LOGGER:
-        robot = RobotFramework()  # type:ignore[no-untyped-call]
-        robot.main(  # type:ignore[no-untyped-call]
-            [session.path],  # type:ignore[no-any-expr]
-            extension="py:robot",
-            # needed because PythonParser.visit_init creates an empty suite
-            runemptysuite=True,
-            **cast(
-                RobotArgs,
-                always_merger.merge(  # type:ignore[no-untyped-call]
-                    parse_robot_args(robot, session),
-                    dict[str, object](
-                        parser=[PythonParser(session)],
-                        prerunmodifier=[
-                            CollectedTestsFilterer(session),
-                            PytestRuntestProtocolInjector(session),
-                        ],
-                        prerebotmodifier=[KeywordNameFixer()],
-                        listener=[PytestRuntestLogListener(session)],
-                    ),
-                ),
-            ),
-        )
+    _collect_slash_run(session, collect_only=False)
     return True
