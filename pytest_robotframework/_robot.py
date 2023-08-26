@@ -3,11 +3,9 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, cast
 
-from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark, skip
-from robot.api import SuiteVisitor
+from pytest import Config, File, Item, MarkDecorator, Session, mark, skip
 from robot.errors import ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
-from robot.model import TestSuite
 from robot.running.bodyrunner import BodyRunner
 from robot.running.context import (  # pylint:disable=import-private-name
     EXECUTION_CONTEXTS,
@@ -16,7 +14,7 @@ from robot.running.context import (  # pylint:disable=import-private-name
 from typing_extensions import override
 
 from pytest_robotframework._common import (
-    get_item_from_robot_test,
+    collected_robot_suite_key,
     original_body_key,
     original_setup_key,
     original_teardown_key,
@@ -28,8 +26,6 @@ if TYPE_CHECKING:
     from os import PathLike
 
     from robot import running
-
-collected_robot_suite_key = StashKey[TestSuite]()
 
 
 class RobotFile(File):
@@ -109,25 +105,3 @@ class RobotItem(Item):
     @override
     def reportinfo(self) -> (PathLike[str] | str, int | None, str):
         return (self.path, self.stash[running_test_case_key].lineno, self.name)
-
-
-class CollectedTestsFilterer(SuiteVisitor):
-    """filters out any tests/suites from the collected robot tests that are not included in the collected
-    pytest tests"""
-
-    def __init__(self, session: Session):
-        self.session = session
-
-    @override
-    def start_suite(self, suite: running.TestSuite):
-        # need to copy when iterating since we are removing items from the original
-        for test in suite.tests[:]:
-            item = get_item_from_robot_test(self.session, test)
-            if not item:
-                # happens when running .robot tests that were filtered out by pytest
-                suite.tests.remove(test)
-
-    @override
-    def end_suite(self, suite: running.TestSuite):
-        """Remove suites that are empty after removing tests."""
-        suite.suites = [s for s in suite.suites if s.test_count > 0]
