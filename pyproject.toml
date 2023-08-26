@@ -30,6 +30,7 @@ robotframework = "pytest_robotframework.pytest_robotframework"
 [tool.black]
 target-version = ["py311"]
 skip-magic-trailing-comma = true
+preview = true
 
 [tool.pylint.MASTER]
 ignore-patterns = '.*\.pyi'
