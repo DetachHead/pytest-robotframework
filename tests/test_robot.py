@@ -145,7 +145,8 @@ def test_setup_fails(pytester: Pytester):
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
     assert xml.xpath(
-        "//suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar' and .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
+        "//suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar' and"
+        " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
     )
     # make sure the test didnt run when setup failed
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
@@ -169,7 +170,8 @@ def test_setup_skipped(pytester: Pytester):
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
     assert xml.xpath(
-        "//suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar' and .//msg[@level='SKIP']]"
+        "//suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar' and"
+        " .//msg[@level='SKIP']]"
     )
     # make sure the test didnt run when setup was skipped
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
@@ -217,7 +219,8 @@ def test_teardown_fails(pytester: Pytester):
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
     assert xml.xpath(
-        "//suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar' and .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
+        "//suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar' and"
+        " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
     )
     assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
@@ -243,7 +246,8 @@ def test_teardown_skipped(pytester: Pytester):
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
     assert xml.xpath(
-        "//suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar' and .//msg[@level='SKIP']]"
+        "//suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar' and"
+        " .//msg[@level='SKIP']]"
     )
     assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
@@ -370,13 +374,11 @@ def test_parameterized_tags(pytester: Pytester):
             no operation
         """,
     )
-    pytester.makeini(
-        """
+    pytester.makeini("""
         [pytest]
         markers =
             key(value)
-        """
-    )
+        """)
     markers: list[Mark] | None = None
 
     class TagGetter:
