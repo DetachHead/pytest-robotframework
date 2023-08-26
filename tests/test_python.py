@@ -99,17 +99,16 @@ def test_two_tests_with_same_name_one_fail_one_pass(pytester: Pytester):
 
 def test_suites(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
-        **{
-            "suite1/test_asdf": """
+        **{"suite1/test_asdf": """
                 def test_func1():
                     pass
-            """
-        }
+            """}
     )
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
     assert output_xml(pytester).xpath(
-        "./suite/suite[@name='Suite1']/suite[@name='Test Asdf']/test[@name='test_func1']"
+        "./suite/suite[@name='Suite1']/suite[@name='Test"
+        " Asdf']/test[@name='test_func1']"
     )
 
 
@@ -134,10 +133,12 @@ def test_nested_suites(pytester: Pytester):
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
     assert xml.xpath(
-        "./suite/suite[@name='Suite1']/suite[@name='Suite2']/suite[@name='Test Asdf']/test[@name='test_func1']"
+        "./suite/suite[@name='Suite1']/suite[@name='Suite2']/suite[@name='Test"
+        " Asdf']/test[@name='test_func1']"
     )
     assert xml.xpath(
-        "./suite/suite[@name='Suite1']/suite[@name='Suite3']/suite[@name='Test Asdf2']/test[@name='test_func2']"
+        "./suite/suite[@name='Suite1']/suite[@name='Suite3']/suite[@name='Test"
+        " Asdf2']/test[@name='test_func2']"
     )
     assert xml.xpath("./suite/suite[@name='Test Top Level']/test[@name='test_func1']")
 
@@ -301,14 +302,12 @@ def test_setup_passes(pytester: Pytester):
             logger.info(1)
         """
     )
-    pytester.makeconftest(
-        """
+    pytester.makeconftest("""
         from robot.api import logger
 
         def pytest_runtest_setup():
             logger.info(2)
-        """
-    )
+        """)
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
@@ -327,12 +326,10 @@ def test_setup_fails(pytester: Pytester):
             pass
         """
     )
-    pytester.makeconftest(
-        """
+    pytester.makeconftest("""
         def pytest_runtest_setup():
             raise Exception('2')
-        """
-    )
+        """)
     run_and_assert_result(pytester, errors=1)
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
@@ -349,14 +346,12 @@ def test_setup_skipped(pytester: Pytester):
             pass
         """
     )
-    pytester.makeconftest(
-        """
+    pytester.makeconftest("""
         from pytest import skip
         
         def pytest_runtest_setup():
             skip()
-        """
-    )
+        """)
     run_and_assert_result(pytester, skipped=1)
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
@@ -373,14 +368,12 @@ def test_teardown_passes(pytester: Pytester):
             logger.info(1)
         """
     )
-    pytester.makeconftest(
-        """
+    pytester.makeconftest("""
         from robot.api import logger
 
         def pytest_runtest_teardown():
             logger.info(2)
-        """
-    )
+        """)
     run_and_assert_result(pytester, passed=1)
     assert_log_file_exists(pytester)
     xml = output_xml(pytester)
@@ -399,12 +392,10 @@ def test_teardown_fails(pytester: Pytester):
             pass
         """
     )
-    pytester.makeconftest(
-        """
+    pytester.makeconftest("""
         def pytest_runtest_teardown():
             raise Exception('2')
-        """
-    )
+        """)
     result = run_pytest(pytester)
     result.assert_outcomes(passed=1, errors=1)
     # unlike pytest, teardown failures in robot count as a test failure
@@ -413,7 +404,8 @@ def test_teardown_fails(pytester: Pytester):
     xml = output_xml(pytester)
     assert xml.xpath(".//test/kw[contains(@name, ' Run Test')]")
     assert xml.xpath(
-        ".//test/kw[contains(@name, ' Teardown')]/msg[@level='FAIL' and .='Exception: 2']"
+        ".//test/kw[contains(@name, ' Teardown')]/msg[@level='FAIL' and"
+        " .='Exception: 2']"
     )
 
 
@@ -424,14 +416,12 @@ def test_teardown_skipped(pytester: Pytester):
             pass
         """
     )
-    pytester.makeconftest(
-        """
+    pytester.makeconftest("""
         from pytest import skip
         
         def pytest_runtest_teardown():
             skip()
-        """
-    )
+        """)
     result = run_pytest(pytester)
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
@@ -533,7 +523,10 @@ def test_parameterized_tags(pytester: Pytester):
 
 
 @mark.xfail(
-    reason="TODO: figure out how to modify the keyword names before the xml is written or read the html file instead"
+    reason=(
+        "TODO: figure out how to modify the keyword names before the xml is written or"
+        " read the html file instead"
+    )
 )
 def test_keyword_names(pytester: Pytester):
     pytester.makepyfile(  # type:ignore[no-untyped-call]
