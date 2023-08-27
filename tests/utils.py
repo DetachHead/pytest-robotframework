@@ -40,11 +40,11 @@ else:
     PytesterDir = Pytester
 
 
-def output_xml(pytester: Pytester) -> _Element:
+def output_xml(pytester: PytesterDir) -> _Element:
     return XML((pytester.path / "output.xml").read_bytes())
 
 
-def assert_robot_total_stats(pytester: Pytester, *, passed=0, skipped=0, failed=0):
+def assert_robot_total_stats(pytester: PytesterDir, *, passed=0, skipped=0, failed=0):
     root = output_xml(pytester)
     statistics = next(child for child in root if child.tag == "statistics")
     total = next(child for child in statistics if child.tag == "total")
@@ -60,7 +60,7 @@ def assert_log_file_exists(pytester: Pytester):
 
 
 def run_pytest(
-    pytester: Pytester, *pytest_args: str, plugins: list[object] | None = None
+    pytester: PytesterDir, *pytest_args: str, plugins: list[object] | None = None
 ) -> RunResult:
     # TODO: figure out why robot doesn't use pytester's cd anymore. started happening when
     #  i added a test that calls a function from the plugin directly instead of using pytester
@@ -71,7 +71,7 @@ def run_pytest(
 
 
 def run_and_assert_result(
-    pytester: Pytester,
+    pytester: PytesterDir,
     *,
     pytest_args: list[str] | None = None,
     passed=0,
