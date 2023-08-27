@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
     from os import PathLike
 
-    from robot import running
+    from robot import model, running
 
 
 class RobotFile(File):
@@ -78,12 +78,14 @@ class RobotItem(Item):
                 skip(e.message)  # type:ignore[no-any-expr]
             raise
 
+    def _run_keyword(self, keyword: model.Keyword | None):
+        if keyword:
+            with self._check_skipped():
+                BuiltIn().run_keyword(keyword.name, *keyword.args)
+
     @override
     def setup(self):
-        setup_keyword = self.stash[original_setup_key]
-        if setup_keyword:
-            with self._check_skipped():
-                BuiltIn().run_keyword(setup_keyword.name)
+        self._run_keyword(self.stash[original_setup_key])
 
     @override
     def runtest(self):
@@ -98,10 +100,7 @@ class RobotItem(Item):
 
     @override
     def teardown(self):
-        teardown_keyword = self.stash[original_teardown_key]
-        if teardown_keyword:
-            with self._check_skipped():
-                BuiltIn().run_keyword(teardown_keyword.name)
+        self._run_keyword(self.stash[original_teardown_key])
 
     @override
     def reportinfo(self) -> (PathLike[str] | str, int | None, str):
