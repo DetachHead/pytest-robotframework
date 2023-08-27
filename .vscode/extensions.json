@@ -9,6 +9,7 @@
     "mhutchie.git-graph",
     "ninoseki.vscode-pylens",
     "tamasfe.even-better-toml",
-    "redhat.vscode-yaml"
+    "redhat.vscode-yaml",
+    "robocorp.robotframework-lsp"
   ]
 }
