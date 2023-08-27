@@ -1,12 +1,43 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Never, cast
 
 from lxml.etree import XML
+from pytest import Pytester, RunResult
 
 if TYPE_CHECKING:
     from lxml.etree import _Element
-    from pytest import Pytester, RunResult
+    from typing_extensions import override
+
+
+if TYPE_CHECKING:
+    # Pytester is final so it's probably a bad idea to rely on extending this at runtime
+    class PytesterDir(Pytester):  # type:ignore[misc]
+        """fake subtype of `Pytester` that bans you from using file creation methods. you should put
+        real life files in `tests/fixtures/[test file path]/[test name]` instead"""
+
+        @override
+        def makepyfile(self, *args: Never, **kwargs: Never) -> Never:
+            ...
+
+        @override
+        def makefile(self, ext: str, *args: str, **kwargs: str) -> Never:
+            ...
+
+        @override
+        def makeini(self, source: str) -> Never:
+            ...
+
+        @override
+        def makepyprojecttoml(self, source: str) -> Never:
+            ...
+
+        @override
+        def maketxtfile(self, *args: Never, **kwargs: Never) -> Never:
+            ...
+
+else:
+    PytesterDir = Pytester
 
 
 def output_xml(pytester: Pytester) -> _Element:

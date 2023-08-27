@@ -19,6 +19,8 @@ lxml-stubs = "^0.4.0"
 pylint = "^2.15"
 pytest = "^7"
 ruff = "~0.0.286"
+robotframework-robocop = "^4.1.0"
+robotframework-tidy = "^4.5.0"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
@@ -194,7 +196,6 @@ enable = [
     "self-cls-assignment",
     "shallow-copy-environ",
     "signature-differs",
-    "subclassed-final-class",
     "super-init-not-called",
     "super-without-brackets",
     "unbalanced-dict-unpacking",
@@ -217,7 +218,6 @@ enable = [
     "bad-mcs-classmethod-argument",
     "bad-mcs-method-argument",
     "dict-init-mutate",
-    "disallowed-name",
     "import-private-name",
     "invalid-characters-in-docstring",
     "mixed-line-endings",
@@ -258,7 +258,7 @@ score = "no"
 max-line-length = 200
 
 [tool.pytest.ini_options]
-addopts = '-p no:robotframework'
+addopts = ['-p no:robotframework', '--ignore=tests/fixtures']
 xfail_strict = true
 
 [tool.mypy]
@@ -408,9 +408,56 @@ line-length = 100
 [tool.ruff.pycodestyle]
 ignore-overlong-task-comments = true
 
+[tool.ruff.flake8-pytest-style]
+fixture-parentheses = false
+
 [tool.ruff.per-file-ignores]
 "*.pyi" = ["A001", "A002", "N"] # we don't control names in 3rd party modules
 "tests/*" = ["S101"]            # pytest uses assert statements
 
 [tool.ruff.isort]
 combine-as-imports = true
+
+[tool.robotidy]
+configure = [
+    "AlignTemplatedTestCases:enabled=True",
+    "RenameKeywords:enabled=True",
+    "RenameTestCases:enabled=True",
+    "SplitTooLongLine:line_length=160",
+]
+
+
+[tool.robocop]
+paths = ["tests"]
+reports = ["all"]
+exclude = [
+    "not-allowed-char-in-filename",
+    "non-local-variables-should-be-uppercase",
+    "section-variable-not-uppercase",
+    "too-many-calls-in-test-case",
+    "too-many-calls-in-keyword",
+    "too-long-test-case",
+    "too-many-arguments",
+    "not-capitalized-test-case-title",
+    "file-too-long",
+    "too-long-keyword",
+    "missing-doc-resource-file",
+    "missing-doc-keyword",
+    "missing-doc-suite",
+    "missing-doc-test-case",
+]
+configure = [
+    "todo-in-comment:enabled:False",
+    "too-many-test-cases:enabled:False",
+    "too-many-calls-in-keyword:severity:W",
+    "can-be-resource-file:severity:W",
+    "missing-doc-suite:severity:W",
+    "line-too-long:line_length:160",
+    "possible-variable-overwriting:severity:E",
+    "could-be-test-tags:severity:E",
+    "tag-already-set-in-test-tags:severity:E",
+    "unused-variable:severity:W",
+    "unnecessary-string-conversion:severity:W",
+    "expression-can-be-simplified:severity:W",
+    "can-be-resource-file:severity:W",
+]

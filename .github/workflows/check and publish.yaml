@@ -31,6 +31,8 @@ jobs:
       - run: poetry run ruff .
       - run: poetry run pylint pytest_robotframework tests
       - run: poetry run pytest
+      - run: poetry run robocop
+      - run: poetry run robotidy --color --check --diff .
   publish:
     runs-on: 'ubuntu-latest'
     if: github.ref == 'refs/heads/master'

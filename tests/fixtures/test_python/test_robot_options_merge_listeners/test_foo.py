@@ -1,0 +1,13 @@
+# noqa: INP001
+# init file breaks it and i dont care because i hate init files
+from typing import TYPE_CHECKING
+
+# needed because the import needs to be different after the file is moved
+if TYPE_CHECKING:
+    from tests.fixtures.test_python.test_robot_options_merge_listeners import Listener
+else:
+    import Listener
+
+
+def test_func1():
+    assert Listener.called

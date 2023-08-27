@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from pytest import Mark, Pytester, Session
+from pytest import Mark, Session
 
 from tests.utils import (
+    PytesterDir,
     assert_log_file_exists,
     assert_robot_total_stats,
     output_xml,
@@ -11,374 +12,155 @@ from tests.utils import (
 )
 
 
-def make_robot_file(pytester: Pytester, content: str):
-    pytester.makefile(".robot", content)
+def test_one_test_passes(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
 
 
-def test_one_test_passes(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            log  1
-        """,
-    )
-    run_and_assert_result(pytester, passed=1)
-    assert_log_file_exists(pytester)
+def test_one_test_fails(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
 
 
-def test_one_test_fails(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            fail
-        """,
-    )
-    run_and_assert_result(pytester, failed=1)
-    assert_log_file_exists(pytester)
-
-
-def test_one_test_skipped(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            skip
-        """,
-    )
-    run_and_assert_result(pytester, skipped=1)
-    assert_log_file_exists(pytester)
-    assert output_xml(pytester).xpath(
-        "./suite//test[@name='foo']/kw/msg[@level='SKIP']"
+def test_one_test_skipped(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, skipped=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "./suite//test[@name='Foo']/kw/msg[@level='SKIP']"
     )
 
 
-def test_two_tests_one_fail_one_pass(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            log  1
-        bar
-            fail  2
-        """,
-    )
-    run_and_assert_result(pytester, passed=1, failed=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
-    assert xml.xpath("./suite//test[@name='foo']//kw/msg[@level='INFO' and .='1']")
-    assert xml.xpath("./suite//test[@name='bar']//kw/msg[@level='FAIL' and .='2']")
+def test_two_tests_one_fail_one_pass(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1, failed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("./suite//test[@name='Foo']//kw/msg[@level='INFO' and .='1']")
+    assert xml.xpath("./suite//test[@name='Bar']//kw/msg[@level='FAIL' and .='2']")
 
 
-def test_listener_calls_log_file(pytester: Pytester):
-    # TODO: this doesnt log to the console so no other way to verify that it ran
-    #  https://github.com/DetachHead/pytest-robotframework/issues/39
-    pytester.makepyfile(  # type:ignore[no-untyped-call]
-        Listener="""
-            from robot.api.interfaces import ListenerV3
-            from typing_extensions import override
-            from pathlib import Path
-            
-            class Listener(ListenerV3):
-                @override
-                def log_file(self, path: str):
-                    Path("hi").write_text("")
-        """
-    )
-    pytester.makefile(
-        ".robot",
-        foo="""
-            *** test cases ***
-            foo
-                no operation
-        """,
-    )
-    result = pytester.runpytest(
-        "--robotargs", f"--listener {pytester.path / 'Listener.py'}"
+def test_listener_calls_log_file(pytester_dir: PytesterDir):
+    result = pytester_dir.runpytest(
+        "--robotargs", f"--listener {pytester_dir.path / 'Listener.py'}"
     )
     result.assert_outcomes(passed=1)
-    assert_log_file_exists(pytester)
+    assert_log_file_exists(pytester_dir)
     assert Path("hi").exists()
 
 
-def test_setup_passes(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** settings ***
-        test setup  bar
-        *** test cases ***
-        foo
-            log  1
-        *** keywords ***
-        bar
-            log  2
-        """,
-    )
-    run_and_assert_result(pytester, passed=1)
-    assert_log_file_exists(pytester)
-    assert output_xml(pytester).xpath(
-        "./suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar']/kw[@name='Log']/arg[.='2']"
+def test_setup_passes(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "./suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar']/kw[@name='Log']/arg[.='2']"
     )
 
 
-def test_setup_fails(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** settings ***
-        test setup  bar
-        *** test cases ***
-        foo
-            log  1
-        *** keywords ***
-        bar
-            fail  asdf
-        """,
-    )
-    run_and_assert_result(pytester, errors=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
+def test_setup_fails(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, errors=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar' and"
+        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and"
         " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
     )
     # make sure the test didnt run when setup failed
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
 
 
-def test_setup_skipped(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** settings ***
-        test setup  bar
-        *** test cases ***
-        foo
-            log  1
-        *** keywords ***
-        bar
-            skip
-        """,
-    )
-    run_and_assert_result(pytester, skipped=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
+def test_setup_skipped(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, skipped=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//suite//test[@name='foo']/kw[@type='SETUP']/kw[@name='bar' and"
+        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and"
         " .//msg[@level='SKIP']]"
     )
     # make sure the test didnt run when setup was skipped
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
 
 
-def test_teardown_passes(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** settings ***
-        test teardown  bar
-        *** test cases ***
-        foo
-            log  1
-        *** keywords ***
-        bar
-            log  2
-        """,
-    )
-    run_and_assert_result(pytester, passed=1)
-    assert_log_file_exists(pytester)
-    assert output_xml(pytester).xpath(
-        "./suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar']/kw[@name='Log']/arg[.='2']"
+def test_teardown_passes(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "./suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar']/kw[@name='Log']/arg[.='2']"
     )
 
 
-def test_teardown_fails(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** settings ***
-        test teardown  bar
-        *** test cases ***
-        foo
-            log  1
-        *** keywords ***
-        bar
-            fail  asdf
-        """,
-    )
-    result = run_pytest(pytester)
+def test_teardown_fails(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir)
     result.assert_outcomes(passed=1, errors=1)
     # unlike pytest, teardown failures in robot count as a test failure
-    assert_robot_total_stats(pytester, failed=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
+    assert_robot_total_stats(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar' and"
+        "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and"
         " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
     )
     assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
 
-def test_teardown_skipped(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** settings ***
-        test teardown  bar
-        *** test cases ***
-        foo
-            log  1
-        *** keywords ***
-        bar
-            skip
-        """,
-    )
-    result = run_pytest(pytester)
+def test_teardown_skipped(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir)
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
-    assert_robot_total_stats(pytester, skipped=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
+    assert_robot_total_stats(pytester_dir, skipped=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//suite//test[@name='foo']/kw[@type='TEARDOWN']/kw[@name='bar' and"
+        "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and"
         " .//msg[@level='SKIP']]"
     )
     assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
 
-def test_two_files_run_one_test(pytester: Pytester):
-    pytester.makefile(
-        ".robot",
-        **{
-            "foo.robot": """
-                *** test cases ***
-                foo
-                    log  1
-                bar
-                    log  1
-            """,
-            "bar.robot": """
-                *** test cases ***
-                baz
-                    log  1
-            """,
-        },
-    )
-    run_and_assert_result(pytester, pytest_args=["foo.robot::foo"], passed=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
-    assert xml.xpath("./suite//test[@name='foo']/status[@status='PASS']")
-    assert xml.xpath("./suite//test[@name='foo']/kw/status[@status='PASS']")
-    assert not xml.xpath("./suite//test[@name='bar']")
-    assert not xml.xpath("./suite//test[@name='baz']")
+def test_two_files_run_one_test(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, pytest_args=["foo.robot::Foo"], passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("./suite//test[@name='Foo']/status[@status='PASS']")
+    assert xml.xpath("./suite//test[@name='Foo']/kw/status[@status='PASS']")
+    assert not xml.xpath("./suite//test[@name='Bar']")
+    assert not xml.xpath("./suite//test[@name='Baz']")
 
 
-def test_two_files_run_test_from_second_suite(pytester: Pytester):
-    """makes sure `CollectedTestsFilterer` correctly filters the tests without
-    mutating the list of tests as it iterates ver it"""
-    pytester.makefile(
-        ".robot",
-        **{
-            "asdf/foo.robot": """
-                *** test cases ***
-                foo
-                    log  1
-                bar
-                    log  1
-            """,
-            "fdsa/bar.robot": """
-                *** test cases ***
-                baz
-                    log  1
-            """,
-        },
-    )
-    run_and_assert_result(pytester, pytest_args=["fdsa/bar.robot::baz"], passed=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
-    assert xml.xpath("./suite//test[@name='baz']/status[@status='PASS']")
-    assert xml.xpath("./suite//test[@name='baz']/kw/status[@status='PASS']")
-    assert not xml.xpath("./suite//test[@name='foo']")
-    assert not xml.xpath("./suite//test[@name='bar']")
+def test_two_files_run_test_from_second_suite(pytester_dir: PytesterDir):
+    """makes sure `PytestCollector` correctly filters the tests without mutating the list of tests
+    as it iterates over it"""
+    run_and_assert_result(pytester_dir, pytest_args=["fdsa/bar.robot::Baz"], passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("./suite//test[@name='Baz']/status[@status='PASS']")
+    assert xml.xpath("./suite//test[@name='Baz']/kw/status[@status='PASS']")
+    assert not xml.xpath("./suite//test[@name='Foo']")
+    assert not xml.xpath("./suite//test[@name='Bar']")
 
 
-def test_tags(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            [tags]  m1
-            no operation
-        bar
-            [tags]  m2
-            no operation
-        """,
-    )
-    run_and_assert_result(pytester, pytest_args=["-m", "m1"], passed=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
-    assert xml.xpath(".//test[@name='foo']/tag[.='m1']")
-    assert not xml.xpath(".//test[@name='bar']")
+def test_tags(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, pytest_args=["-m", "m1"], passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(".//test[@name='Foo']/tag[.='m1']")
+    assert not xml.xpath(".//test[@name='Bar']")
 
 
-def test_tags_in_settings(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** settings ***
-        test tags  m1
-        *** test cases ***
-        foo
-            no operation
-        bar
-            no operation
-        """,
-    )
-    run_and_assert_result(pytester, pytest_args=["-m", "m1"], passed=2)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
-    assert xml.xpath(".//test[@name='foo']/tag[.='m1']")
-    assert xml.xpath(".//test[@name='bar']/tag[.='m1']")
+def test_tags_in_settings(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, pytest_args=["-m", "m1"], passed=2)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(".//test[@name='Foo']/tag[.='m1']")
+    assert xml.xpath(".//test[@name='Bar']/tag[.='m1']")
 
 
-def test_warning_on_unknown_tag(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            [tags]  m1
-            no operation
-        """,
-    )
+def test_warning_on_unknown_tag(pytester_dir: PytesterDir):
     # TODO: figure out why the error message is wack
     #  https://github.com/DetachHead/pytest-robotframework/issues/37
-    result = run_pytest(pytester, "--strict-markers", "-m", "m1")
+    result = run_pytest(pytester_dir, "--strict-markers", "-m", "m1")
     result.assert_outcomes(errors=1)
 
 
-def test_parameterized_tags(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            [tags]  key:hi
-            no operation
-        """,
-    )
-    pytester.makeini("""
-        [pytest]
-        markers =
-            key(value)
-        """)
+def test_parameterized_tags(pytester_dir: PytesterDir):
     markers: list[Mark] | None = None
 
     class TagGetter:
@@ -388,125 +170,48 @@ def test_parameterized_tags(pytester: Pytester):
             for item in session.items:
                 markers = item.own_markers
 
-    run_pytest(pytester, "--collectonly", "--strict-markers", plugins=[TagGetter()])
+    result = run_pytest(
+        pytester_dir, "--collectonly", "--strict-markers", plugins=[TagGetter()]
+    )
+    result.assert_outcomes()
     assert markers
     assert len(markers) == 1
     assert markers[0].name == "key"
     assert markers[0].args == ("hi",)  # type:ignore[no-any-expr]
 
 
-def test_doesnt_run_when_collecting(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            asdfadsf
-        """,
-    )
-    result = run_pytest(pytester, "--collect-only")
+def test_doesnt_run_when_collecting(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir, "--collect-only")
     result.assert_outcomes()
-    assert not (pytester.path / "log.html").exists()
+    assert not (pytester_dir.path / "log.html").exists()
 
 
-def test_correct_items_collected_when_collect_only(pytester: Pytester):
-    pytester.makefile(
-        ".robot",
-        foo="""
-            *** test cases ***
-            foo
-                asdfadsf
-        """,
-        bar="""
-            *** test cases ***
-            bar
-                asdfadsf
-        """,
-    )
-    result = run_pytest(pytester, "--collect-only", "bar.robot")
+def test_correct_items_collected_when_collect_only(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir, "--collect-only", "bar.robot")
     assert result.parseoutcomes() == {"test": 1}
-    assert "<RobotItem bar>" in (line.strip() for line in result.outlines)
+    assert "<RobotItem Bar>" in (line.strip() for line in result.outlines)
 
 
-def test_doesnt_run_tests_outside_path(pytester: Pytester):
-    pytester.makefile(
-        ".robot",
-        **{
-            "foo/asdf.robot": """
-                *** test cases ***
-                foo
-                    log  1
-            """,
-            "bar/asdf.robot": """
-                *** test cases ***
-                bar
-                    log  1
-            """,
-        },
-    )
-    run_and_assert_result(pytester, pytest_args=["foo"], passed=1)
-    assert_log_file_exists(pytester)
-    xml = output_xml(pytester)
-    assert xml.xpath(".//test[@name='foo']")
-    assert not xml.xpath(".//test[@name='bar']")
+def test_doesnt_run_tests_outside_path(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, pytest_args=["foo"], passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(".//test[@name='Foo']")
+    assert not xml.xpath(".//test[@name='Bar']")
 
 
-def test_run_keyword_and_ignore_error(pytester: Pytester):
-    pytester.makefile(
-        ".py",
-        foo="""
-            from pytest_robotframework import keyword
-                            
-            @keyword
-            def bar():
-                raise Exception
-        """,
-    )
-    make_robot_file(
-        pytester,
-        """
-        library  foo
-        *** test cases ***
-        foo
-            run keyword and ignore error  bar
-        """,
-    )
-    run_and_assert_result(pytester, passed=1)
-    assert_log_file_exists(pytester)
+def test_run_keyword_and_ignore_error(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
 
 
-def test_init_file(pytester: Pytester):
-    make_robot_file(
-        pytester,
-        """
-        *** test cases ***
-        foo
-            no operation
-        """,
-    )
-    pytester.makefile(".py", __init__="")
-    result = run_pytest(pytester)
+def test_init_file(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir)
     result.assert_outcomes(passed=1)
-    assert (pytester.path / "log.html").exists()
+    assert (pytester_dir.path / "log.html").exists()
 
 
-def test_init_file_nested(pytester: Pytester):
-    pytester.makefile(
-        ".robot",
-        **{
-            "foo/foo": """
-                *** test cases ***
-                foo
-                    no operation
-            """,
-            "foo/bar": """
-                *** test cases ***
-                bar
-                    no operation
-            """,
-        },
-    )
-    pytester.makefile(".py", **{"foo/__init__": "", "__init__": ""})
-    result = run_pytest(pytester, "foo")
+def test_init_file_nested(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir, "foo")
     result.assert_outcomes(passed=2)
-    assert (pytester.path / "log.html").exists()
+    assert (pytester_dir.path / "log.html").exists()
