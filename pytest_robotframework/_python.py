@@ -27,7 +27,8 @@ class PythonParser(Parser):
 
     extension = "py"
 
-    def _create_suite(self, source: Path) -> running.TestSuite:
+    @staticmethod
+    def _create_suite(source: Path) -> running.TestSuite:
         return running.TestSuite(
             running.TestSuite.name_from_source(source), source=source
         )
