@@ -24,9 +24,10 @@ if TYPE_CHECKING:
 
 
 def _collect_slash_run(session: Session, *, collect_only: bool):
-    """this is called either by `pytest_collection` or `pytest_runtestloop` depending on whether `collect_only`
-    is `True`, because to avoid having to run robot multiple times for both the collection and running, it's
-    more efficient to just have `pytest_runtestloop` handle the collection as well if possible.
+    """this is called either by `pytest_collection` or `pytest_runtestloop` depending on whether
+    `collect_only` is `True`, because to avoid having to run robot multiple times for both the
+    collection and running, it's more efficient to just have `pytest_runtestloop` handle the
+    collection as well if possible.
     """
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot_args = cast(
@@ -40,7 +41,8 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                             "--robotargs"
                         ),
                     ).split(" "),
-                    session.path,  # not actually used here, but the argument parser requires at least one path
+                    # not actually used here, but the argument parser requires at least one path
+                    session.path,
                 ]
             )[0],
             dict[str, object](
@@ -60,7 +62,8 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 prerebotmodifier=[KeywordNameFixer()],
             ),
         )
-    # needed for log_file listener methods to prevent logger from deactivating after the test is over
+    # needed for log_file listener methods to prevent logger from deactivating after the test is
+    # over
     with LOGGER:
         robot.main(  # type:ignore[no-untyped-call]
             [session.path],  # type:ignore[no-any-expr]
@@ -96,8 +99,8 @@ def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
 def pytest_runtest_setup(item: Item):
     if isinstance(item, RobotItem):
         # `set_variables` and `import_resource` is only supported in python files.
-        # when running robot files, suite variables should be set using the `*** Variables ***` section
-        # and resources should be imported with `Resource` in the `*** Settings***` section
+        # when running robot files, suite variables should be set using the `*** Variables ***`
+        # section and resources should be imported with `Resource` in the `*** Settings***` section
         return
     builtin = BuiltIn()
     for key, value in _suite_variables[item.path].items():

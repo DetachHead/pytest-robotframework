@@ -53,7 +53,8 @@ def run_and_assert_result(
     assert_robot_total_stats(
         pytester,
         passed=passed,
-        # most things that are errors in pytest are failures in robot. also robot doesn't store errors here
+        # most things that are errors in pytest are failures in robot. also robot doesn't store
+        #  errors here
         # TODO: a way to check for robot errors, i think they currently go undetected
         #  https://github.com/DetachHead/pytest-robotframework/issues/39
         failed=failed + errors,

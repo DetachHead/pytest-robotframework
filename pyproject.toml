@@ -366,7 +366,6 @@ extend-select = [
     "RUF017",
 ]
 ignore = [
-    "E501",    # Line too long (https://github.com/astral-sh/ruff/issues/6908)
     "PLR0913", # Too many arguments to function call
     "PLR0912", # Too many branches
     "PLR0915", # Too many statements
@@ -404,6 +403,10 @@ ignore = [
 ]
 target-version = "py311"
 respect-gitignore = true
+line-length = 100
+
+[tool.ruff.pycodestyle]
+ignore-overlong-task-comments = true
 
 [tool.ruff.per-file-ignores]
 "*.pyi" = ["A001", "A002", "N"] # we don't control names in 3rd party modules

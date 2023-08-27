@@ -3,7 +3,8 @@ from collections import defaultdict
 from functools import wraps
 from pathlib import Path
 
-# yes lets put the Callable type in the collection module.... because THAT makes sense!!! said no one ever
+# yes lets put the Callable type in the collection module.... because THAT makes sense!!!
+# said no one ever
 from typing import Callable, ParamSpec, cast  # noqa: UP035
 
 from basedtyping import T
@@ -23,8 +24,8 @@ _suite_variables = defaultdict[Path, RobotVariables](dict)
 def set_variables(variables: RobotVariables):
     """sets suite-level variables, equivalent to the `*** Variables ***` section in a `.robot` file.
 
-    also performs some validation checks that robot doesn't to make sure the variable has the correct
-    type matching its prefix."""
+    also performs some validation checks that robot doesn't to make sure the variable has the
+    correct type matching its prefix."""
     suite_path = Path(inspect.stack()[1].filename)
     _suite_variables[suite_path] = variables
 

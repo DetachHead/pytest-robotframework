@@ -69,7 +69,8 @@ class RobotItem(Item):
     @staticmethod
     @contextmanager
     def _check_skipped() -> Iterator[None]:
-        """since robot and pytest skips are different, we need to catch robot skips and convert them to pytest skips"""
+        """since robot and pytest skips are different, we need to catch robot skips and convert them
+        to pytest skips"""
         try:
             yield
         except ExecutionFailed as e:

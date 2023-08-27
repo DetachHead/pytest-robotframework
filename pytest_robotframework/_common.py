@@ -56,7 +56,8 @@ class PytestCollector(SuiteVisitor):
     if `collect_only` is `False`, it also does the following to prepare the tests for execution:
 
     - filters out any `.robot` tests/suites that are not included in the collected pytest tests
-    - adds the collected `.py` test cases to the robot test suites (with empty bodies. bodies are added later by `PytestRuntestProtocolInjector`)
+    - adds the collected `.py` test cases to the robot test suites (with empty bodies. bodies are
+    added later by `PytestRuntestProtocolInjector`)
     """
 
     def __init__(self, session: Session, *, collect_only: bool):
@@ -98,7 +99,8 @@ class PytestCollector(SuiteVisitor):
             suite.tests.clear()  # type:ignore[no-untyped-call]
             return
         if suite.source and suite.source.suffix != ".robot":
-            # remove the fake test (required so that the parser doesn't delete suites for being empty)
+            # remove the fake test (required so that the parser doesn't delete suites for being
+            # empty)
             suite.tests.clear()  # type:ignore[no-untyped-call]
 
         # remove any .robot tests that were filtered out by pytest:
@@ -124,7 +126,8 @@ class PytestCollector(SuiteVisitor):
 
 
 class KeywordNameFixer(ResultVisitor):
-    """renames our dynamically generated setup/call/teardown keywords in the log back to user friendly ones"""
+    """renames our dynamically generated setup/call/teardown keywords in the log back to user
+    friendly ones"""
 
     @override
     # supertype is wrong, TODO: raise robot issue
@@ -143,15 +146,15 @@ original_teardown_key = StashKey[model.Keyword]()
 
 
 def register_keyword(suite: running.TestSuite, fn: KeywordFunction) -> str:
-    """when robot parses a test suite, there's no way to specify function references for the keywords, only the name.
-    then when the test is executed, the execution context creates a handler which imports the modules used by the
-    suite, which is where it resolves the keywords by name.
+    """when robot parses a test suite, there's no way to specify function references for the
+    keywords, only the name. then when the test is executed, the execution context creates a handler
+    which imports the modules used by the suite, which is where it resolves the keywords by name.
 
-    so since we are defining arbitrary functions here that robot needs to be able to find in a module, we have to
-    dynamically add it to our fake module with a unique name.
+    so since we are defining arbitrary functions here that robot needs to be able to find in a
+    module, we have to dynamically add it to our fake module with a unique name.
 
-    after the test suite is run, `KeywordNameFixer` modifies the run results to change the keyword names back to
-    non-unique user friendly ones"""
+    after the test suite is run, `KeywordNameFixer` modifies the run results to change the keyword
+    names back to non-unique user friendly ones"""
     suite.resource.imports.library(_fake_robot_library.__name__)
     name = f"pytestrobotkeyword{hash(fn)}_{fn.__name__}"
     setattr(_fake_robot_library, name, keyword(fn))  # type:ignore[no-any-expr]
@@ -159,15 +162,17 @@ def register_keyword(suite: running.TestSuite, fn: KeywordFunction) -> str:
 
 
 class PytestRuntestProtocolInjector(SuiteVisitor):
-    """injects the hooks from `pytest_runtest_protocol` into the robot test suite. this replaces any existing
-    setup/body/teardown with said hooks, which may or may not be an issue depending on whether a python or robot
-    test is being run.
+    """injects the hooks from `pytest_runtest_protocol` into the robot test suite. this replaces any
+     existing setup/body/teardown with said hooks, which may or may not be an issue depending on
+     whether a python or robot test is being run.
 
-    - if running a `.robot` test: the test cases would already have setup/body/teardown keywords, so make sure the hooks
-    actually call those keywords (`original_setup_key`, `original_body_key` and `original_teardown_key` stashes are
-    used to send the original keywords to the methods on `RobotFile`)
-    - if running a `.py` test, this is not an issue because the robot test cases are empty (see `PythonParser`)
-    and the hook functions already have the actual contents of the tests, because they are just plain pytest tests
+    - if running a `.robot` test: the test cases would already have setup/body/teardown keywords, so
+    make sure the hooks actually call those keywords (`original_setup_key`, `original_body_key` and
+    `original_teardown_key` stashes are used to send the original keywords to the methods on
+    `RobotFile`)
+    - if running a `.py` test, this is not an issue because the robot test cases are empty (see
+    `PythonParser`) and the hook functions already have the actual contents of the tests, because
+    they are just plain pytest tests
     """
 
     def __init__(self, session: Session):
@@ -225,7 +230,10 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             # https://github.com/python/mypy/issues/15894
             def setup(item: Item = item):  # type:ignore[assignment]
                 # mostly copied from the start of `_pytest.runner.runtestprotocol`
-                if hasattr(item, "_request") and not item._request:  # type: ignore[no-any-expr] # noqa: SLF001
+                if (
+                    hasattr(item, "_request")
+                    and not item._request  # type: ignore[no-any-expr] # noqa: SLF001
+                ):
                     # This only happens if the item is re-run, as is done by
                     # pytest-rerunfailures.
                     item._initrequest()  # type: ignore[attr-defined] # noqa: SLF001
@@ -269,8 +277,9 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
 
 class PytestRuntestLogListener(ListenerV3):
-    """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from `pytest_runtest_protocol`.
-    since all the other parts of `_pytest.runner.runtestprotocol` are re-implemented in `PythonParser`
+    """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from
+    `pytest_runtest_protocol`. since all the other parts of `_pytest.runner.runtestprotocol` are
+    re-implemented in `PythonParser`
     """
 
     def __init__(self, session: Session):
