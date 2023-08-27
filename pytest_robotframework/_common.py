@@ -53,6 +53,8 @@ class PytestCollector(SuiteVisitor):
     """
     calls the pytest collection hooks.
 
+    if `collect_only` is `True`, it also removes all suites/tests so that robot doesn't run anything
+
     if `collect_only` is `False`, it also does the following to prepare the tests for execution:
 
     - filters out any `.robot` tests/suites that are not included in the collected pytest tests
@@ -66,7 +68,7 @@ class PytestCollector(SuiteVisitor):
 
     @override
     def visit_suite(self, suite: running.TestSuite):
-        if not suite.parent:
+        if not suite.parent:  # only do this once, on the top level suite
             self.session.stash[collected_robot_suite_key] = suite
             self.session.perform_collect()
             # create robot test cases for python tests:
@@ -279,7 +281,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 class PytestRuntestLogListener(ListenerV3):
     """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from
     `pytest_runtest_protocol`. since all the other parts of `_pytest.runner.runtestprotocol` are
-    re-implemented in `PythonParser`
+    re-implemented in `PytestRuntestProtocolInjector`
     """
 
     def __init__(self, session: Session):
