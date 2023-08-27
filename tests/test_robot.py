@@ -215,3 +215,14 @@ def test_init_file_nested(pytester_dir: PytesterDir):
     result = run_pytest(pytester_dir, "foo")
     result.assert_outcomes(passed=2)
     assert (pytester_dir.path / "log.html").exists()
+
+
+def test_setup_with_args(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir)
+    result.assert_outcomes(passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//kw[@type='SETUP']/kw[@name='Run Keywords' and ./arg[.='Bar'] and"
+        " ./arg[.='AND'] and ./arg[.='Baz']]"
+    )
