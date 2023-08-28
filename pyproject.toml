@@ -97,7 +97,6 @@ enable = [
     "invalid-format-returned",
     "invalid-getnewargs-ex-returned",
     "invalid-getnewargs-returned",
-    "invalid-hash-returned",
     "invalid-index-returned",
     "invalid-length-hint-returned",
     "invalid-length-returned",
@@ -327,7 +326,6 @@ extend-select = [
     # nursery rules:
     # https://github.com/astral-sh/ruff/issues/6910
     "E111",
-    "E112",
     "E113",
     "E114",
     "E115",
