@@ -45,4 +45,4 @@ class PythonParser(Parser):
 
     @override
     def parse_init(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
-        return self._create_suite(source)
+        return self._create_suite(source.parent)

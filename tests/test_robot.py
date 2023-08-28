@@ -209,6 +209,7 @@ def test_init_file(pytester_dir: PytesterDir):
     result = run_pytest(pytester_dir)
     result.assert_outcomes(passed=1)
     assert (pytester_dir.path / "log.html").exists()
+    assert output_xml(pytester_dir).xpath("/robot/suite[@name='Test Init File0']")
 
 
 def test_init_file_nested(pytester_dir: PytesterDir):
