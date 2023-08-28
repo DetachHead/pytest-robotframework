@@ -196,27 +196,39 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
         )
         reports.append(report)
         if report.skipped:
-            BuiltIn().skip("")  # type:ignore[no-untyped-call]
+            # empty string means xfail with no reason, None means it was not an xfail
+            xfail_reason = (
+                cast(str, report.wasxfail) if hasattr(report, "wasxfail") else None
+            )
+            BuiltIn().skip(  # type:ignore[no-untyped-call]
+                # TODO: is there a reliable way to get the reason when skipped by a skip/skipif marker?
+                # https://github.com/DetachHead/pytest-robotframework/issues/51
+                ""
+                if xfail_reason is None
+                else ("xfail" + (f": {xfail_reason}" if xfail_reason else ""))
+            )
         elif report.failed:
             # make robot show the exception:
             # TODO: whats up with longrepr why is it such a pain in the ass to use?
             #  is there an easier way to just get the exception/error message?
             #  https://github.com/DetachHead/pytest-robotframework/issues/35
             longrepr = report.longrepr
-            if isinstance(longrepr, ExceptionInfo):
-                raise longrepr.value
-            error_text = (
-                "please report this on the pytest-robotframework github repo:"
-                f" {longrepr}"
-            )
+            if isinstance(longrepr, str):
+                # xfail strict
+                raise Exception(longrepr)
             if isinstance(longrepr, ExceptionRepr):
                 if longrepr.reprcrash:
+                    # normal failures
                     raise Exception(longrepr.reprcrash.message)
                 raise PytestRobotFrameworkError(
-                    f"pytest exception was `None`, {error_text}"
+                    f"pytest exception reprcrash was `None`: {longrepr}"
+                )
+            if isinstance(longrepr, ExceptionInfo):
+                raise PytestRobotFrameworkError(
+                    f"got unexpected exception type: {longrepr.value}"
                 )
             raise PytestRobotFrameworkError(
-                f"Unknown exception type appeared, {error_text}"
+                f"Unknown exception type appeared: {longrepr}"
             )
 
     @override

@@ -284,3 +284,38 @@ def test_unittest_class(pytester_dir: PytesterDir):
 def test_robot_keyword_in_python_test(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
+
+
+def test_xfail_fails(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, xfailed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[contains(@name, ' Run Test') and ./msg[@level='SKIP' and .='xfail:"
+        " asdf']]"
+    )
+
+
+def test_xfail_passes(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[contains(@name, ' Run Test') and ./msg[@level='FAIL' and"
+        " .='[XPASS(strict)] asdf']]"
+    )
+
+
+def test_xfail_fails_no_reason(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, xfailed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[contains(@name, ' Run Test') and ./msg[@level='SKIP' and .='xfail']]"
+    )
+
+
+def test_xfail_passes_no_reason(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[contains(@name, ' Run Test') and ./msg[@level='FAIL' and"
+        " .='[XPASS(strict)] ']]"
+    )
