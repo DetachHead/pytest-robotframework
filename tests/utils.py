@@ -78,9 +78,12 @@ def run_and_assert_result(
     skipped=0,
     failed=0,
     errors=0,
+    xfailed=0,
 ):
     result = run_pytest(pytester, *(pytest_args or []))
-    result.assert_outcomes(passed=passed, skipped=skipped, failed=failed, errors=errors)
+    result.assert_outcomes(
+        passed=passed, skipped=skipped, failed=failed, errors=errors, xfailed=xfailed
+    )
     assert_robot_total_stats(
         pytester,
         passed=passed,
@@ -89,5 +92,6 @@ def run_and_assert_result(
         # TODO: a way to check for robot errors, i think they currently go undetected
         #  https://github.com/DetachHead/pytest-robotframework/issues/39
         failed=failed + errors,
-        skipped=skipped,
+        # robot doesn't have xfail, uses skips instead
+        skipped=skipped + xfailed,
     )
