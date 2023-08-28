@@ -5,10 +5,11 @@ from pathlib import Path
 
 # yes lets put the Callable type in the collection module.... because THAT makes sense!!!
 # said no one ever
-from typing import Callable, ParamSpec, cast  # noqa: UP035
+from typing import Callable, ParamSpec, TypeVar, cast  # noqa: UP035
 
 from basedtyping import T
 from robot import result, running
+from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running import EXECUTION_CONTEXTS
 from robot.running.context import (  # pylint:disable=import-private-name
@@ -17,6 +18,8 @@ from robot.running.context import (  # pylint:disable=import-private-name
 from robot.running.statusreporter import StatusReporter
 
 RobotVariables = dict[str, object]
+
+Listener = ListenerV2 | ListenerV3
 
 _suite_variables = defaultdict[Path, RobotVariables](dict)
 
@@ -63,3 +66,29 @@ def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
             return fn(*args, **kwargs)
 
     return inner
+
+
+class _ListenerRegistry:
+    def __init__(self):
+        self.instances = list[Listener]()
+        self.too_late = False
+
+
+_listeners = _ListenerRegistry()
+
+_T_Listener = TypeVar("_T_Listener", bound=type[Listener])
+
+
+def listener(cls: _T_Listener) -> _T_Listener:
+    """registers a class as a global robot listener. listeners using this decorator are always
+    enabled and do not need to be registered with the `--listener` robot option.
+
+    the listener must be defined in a `conftest.py` file so it gets registered before robot starts
+    running."""
+    if _listeners.too_late:
+        raise Exception(
+            f"listener {cls.__name__!r} cannot be registered because robot has already"
+            " started running. make sure it's defined in a `conftest.py` file"
+        )
+    _listeners.instances.append(cls())
+    return cls

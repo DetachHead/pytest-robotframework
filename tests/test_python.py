@@ -319,3 +319,21 @@ def test_xfail_passes_no_reason(pytester_dir: PytesterDir):
         "//kw[contains(@name, ' Run Test') and ./msg[@level='FAIL' and"
         " .='[XPASS(strict)] ']]"
     )
+
+
+def test_listener_decorator(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+
+
+def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir)
+    result.assert_outcomes(errors=1)
+    # pytest failed before test was collected so nothing in the robot run
+    assert_robot_total_stats(pytester_dir)
+    assert_log_file_exists(pytester_dir)
+    assert (
+        "E   Exception: listener 'Listener' cannot be registered because robot has"
+        " already started running. make sure it's defined in a `conftest.py` file"
+        in result.outlines
+    )
