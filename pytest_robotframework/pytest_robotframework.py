@@ -7,10 +7,16 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.run import RobotFramework
 
-from pytest_robotframework import _resources, _suite_variables, import_resource
+from pytest_robotframework import (
+    _listeners,
+    _resources,
+    _suite_variables,
+    import_resource,
+)
 from pytest_robotframework._common import (
     KeywordNameFixer,
     PytestCollector,
+    PytestRobotFrameworkError,
     PytestRuntestLogListener,
     PytestRuntestProtocolInjector,
 )
@@ -29,6 +35,8 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     collection and running, it's more efficient to just have `pytest_runtestloop` handle the
     collection as well if possible.
     """
+    if _listeners.too_late:
+        raise PytestRobotFrameworkError("somehow ran collect/run twice???")
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot_args = cast(
         dict[str, object],
@@ -58,10 +66,11 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             robot_args,
             dict[str, object](
                 prerunmodifier=[PytestRuntestProtocolInjector(session)],
-                listener=[PytestRuntestLogListener(session)],
+                listener=[PytestRuntestLogListener(session), *_listeners.instances],
                 prerebotmodifier=[KeywordNameFixer()],
             ),
         )
+    _listeners.too_late = True
     # needed for log_file listener methods to prevent logger from deactivating after the test is
     # over
     with LOGGER:
