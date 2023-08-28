@@ -75,23 +75,6 @@ def test_bar():
     ...
 ```
 
-### robot options
-
-specify robot CLI arguments with the `--robotargs` argument:
-
-```
-pytest --robotargs="-d results --listener foo.Foo"
-```
-
-or you could use the `ROBOT_OPTIONS` environment variable:
-
-```
-ROBOT_OPTIONS="-d results --listener foo.Foo"
-```
-
-however, arguments that have pytest equivalents should not set with robot as they will probably cause the plugin to behave incorrectly.
-for example, instead of `pytest --robotargs="--include some_tag"` you should use `pytest -m some_tag`.
-
 ### setup/teardown and other hooks
 
 to define a function that runs for each test at setup or teardown, create a `conftest.py` with a `pytest_runtest_setup` and/or `pytest_runtest_teardown` function:
@@ -141,6 +124,24 @@ def test_eval(test_input: int, expected: int):
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/4361295b-5e44-4c9d-b2f3-839e3901b1eb)
 
+### listeners
+
+you can define listeners in your `conftest.py` and decorate them with `@listener` to register them as global listeners:
+
+```py
+# conftest.py
+from pytest_robotframework import listener
+from robot import model, result
+from robot.api.interfaces import ListenerV3
+from typing_extensions import override
+
+@listener
+class Listener(ListenerV3):
+    @override
+    def start_test(self, data: model.TestCase result: result.TestCase):
+        ...
+```
+
 ### robot suite variables
 
 to set suite-level robot variables, call the `set_variables` function at the top of the test suite:
@@ -161,3 +162,35 @@ def test_variables():
 ```
 
 `set_variables` is equivalent to the `*** Variables ***` section in a `.robot` file. all variables are prefixed with `$`. `@` and `&` are not required since `$` variables can store lists and dicts anyway
+
+## config
+
+since this is a pytest plugin, you should avoid using robot options that have pytest equivalents:
+
+| instead of...                                 | use...                                                                                                                                                                            |
+| :-------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `robot --include tag_name`                    | `pytest -m tag_name`                                                                                                                                                              |
+| `robot --skip tag_name`                       | `pytest -m "not tag_name"`                                                                                                                                                        |
+| `robot --test "test name" path/to/test.robot` | `pytest path/to/test.robot::"Test Name"`                                                                                                                                          |
+| `robot --listener Foo`                        | [`@listener` decorator](#listeners)                                                                                                                                               |
+| `robot --dryrun`                              | `pytest --collect-only` (not exactly the same. you should use [a type checker](https://github.com/kotlinisland/basedmypy) on your python tests as a replacement for robot dryrun) |
+| `robot --exitonfailure`                       | `pytest --maxfail=1`                                                                                                                                                              |
+| `robot --rerunfailed`                         | `pytest --lf`                                                                                                                                                                     |
+
+if the robot option you want to use isn't mentioned here, check the pytest [command line options](https://docs.pytest.org/en/latest/reference/reference.html#command-line-flags) and [ini options](https://docs.pytest.org/en/latest/reference/reference.html#configuration-options) for a complete list of pytest settings as there are probably many missing from this list.
+
+#### specifying robot options directlty
+
+you can specify robot CLI arguments directly with the `--robotargs` argument:
+
+```
+pytest --robotargs="-d results --listener foo.Foo"
+```
+
+or you could use the `ROBOT_OPTIONS` environment variable:
+
+```
+ROBOT_OPTIONS="-d results --listener foo.Foo"
+```
+
+however, arguments that have pytest equivalents should not be set with robot as they will probably cause the plugin to behave incorrectly.
