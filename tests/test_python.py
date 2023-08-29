@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from pytest import mark
-
 from tests.utils import (
     PytesterDir,
     assert_log_file_exists,
@@ -135,12 +133,8 @@ def test_setup_passes(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        ".//test/kw[contains(@name, ' Setup')]/msg[@level='INFO' and .='2']"
-    )
-    assert xml.xpath(
-        ".//test/kw[contains(@name, ' Run Test')]/msg[@level='INFO' and .='1']"
-    )
+    assert xml.xpath(".//test/kw[@name='Setup']/msg[@level='INFO' and .='2']")
+    assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='INFO' and .='1']")
 
 
 def test_setup_fails(pytester_dir: PytesterDir):
@@ -148,29 +142,25 @@ def test_setup_fails(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        ".//test/kw[contains(@name, ' Setup')]/msg[@level='FAIL' and .='Exception: 2']"
+        ".//test/kw[@name='Setup']/msg[@level='FAIL' and .='Exception: 2']"
     )
-    assert not xml.xpath(".//test/kw[contains(@name, ' Run Test')]")
+    assert not xml.xpath(".//test/kw[@name='Run Test']")
 
 
 def test_setup_skipped(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, skipped=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath(".//test/kw[contains(@name, ' Setup')]/msg[@level='SKIP']")
-    assert not xml.xpath(".//test/kw[contains(@name, ' Run Test')]")
+    assert xml.xpath(".//test/kw[@name='Setup']/msg[@level='SKIP']")
+    assert not xml.xpath(".//test/kw[@name='Run Test']")
 
 
 def test_teardown_passes(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        ".//test/kw[contains(@name, ' Run Test')]/msg[@level='INFO' and .='1']"
-    )
-    assert xml.xpath(
-        ".//test/kw[contains(@name, ' Teardown')]/msg[@level='INFO' and .='2']"
-    )
+    assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='INFO' and .='1']")
+    assert xml.xpath(".//test/kw[@name='Teardown']/msg[@level='INFO' and .='2']")
 
 
 def test_teardown_fails(pytester_dir: PytesterDir):
@@ -180,10 +170,9 @@ def test_teardown_fails(pytester_dir: PytesterDir):
     assert_robot_total_stats(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath(".//test/kw[contains(@name, ' Run Test')]")
+    assert xml.xpath(".//test/kw[@name='Run Test']")
     assert xml.xpath(
-        ".//test/kw[contains(@name, ' Teardown')]/msg[@level='FAIL' and"
-        " .='Exception: 2']"
+        ".//test/kw[@name='Teardown']/msg[@level='FAIL' and .='Exception: 2']"
     )
 
 
@@ -194,8 +183,8 @@ def test_teardown_skipped(pytester_dir: PytesterDir):
     assert_robot_total_stats(pytester_dir, skipped=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath(".//test/kw[contains(@name, ' Run Test')]")
-    assert xml.xpath(".//test/kw[contains(@name, ' Teardown')]/msg[@level='SKIP']")
+    assert xml.xpath(".//test/kw[@name='Run Test']")
+    assert xml.xpath(".//test/kw[@name='Teardown']/msg[@level='SKIP']")
 
 
 def test_fixture(pytester_dir: PytesterDir):
@@ -219,7 +208,7 @@ def test_keyword_decorator(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        ".//kw[contains(@name, ' Run Test')]/kw[@name='foo']/doc[.='hie']"
+        ".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']"
     )
 
 
@@ -237,12 +226,6 @@ def test_parameterized_tags(pytester_dir: PytesterDir):
     assert xml.xpath(".//test[@name='test_tags']/tag[.='foo:bar']")
 
 
-@mark.xfail(
-    reason=(
-        "TODO: figure out how to modify the keyword names before the xml is written or"
-        " read the html file instead"
-    )
-)
 def test_keyword_names(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=2)
     assert_log_file_exists(pytester_dir)
@@ -290,8 +273,7 @@ def test_xfail_fails(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, xfailed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[contains(@name, ' Run Test') and ./msg[@level='SKIP' and .='xfail:"
-        " asdf']]"
+        "//kw[@name='Run Test' and ./msg[@level='SKIP' and .='xfail: asdf']]"
     )
 
 
@@ -299,8 +281,7 @@ def test_xfail_passes(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[contains(@name, ' Run Test') and ./msg[@level='FAIL' and"
-        " .='[XPASS(strict)] asdf']]"
+        "//kw[@name='Run Test' and ./msg[@level='FAIL' and .='[XPASS(strict)] asdf']]"
     )
 
 
@@ -308,7 +289,7 @@ def test_xfail_fails_no_reason(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, xfailed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[contains(@name, ' Run Test') and ./msg[@level='SKIP' and .='xfail']]"
+        "//kw[@name='Run Test' and ./msg[@level='SKIP' and .='xfail']]"
     )
 
 
@@ -316,8 +297,7 @@ def test_xfail_passes_no_reason(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[contains(@name, ' Run Test') and ./msg[@level='FAIL' and"
-        " .='[XPASS(strict)] ']]"
+        "//kw[@name='Run Test' and ./msg[@level='FAIL' and .='[XPASS(strict)] ']]"
     )
 
 
@@ -333,7 +313,8 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
     assert_robot_total_stats(pytester_dir)
     assert_log_file_exists(pytester_dir)
     assert (
-        "E   Exception: listener 'Listener' cannot be registered because robot has"
-        " already started running. make sure it's defined in a `conftest.py` file"
+        "E   pytest_robotframework._errors.UserError: listener 'Listener' cannot be"
+        " registered because robot has already started running. make sure it's defined"
+        " in a `conftest.py` file"
         in result.outlines
     )
