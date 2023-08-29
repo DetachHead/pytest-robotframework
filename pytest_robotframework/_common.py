@@ -29,6 +29,27 @@ def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item |
         return None
 
 
+_P = ParamSpec("_P")
+
+
+def create_running_keyword(
+    keyword_type: Literal["SETUP", "KEYWORD", "TEARDOWN"],
+    fn: Callable[_P, None],
+    *args: _P.args,
+    **kwargs: _P.kwargs,
+) -> running.Keyword:
+    """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
+    if kwargs:
+        raise InternalError(f"kwargs not supported: {kwargs}")
+    return running.Keyword(
+        name=f"{fn.__module__}.{fn.__name__}",
+        # robot says this can only be a str but keywords can take any object when called from
+        # python
+        args=args,  # type:ignore[arg-type]
+        type=keyword_type,
+    )
+
+
 class PytestCollector(SuiteVisitor):
     """
     calls the pytest collection hooks.
@@ -110,26 +131,6 @@ class PytestCollector(SuiteVisitor):
 original_setup_key = StashKey[model.Keyword]()
 original_body_key = StashKey[Body]()
 original_teardown_key = StashKey[model.Keyword]()
-
-_P = ParamSpec("_P")
-
-
-def create_running_keyword(
-    keyword_type: Literal["SETUP", "KEYWORD", "TEARDOWN"],
-    fn: Callable[_P, None],
-    *args: _P.args,
-    **kwargs: _P.kwargs,
-) -> running.Keyword:
-    """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
-    if kwargs:
-        raise InternalError(f"kwargs not supported: {kwargs}")
-    return running.Keyword(
-        name=f"{fn.__module__}.{fn.__name__}",
-        # robot says this only be a str but keywords can take any object when called from
-        # python
-        args=args,  # type:ignore[arg-type]
-        type=keyword_type,
-    )
 
 
 class PytestRuntestProtocolInjector(SuiteVisitor):
