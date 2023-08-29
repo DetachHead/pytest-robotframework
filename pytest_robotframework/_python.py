@@ -6,6 +6,8 @@ from robot import running
 from robot.api.interfaces import Parser, TestDefaults
 from typing_extensions import override
 
+from pytest_robotframework._robot_library import internal_error
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -39,7 +41,12 @@ class PythonParser(Parser):
         # this fake test is required to prevent the suite from being deleted before the
         # prerunmodifiers are called
         test_case = running.TestCase(name="fake test you shoud NEVER see this!!!!!!!")
-        test_case.body = [running.Keyword("fail")]
+        test_case.body = [
+            running.Keyword(
+                internal_error.__name__,  # type:ignore[no-any-expr]
+                args=["fake placeholder test appeared. this should never happen :(("],
+            )
+        ]
         result.tests.append(test_case)
         return result
 
