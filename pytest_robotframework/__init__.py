@@ -18,6 +18,8 @@ from robot.running.context import (  # pylint:disable=import-private-name
 )
 from robot.running.statusreporter import StatusReporter
 
+from pytest_robotframework._errors import UserError
+
 if TYPE_CHECKING:
     from basedtyping import T
 
@@ -90,7 +92,7 @@ def listener(cls: _T_Listener) -> _T_Listener:
     the listener must be defined in a `conftest.py` file so it gets registered before robot starts
     running."""
     if _listeners.too_late:
-        raise Exception(
+        raise UserError(
             f"listener {cls.__name__!r} cannot be registered because robot has already"
             " started running. make sure it's defined in a `conftest.py` file"
         )

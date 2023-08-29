@@ -14,12 +14,11 @@ from pytest_robotframework import (
     import_resource,
 )
 from pytest_robotframework._common import (
-    KeywordNameFixer,
     PytestCollector,
-    PytestRobotFrameworkError,
     PytestRuntestLogListener,
     PytestRuntestProtocolInjector,
 )
+from pytest_robotframework._errors import InternalError
 from pytest_robotframework._python import PythonParser
 from pytest_robotframework._robot import RobotFile, RobotItem
 
@@ -36,7 +35,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     collection as well if possible.
     """
     if _listeners.too_late:
-        raise PytestRobotFrameworkError("somehow ran collect/run twice???")
+        raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot_args = cast(
         dict[str, object],
@@ -67,7 +66,6 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             dict[str, object](
                 prerunmodifier=[PytestRuntestProtocolInjector(session)],
                 listener=[PytestRuntestLogListener(session), *_listeners.instances],
-                prerebotmodifier=[KeywordNameFixer()],
             ),
         )
     _listeners.too_late = True

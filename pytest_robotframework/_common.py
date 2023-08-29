@@ -1,44 +1,20 @@
 from __future__ import annotations
 
-import re
 from types import ModuleType
+from typing import cast
 
-# callable isnt a collection
-from typing import Callable, Literal, cast  # noqa: UP035
-
-from _pytest._code.code import (  # pylint:disable=import-private-name
-    ExceptionInfo,
-    ExceptionRepr,
-)
-from _pytest.runner import (  # pylint:disable=import-private-name
-    call_and_report,
-    show_test_item,
-)
-from pytest import Function, Item, Session, StashKey, TestReport
+from pytest import Function, Item, Session, StashKey
 from robot import model, result, running
-from robot.api import ResultVisitor, SuiteVisitor
-from robot.api.deco import keyword
+from robot.api import SuiteVisitor
 from robot.api.interfaces import ListenerV3
-from robot.libraries.BuiltIn import BuiltIn
 from robot.running.model import Body
 from typing_extensions import override
 
-from pytest_robotframework import _fake_robot_library
-
-KeywordFunction = Callable[[], None]
-
+from pytest_robotframework import _robot_library
+from pytest_robotframework._errors import InternalError
 
 collected_robot_suite_key = StashKey[model.TestSuite]()
 running_test_case_key = StashKey[running.TestCase]()
-
-
-class PytestRobotFrameworkError(Exception):
-    def __init__(self, message: str) -> None:
-        super().__init__(
-            "something went wrong with the pytest-robotframework plugin. please raise"
-            " an issue at https://github.com/detachhead/pytest-robotframework with the"
-            f" following information:\n\n{message}"
-        )
 
 
 def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
@@ -129,40 +105,9 @@ class PytestCollector(SuiteVisitor):
         suite.suites = [s for s in suite.suites if s.test_count > 0]
 
 
-class KeywordNameFixer(ResultVisitor):
-    """renames our dynamically generated setup/call/teardown keywords in the log back to user
-    friendly ones"""
-
-    @override
-    # supertype is wrong, TODO: raise robot issue
-    def visit_keyword(
-        self,
-        keyword: result.Keyword,  # type:ignore[override] #pylint:disable=redefined-outer-name
-    ):
-        keyword.kwname = re.sub(
-            r"pytestrobotkeyword\d+ ", "", keyword.kwname, flags=re.IGNORECASE
-        )
-
-
 original_setup_key = StashKey[model.Keyword]()
 original_body_key = StashKey[Body]()
 original_teardown_key = StashKey[model.Keyword]()
-
-
-def register_keyword(suite: running.TestSuite, fn: KeywordFunction) -> str:
-    """when robot parses a test suite, there's no way to specify function references for the
-    keywords, only the name. then when the test is executed, the execution context creates a handler
-    which imports the modules used by the suite, which is where it resolves the keywords by name.
-
-    so since we are defining arbitrary functions here that robot needs to be able to find in a
-    module, we have to dynamically add it to our fake module with a unique name.
-
-    after the test suite is run, `KeywordNameFixer` modifies the run results to change the keyword
-    names back to non-unique user friendly ones"""
-    suite.resource.imports.library(_fake_robot_library.__name__)
-    name = f"pytestrobotkeyword{hash(fn)}_{fn.__name__}"
-    setattr(_fake_robot_library, name, keyword(fn))  # type:ignore[no-any-expr]
-    return name
 
 
 class PytestRuntestProtocolInjector(SuiteVisitor):
@@ -181,114 +126,44 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
     def __init__(self, session: Session):
         self.session = session
-        self.report_key = StashKey[list[TestReport]]()
-
-    def _call_and_report_robot_edition(
-        self, item: Item, when: Literal["setup", "call", "teardown"], **kwargs: object
-    ):
-        """wrapper for the `call_and_report` function used by `_pytest.runner.runtestprotocol`
-        with additional logic to show the result in the robot log"""
-        if self.report_key in item.stash:
-            reports = item.stash[self.report_key]
-        else:
-            reports = list[TestReport]()
-            item.stash[self.report_key] = reports
-        report = call_and_report(  # type:ignore[no-untyped-call]
-            item, when, log=True, **kwargs
-        )
-        reports.append(report)
-        if report.skipped:
-            # empty string means xfail with no reason, None means it was not an xfail
-            xfail_reason = (
-                cast(str, report.wasxfail) if hasattr(report, "wasxfail") else None
-            )
-            BuiltIn().skip(  # type:ignore[no-untyped-call]
-                # TODO: is there a reliable way to get the reason when skipped by a skip/skipif marker?
-                # https://github.com/DetachHead/pytest-robotframework/issues/51
-                ""
-                if xfail_reason is None
-                else ("xfail" + (f": {xfail_reason}" if xfail_reason else ""))
-            )
-        elif report.failed:
-            # make robot show the exception:
-            # TODO: whats up with longrepr why is it such a pain in the ass to use?
-            #  is there an easier way to just get the exception/error message?
-            #  https://github.com/DetachHead/pytest-robotframework/issues/35
-            longrepr = report.longrepr
-            if isinstance(longrepr, str):
-                # xfail strict
-                raise Exception(longrepr)
-            if isinstance(longrepr, ExceptionRepr):
-                if longrepr.reprcrash:
-                    # normal failures
-                    raise Exception(longrepr.reprcrash.message)
-                raise PytestRobotFrameworkError(
-                    f"pytest exception reprcrash was `None`: {longrepr}"
-                )
-            if isinstance(longrepr, ExceptionInfo):
-                raise PytestRobotFrameworkError(
-                    f"got unexpected exception type: {longrepr.value}"
-                )
-            raise PytestRobotFrameworkError(
-                f"Unknown exception type appeared: {longrepr}"
-            )
 
     @override
     def start_suite(self, suite: running.TestSuite):
+        suite.resource.imports.library(_robot_library.__name__)
         for test in suite.tests:
             item = get_item_from_robot_test(self.session, test)
             if not item:
-                raise PytestRobotFrameworkError(
+                raise InternalError(
                     "this should NEVER happen, `PytestCollector` failed to filter out"
                     f" {test.name}"
                 )
 
-            # https://github.com/python/mypy/issues/15894
-            def setup(item: Item = item):  # type:ignore[assignment]
-                # mostly copied from the start of `_pytest.runner.runtestprotocol`
-                if (
-                    hasattr(item, "_request")
-                    and not item._request  # type: ignore[no-any-expr] # noqa: SLF001
-                ):
-                    # This only happens if the item is re-run, as is done by
-                    # pytest-rerunfailures.
-                    item._initrequest()  # type: ignore[attr-defined] # noqa: SLF001
-                self._call_and_report_robot_edition(item, "setup")
-
             item.stash[original_setup_key] = test.setup
             test.setup = running.Keyword(  # type:ignore[assignment]
-                name=register_keyword(suite, setup), type=model.Keyword.SETUP
+                name=_robot_library.setup.__name__,  # type:ignore[no-any-expr]
+                # robot says this only be a str but keywords can take any object when called from
+                # python
+                args=[item],  # type:ignore[list-item]
+                type=model.Keyword.SETUP,
             )
-
-            def run_test(item: Item = item):  # type:ignore[assignment]
-                # mostly copied from the middle of `_pytest.runner.runtestprotocol`
-                reports = item.stash[self.report_key]
-                if reports[0].passed:
-                    if item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                        "setupshow", default=False
-                    ):
-                        show_test_item(item)
-                    if not item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                        "setuponly", default=False
-                    ):
-                        self._call_and_report_robot_edition(item, "call")
 
             # TODO: what is this mypy error
             #  https://github.com/DetachHead/pytest-robotframework/issues/36
             item.stash[original_body_key] = test.body  # type:ignore[misc]
             test.body = Body(
-                items=[running.Keyword(name=register_keyword(suite, run_test))]
+                items=[
+                    running.Keyword(
+                        name=_robot_library.run_test.__name__,  # type:ignore[no-any-expr]
+                        args=[item],  # type:ignore[list-item]
+                    )
+                ]
             )
-
-            def teardown(item: Item = item):  # type:ignore[assignment]
-                # mostly copied from the end of `_pytest.runner.runtestprotocol`
-                self._call_and_report_robot_edition(
-                    item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
-                )
 
             item.stash[original_teardown_key] = test.teardown
             test.teardown = running.Keyword(
-                name=register_keyword(suite, teardown), type=model.Keyword.TEARDOWN
+                name=_robot_library.teardown.__name__,  # type:ignore[no-any-expr]
+                args=[item],  # type:ignore[list-item]
+                type=model.Keyword.TEARDOWN,
             )
 
 
@@ -304,7 +179,7 @@ class PytestRuntestLogListener(ListenerV3):
     def _get_item(self, data: running.TestCase) -> Item:
         item = get_item_from_robot_test(self.session, data)
         if not item:
-            raise PytestRobotFrameworkError(
+            raise InternalError(
                 f"failed to find pytest item for robot test: {data.name}"
             )
         return item
