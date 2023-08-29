@@ -1,5 +1,7 @@
 # noqa: N999
 # in robot if a class has the same name as the file you don't have to specify both
+from __future__ import annotations
+
 from pathlib import Path
 
 from robot.api.interfaces import ListenerV3

@@ -1,5 +1,7 @@
 # noqa: INP001
 # init file breaks it and i dont care because i hate init files
+from __future__ import annotations
+
 from pathlib import Path
 
 from robot.api.interfaces import ListenerV3
