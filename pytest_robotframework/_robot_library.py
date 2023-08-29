@@ -1,4 +1,4 @@
-"""robot library that contains the keywords added by `_common.PytestRuntestProtocolInjector`"""
+"""robot library that contains the keywords added by the plugin"""
 from __future__ import annotations
 
 from typing import Literal, cast
@@ -99,3 +99,8 @@ def teardown(item: Item):  # type:ignore[no-any-decorated]
     _call_and_report_robot_edition(
         item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
     )
+
+
+@keyword  # type:ignore[no-any-expr,misc]
+def internal_error(msg: str):  # type:ignore[no-any-decorated]
+    raise InternalError(msg)
