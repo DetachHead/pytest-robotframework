@@ -8,6 +8,7 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+pytest = "^7"
 robotframework = "^6.1.1"
 deepmerge = "^1.1.0"
 
@@ -17,7 +18,6 @@ basedmypy = ">=2.1"
 lxml = ">=4.9.3"
 lxml-stubs = ">=0.4.0"
 pylint = ">=2.15"
-pytest = ">=7"
 ruff = ">=0.0.286"
 robotframework-robocop = ">=4.1.0"
 robotframework-tidy = ">=4.5.0"
