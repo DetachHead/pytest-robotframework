@@ -63,6 +63,16 @@
       "problemMatcher": []
     },
     {
+      "label": "ruff fix - all files",
+      "type": "shell",
+      "command": "${command:python.interpreterPath}",
+      "args": ["-m", "ruff", "--fix", "."],
+      "presentation": {
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "pylint - all files",
       "type": "shell",
       "command": "${command:python.interpreterPath}",
