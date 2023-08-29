@@ -318,3 +318,8 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
         " in a `conftest.py` file"
         in result.outlines
     )
+
+
+def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, pytest_args=["asdfdsf"])
+    assert_log_file_exists(pytester_dir)

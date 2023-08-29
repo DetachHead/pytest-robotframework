@@ -5,7 +5,7 @@ from types import ModuleType
 # callable is not a collection
 from typing import Callable, Literal, ParamSpec, cast  # noqa: UP035
 
-from pytest import Function, Item, Session, StashKey
+from pytest import Function, Item, Session, StashKey, UsageError
 from robot import model, result, running
 from robot.api import SuiteVisitor
 from robot.api.interfaces import ListenerV3
@@ -66,12 +66,18 @@ class PytestCollector(SuiteVisitor):
     def __init__(self, session: Session, *, collect_only: bool):
         self.session = session
         self.collect_only = collect_only
+        self.collection_error: UsageError | None = None
 
     @override
     def visit_suite(self, suite: running.TestSuite):
         if not suite.parent:  # only do this once, on the top level suite
             self.session.stash[collected_robot_suite_key] = suite
-            self.session.perform_collect()
+            try:
+                self.session.perform_collect()
+            except UsageError as e:
+                # if collection fails we still need to clean up the suite (ie. delete all the fake
+                # tests), so we defer the error to `end_suite` for the top level suite
+                self.collection_error = e
             # create robot test cases for python tests:
             for item in self.session.items:
                 if (
@@ -98,15 +104,11 @@ class PytestCollector(SuiteVisitor):
                 test_case.body = Body()
                 item.stash[running_test_case_key] = test_case
         if self.collect_only:
-            suite.suites.clear()  # type:ignore[no-untyped-call]
             suite.tests.clear()  # type:ignore[no-untyped-call]
             return
-        if suite.source and suite.source.suffix != ".robot":
-            # remove the fake test (required so that the parser doesn't delete suites for being
-            # empty)
-            suite.tests.clear()  # type:ignore[no-untyped-call]
 
-        # remove any .robot tests that were filtered out by pytest:
+        # remove any .robot tests that were filtered out by pytest (and the fake test
+        # from `PythonParser`):
         for test in suite.tests[:]:
             if not get_item_from_robot_test(self.session, test):
                 # happens when running .robot tests that were filtered out by pytest
@@ -126,6 +128,8 @@ class PytestCollector(SuiteVisitor):
     def end_suite(self, suite: running.TestSuite):
         """Remove suites that are empty after removing tests."""
         suite.suites = [s for s in suite.suites if s.test_count > 0]
+        if not suite.parent and self.collection_error:
+            raise self.collection_error
 
 
 original_setup_key = StashKey[model.Keyword]()

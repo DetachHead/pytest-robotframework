@@ -244,3 +244,8 @@ def test_keyword_with_conflicting_name(pytester_dir: PytesterDir):
     assert xml.xpath(
         "//kw[@type='TEARDOWN']/kw[@name='Actual Teardown']/kw[@name='Log']/msg[.='2']"
     )
+
+
+def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, pytest_args=["asdfdsf"])
+    assert_log_file_exists(pytester_dir)
