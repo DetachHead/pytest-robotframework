@@ -111,7 +111,6 @@ class PytestCollector(SuiteVisitor):
         # from `PythonParser`):
         for test in suite.tests[:]:
             if not get_item_from_robot_test(self.session, test):
-                # happens when running .robot tests that were filtered out by pytest
                 suite.tests.remove(test)
 
         # add any .py tests that were collected by pytest
