@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 from collections import defaultdict
 from functools import wraps
@@ -5,9 +7,8 @@ from pathlib import Path
 
 # yes lets put the Callable type in the collection module.... because THAT makes sense!!!
 # said no one ever
-from typing import Callable, ParamSpec, TypeVar, cast  # noqa: UP035
+from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar, cast  # noqa: UP035
 
-from basedtyping import T
 from robot import result, running
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
@@ -16,6 +17,9 @@ from robot.running.context import (  # pylint:disable=import-private-name
     _ExecutionContext,
 )
 from robot.running.statusreporter import StatusReporter
+
+if TYPE_CHECKING:
+    from basedtyping import T
 
 RobotVariables = dict[str, object]
 
