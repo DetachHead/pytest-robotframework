@@ -1,6 +1,7 @@
-from pathlib import Path
+from __future__ import annotations
 
-from pytest import Mark, Session
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from tests.utils import (
     PytesterDir,
@@ -10,6 +11,9 @@ from tests.utils import (
     run_and_assert_result,
     run_pytest,
 )
+
+if TYPE_CHECKING:
+    from pytest import Mark, Session
 
 
 def test_one_test_passes(pytester_dir: PytesterDir):

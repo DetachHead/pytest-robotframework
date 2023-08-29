@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from robot.libraries.BuiltIn import BuiltIn
 
 

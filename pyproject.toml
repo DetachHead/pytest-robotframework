@@ -415,6 +415,7 @@ fixture-parentheses = false
 
 [tool.ruff.isort]
 combine-as-imports = true
+required-imports = ["from __future__ import annotations"]
 
 [tool.robotidy]
 configure = [
