@@ -231,3 +231,16 @@ def test_setup_with_args(pytester_dir: PytesterDir):
         "//kw[@type='SETUP']/kw[@name='Run Keywords' and ./arg[.='Bar'] and"
         " ./arg[.='AND'] and ./arg[.='Baz']]"
     )
+
+
+def test_keyword_with_conflicting_name(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//kw[@name='Run Test']/kw[@name='Teardown' and"
+        " not(@type)]/kw[@name='Log']/msg[.='1']"
+    )
+    assert xml.xpath(
+        "//kw[@type='TEARDOWN']/kw[@name='Actual Teardown']/kw[@name='Log']/msg[.='2']"
+    )

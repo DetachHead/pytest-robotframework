@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from types import ModuleType
-from typing import cast
+
+# callable is not a collection
+from typing import Callable, Literal, ParamSpec, cast  # noqa: UP035
 
 from pytest import Function, Item, Session, StashKey
 from robot import model, result, running
@@ -109,6 +111,26 @@ original_setup_key = StashKey[model.Keyword]()
 original_body_key = StashKey[Body]()
 original_teardown_key = StashKey[model.Keyword]()
 
+_P = ParamSpec("_P")
+
+
+def create_running_keyword(
+    keyword_type: Literal["SETUP", "KEYWORD", "TEARDOWN"],
+    fn: Callable[_P, None],
+    *args: _P.args,
+    **kwargs: _P.kwargs,
+) -> running.Keyword:
+    """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
+    if kwargs:
+        raise InternalError(f"kwargs not supported: {kwargs}")
+    return running.Keyword(
+        name=f"{fn.__module__}.{fn.__name__}",
+        # robot says this only be a str but keywords can take any object when called from
+        # python
+        args=args,  # type:ignore[arg-type]
+        type=keyword_type,
+    )
+
 
 class PytestRuntestProtocolInjector(SuiteVisitor):
     """injects the hooks from `pytest_runtest_protocol` into the robot test suite. this replaces any
@@ -129,7 +151,9 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
     @override
     def start_suite(self, suite: running.TestSuite):
-        suite.resource.imports.library(_robot_library.__name__)
+        suite.resource.imports.library(
+            _robot_library.__name__, alias=_robot_library.__name__
+        )
         for test in suite.tests:
             item = get_item_from_robot_test(self.session, test)
             if not item:
@@ -139,31 +163,30 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                 )
 
             item.stash[original_setup_key] = test.setup
-            test.setup = running.Keyword(  # type:ignore[assignment]
-                name=_robot_library.setup.__name__,  # type:ignore[no-any-expr]
-                # robot says this only be a str but keywords can take any object when called from
-                # python
-                args=[item],  # type:ignore[list-item]
-                type=model.Keyword.SETUP,
+            # TODO: whats this mypy error
+            #  https://github.com/DetachHead/pytest-robotframework/issues/36
+            test.setup = create_running_keyword(  # type:ignore[assignment]
+                "SETUP",
+                _robot_library.setup,  # type:ignore[no-any-expr]
+                item,
             )
 
-            # TODO: what is this mypy error
-            #  https://github.com/DetachHead/pytest-robotframework/issues/36
             item.stash[original_body_key] = test.body  # type:ignore[misc]
             test.body = Body(
                 items=[
-                    running.Keyword(
-                        name=_robot_library.run_test.__name__,  # type:ignore[no-any-expr]
-                        args=[item],  # type:ignore[list-item]
+                    create_running_keyword(
+                        "KEYWORD",
+                        _robot_library.run_test,  # type:ignore[no-any-expr]
+                        item,
                     )
                 ]
             )
 
             item.stash[original_teardown_key] = test.teardown
-            test.teardown = running.Keyword(
-                name=_robot_library.teardown.__name__,  # type:ignore[no-any-expr]
-                args=[item],  # type:ignore[list-item]
-                type=model.Keyword.TEARDOWN,
+            test.teardown = create_running_keyword(
+                "TEARDOWN",
+                _robot_library.teardown,  # type:ignore[no-any-expr]
+                item,
             )
 
 
