@@ -9,7 +9,16 @@
       "type": "python",
       "request": "launch",
       "module": "pytest",
+      "args": "${input:pytestArgs}",
       "justMyCode": false
+    }
+  ],
+  "inputs": [
+    {
+      "id": "pytestArgs",
+      "type": "promptString",
+      "description": "args for pytest",
+      "default": ""
     }
   ]
 }
