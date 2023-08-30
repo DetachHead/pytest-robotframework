@@ -1,5 +1,5 @@
-"""robot parsers, prerunmodifiers and listeners that the plugin (`pytest_robotframework.py`) uses
-when running robot (some of them are not activated when running pytest in `--collect-only` mode)"""
+"""robot parsers, prerunmodifiers and listeners that the plugin (`plugin.py`) uses when running
+robot (some of them are not activated when running pytest in `--collect-only` mode)"""
 
 from __future__ import annotations
 
