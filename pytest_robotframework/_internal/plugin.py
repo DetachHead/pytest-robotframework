@@ -15,6 +15,7 @@ from pytest_robotframework import (
     _resources,
     _suite_variables,
     import_resource,
+    keyword,
     keywordify,
 )
 from pytest_robotframework._internal.errors import InternalError
@@ -94,6 +95,16 @@ def pytest_addoption(parser: Parser):
         default="",
         help="additional arguments to be passed to robotframework",
     )
+
+
+# TODO: make this work
+# https://github.com/DetachHead/pytest-robotframework/issues/68
+def pytest_assertion_pass(orig: str):
+    @keyword
+    def assertion(_expression: str):
+        pass
+
+    assertion(orig)
 
 
 def pytest_collection(session: Session) -> object:

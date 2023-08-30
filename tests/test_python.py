@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from pytest import mark
+
 from tests.utils import (
     PytesterDir,
     assert_log_file_exists,
@@ -359,6 +361,18 @@ def test_keywordify_pytest_function(pytester_dir: PytesterDir):
     )
 
 
+# https://github.com/DetachHead/pytest-robotframework/issues/67
+@mark.xfail(reason="keywords don't work with context managers")
+def test_keyword_inside_context_manager(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//kw[@name='raises' and ./arg[.=\"<class"
+        " 'ZeroDivisionError'>\"]/kw[@name='asdf']]"
+    )
+
+
 def test_keywordify_module(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
@@ -371,3 +385,26 @@ def test_keywordify_class(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath("//kw[@name='patched_keyword']")
+
+
+def test_assertion_fails(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath("//msg[@level='FAIL' and .='assert 1 == 2']")
+
+
+# https://github.com/DetachHead/pytest-robotframework/issues/68
+@mark.xfail(
+    reason=(
+        "pytest_runtest_protocol hooks are broken which causes the builtin assertion"
+        " plugin to never call pytest_assertion_pass"
+    )
+)
+def test_assertion_passes(pytester_dir: PytesterDir):
+    run_and_assert_result(
+        pytester_dir, pytest_args=["-o", "enable_assertion_pass_hook=true"], passed=1
+    )
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='assertion' and ./arg[.='assert 1 == 1']]"
+    )
