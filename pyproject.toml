@@ -27,7 +27,7 @@ build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.1.0b2"]
 
 [tool.poetry.plugins.pytest11]
-robotframework = "pytest_robotframework.pytest_robotframework"
+robotframework = "pytest_robotframework._internal.plugin"
 
 [tool.black]
 target-version = ["py311"]
