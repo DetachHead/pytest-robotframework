@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from pytest_robotframework._internal.errors import UserError
 from tests.utils import (
     PytesterDir,
     assert_log_file_exists,
@@ -321,9 +322,9 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
     assert_robot_total_stats(pytester_dir)
     assert_log_file_exists(pytester_dir)
     assert (
-        "E   pytest_robotframework._errors.UserError: listener 'Listener' cannot be"
-        " registered because robot has already started running. make sure it's defined"
-        " in a `conftest.py` file"
+        f"E   {UserError.__module__}.{UserError.__qualname__}: listener 'Listener'"
+        " cannot be registered because robot has already started running. make sure"
+        " it's defined in a `conftest.py` file"
         in result.outlines
     )
 

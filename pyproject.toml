@@ -151,6 +151,7 @@ enable = [
     "bad-thread-instantiation",
     "comparison-with-callable",
     "confusing-with-statement",
+    "cyclic-import",
     "deprecated-argument",
     "deprecated-class",
     "deprecated-decorator",
