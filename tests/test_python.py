@@ -212,11 +212,20 @@ def test_test_case_docstring(pytester_dir: PytesterDir):
     assert output_xml(pytester_dir).xpath("./suite/suite/test/doc[.='hello???']")
 
 
-def test_keyword_decorator(pytester_dir: PytesterDir):
+def test_keyword_decorator_docstring(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
         ".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']"
+    )
+
+
+def test_keyword_decorator_args(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        ".//kw[@name='Run Test']/kw[@name='foo' and ./arg[.='1'] and"
+        " ./arg[.='bar=True']]"
     )
 
 
