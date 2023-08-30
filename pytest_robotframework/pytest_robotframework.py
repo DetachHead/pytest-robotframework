@@ -1,3 +1,5 @@
+"""the actual pytest plugin"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
@@ -13,14 +15,14 @@ from pytest_robotframework import (
     _suite_variables,
     import_resource,
 )
-from pytest_robotframework._common import (
+from pytest_robotframework._internal.errors import InternalError
+from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
+from pytest_robotframework._internal.robot_classes import (
     PytestCollector,
     PytestRuntestLogListener,
     PytestRuntestProtocolInjector,
+    PythonParser,
 )
-from pytest_robotframework._errors import InternalError
-from pytest_robotframework._python import PythonParser
-from pytest_robotframework._robot import RobotFile, RobotItem
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -71,14 +73,17 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     _listeners.too_late = True
     # needed for log_file listener methods to prevent logger from deactivating after the test is
     # over
-    with LOGGER:
-        robot.main(  # type:ignore[no-untyped-call]
-            [session.path],  # type:ignore[no-any-expr]
-            extension="py:robot",
-            # needed because PythonParser.visit_init creates an empty suite
-            runemptysuite=True,
-            **robot_args,
-        )
+    try:
+        with LOGGER:
+            robot.main(  # type:ignore[no-untyped-call]
+                [session.path],  # type:ignore[no-any-expr]
+                extension="py:robot",
+                # needed because PythonParser.visit_init creates an empty suite
+                runemptysuite=True,
+                **robot_args,
+            )
+    finally:
+        _listeners.too_late = False
 
 
 def pytest_addoption(parser: Parser):

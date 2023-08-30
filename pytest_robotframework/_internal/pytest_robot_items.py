@@ -1,3 +1,5 @@
+"""classes for extending pytest to be able to collect `.robot` files"""
+
 from __future__ import annotations
 
 from contextlib import contextmanager
@@ -7,19 +9,16 @@ from pytest import Config, File, Item, MarkDecorator, Session, mark, skip
 from robot.errors import ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
-from robot.running.context import (  # pylint:disable=import-private-name
-    EXECUTION_CONTEXTS,
-    _ExecutionContext,
-)
 from typing_extensions import override
 
-from pytest_robotframework._common import (
+from pytest_robotframework._internal.robot_classes import (
     collected_robot_suite_key,
     original_body_key,
     original_setup_key,
     original_teardown_key,
     running_test_case_key,
 )
+from pytest_robotframework._internal.robot_utils import execution_context
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -90,7 +89,7 @@ class RobotItem(Item):
     @override
     def runtest(self):
         test = self.stash[running_test_case_key]
-        context = cast(_ExecutionContext, EXECUTION_CONTEXTS.current)
+        context = execution_context()
         with self._check_skipped():
             BodyRunner(
                 context=context, templated=bool(test.template)

@@ -1,3 +1,5 @@
+"""useful helpers for you to use in your pytest tests and `conftest.py` files."""
+
 from __future__ import annotations
 
 import inspect
@@ -7,18 +9,15 @@ from pathlib import Path
 
 # yes lets put the Callable type in the collection module.... because THAT makes sense!!!
 # said no one ever
-from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar, cast  # noqa: UP035
+from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar  # noqa: UP035
 
 from robot import result, running
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
-from robot.running import EXECUTION_CONTEXTS
-from robot.running.context import (  # pylint:disable=import-private-name
-    _ExecutionContext,
-)
 from robot.running.statusreporter import StatusReporter
 
-from pytest_robotframework._errors import UserError
+from pytest_robotframework._internal.errors import UserError
+from pytest_robotframework._internal.robot_utils import execution_context
 
 if TYPE_CHECKING:
     from basedtyping import T
@@ -26,6 +25,7 @@ if TYPE_CHECKING:
 RobotVariables = dict[str, object]
 
 Listener = ListenerV2 | ListenerV3
+
 
 _suite_variables = defaultdict[Path, RobotVariables](dict)
 
@@ -47,7 +47,7 @@ def import_resource(path: Path | str):
     use this when specifying robot resource imports at the top of the file.
 
     to import libraries, use a regular python import"""
-    if cast(_ExecutionContext | None, EXECUTION_CONTEXTS.current):
+    if execution_context():
         BuiltIn().import_resource(str(path))
     else:
         _resources.append(Path(path))
@@ -67,7 +67,7 @@ def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
         with StatusReporter(
             running.Keyword(name=fn.__name__),
             result.Keyword(kwname=fn.__name__, doc=fn.__doc__ or ""),
-            cast(_ExecutionContext, BuiltIn()._context),  # noqa: SLF001
+            execution_context(),
         ):
             return fn(*args, **kwargs)
 

@@ -1,25 +1,55 @@
+"""robot parsers, prerunmodifiers and listeners that the plugin (`pytest_robotframework.py`) uses
+when running robot (some of them are not activated when running pytest in `--collect-only` mode)"""
+
 from __future__ import annotations
 
 from types import ModuleType
 
 # callable is not a collection
-from typing import Callable, Literal, ParamSpec, cast  # noqa: UP035
+from typing import TYPE_CHECKING, Callable, Literal, ParamSpec, cast  # noqa: UP035
 
 from pytest import Function, Item, Session, StashKey, UsageError
 from robot import model, result, running
 from robot.api import SuiteVisitor
-from robot.api.interfaces import ListenerV3
+from robot.api.interfaces import ListenerV3, Parser, TestDefaults
 from robot.running.model import Body
 from typing_extensions import override
 
-from pytest_robotframework import _robot_library
-from pytest_robotframework._errors import InternalError
+from pytest_robotframework._internal import robot_library
+from pytest_robotframework._internal.errors import InternalError
+from pytest_robotframework._internal.robot_library import internal_error
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+_P = ParamSpec("_P")
+
+
+def _create_running_keyword(
+    keyword_type: Literal["SETUP", "KEYWORD", "TEARDOWN"],
+    fn: Callable[_P, None],
+    *args: _P.args,
+    **kwargs: _P.kwargs,
+) -> running.Keyword:
+    """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
+    if kwargs:
+        raise internal_error(
+            f"kwargs not supported: {kwargs}"
+        )  # type:ignore[no-any-expr]
+    return running.Keyword(
+        name=f"{fn.__module__}.{fn.__name__}",
+        # robot says this can only be a str but keywords can take any object when called from
+        # python
+        args=args,  # type:ignore[arg-type]
+        type=keyword_type,
+    )
+
 
 collected_robot_suite_key = StashKey[model.TestSuite]()
 running_test_case_key = StashKey[running.TestCase]()
 
 
-def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
+def _get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
     try:
         return next(
             item for item in session.items if item.stash[running_test_case_key] == test
@@ -29,25 +59,46 @@ def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item |
         return None
 
 
-_P = ParamSpec("_P")
+class PythonParser(Parser):
+    """custom robot "parser" for python files. doesn't actually do any parsing, but instead creates
+    empty test suites for each python file found by robot. this is required for the prerunmodifiers.
+    they do all the work
 
+    the `PytestCollector` prerunmodifier then creates empty test cases for each suite, and
+    `PytestRuntestProtocolInjector` inserts the actual test functions which are responsible for
+    actually running the setup/call/teardown functions"""
 
-def create_running_keyword(
-    keyword_type: Literal["SETUP", "KEYWORD", "TEARDOWN"],
-    fn: Callable[_P, None],
-    *args: _P.args,
-    **kwargs: _P.kwargs,
-) -> running.Keyword:
-    """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
-    if kwargs:
-        raise InternalError(f"kwargs not supported: {kwargs}")
-    return running.Keyword(
-        name=f"{fn.__module__}.{fn.__name__}",
-        # robot says this can only be a str but keywords can take any object when called from
-        # python
-        args=args,  # type:ignore[arg-type]
-        type=keyword_type,
-    )
+    def __init__(self, session: Session) -> None:
+        self.session = session
+        super().__init__()
+
+    extension = "py"
+
+    @staticmethod
+    def _create_suite(source: Path) -> running.TestSuite:
+        return running.TestSuite(
+            running.TestSuite.name_from_source(source), source=source
+        )
+
+    @override
+    def parse(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
+        suite = self._create_suite(source)
+        # this fake test is required to prevent the suite from being deleted before the
+        # prerunmodifiers are called
+        test_case = running.TestCase(name="fake test you shoud NEVER see this!!!!!!!")
+        test_case.body = [
+            _create_running_keyword(
+                "KEYWORD",
+                robot_library.internal_error,  # type:ignore[no-any-expr]
+                "fake placeholder test appeared. this should never happen :((",
+            )
+        ]
+        suite.tests.append(test_case)
+        return suite
+
+    @override
+    def parse_init(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
+        return self._create_suite(source.parent)
 
 
 class PytestCollector(SuiteVisitor):
@@ -109,7 +160,7 @@ class PytestCollector(SuiteVisitor):
             # remove any .robot tests that were filtered out by pytest (and the fake test
             # from `PythonParser`):
             for test in suite.tests[:]:
-                if not get_item_from_robot_test(self.session, test):
+                if not _get_item_from_robot_test(self.session, test):
                     suite.tests.remove(test)
 
             # add any .py tests that were collected by pytest
@@ -155,10 +206,10 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     @override
     def start_suite(self, suite: running.TestSuite):
         suite.resource.imports.library(
-            _robot_library.__name__, alias=_robot_library.__name__
+            robot_library.__name__, alias=robot_library.__name__
         )
         for test in suite.tests:
-            item = get_item_from_robot_test(self.session, test)
+            item = _get_item_from_robot_test(self.session, test)
             if not item:
                 raise InternalError(
                     "this should NEVER happen, `PytestCollector` failed to filter out"
@@ -168,27 +219,27 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             item.stash[original_setup_key] = test.setup
             # TODO: whats this mypy error
             #  https://github.com/DetachHead/pytest-robotframework/issues/36
-            test.setup = create_running_keyword(  # type:ignore[assignment]
+            test.setup = _create_running_keyword(  # type:ignore[assignment]
                 "SETUP",
-                _robot_library.setup,  # type:ignore[no-any-expr]
+                robot_library.setup,  # type:ignore[no-any-expr]
                 item,
             )
 
             item.stash[original_body_key] = test.body  # type:ignore[misc]
             test.body = Body(
                 items=[
-                    create_running_keyword(
+                    _create_running_keyword(
                         "KEYWORD",
-                        _robot_library.run_test,  # type:ignore[no-any-expr]
+                        robot_library.run_test,  # type:ignore[no-any-expr]
                         item,
                     )
                 ]
             )
 
             item.stash[original_teardown_key] = test.teardown
-            test.teardown = create_running_keyword(
+            test.teardown = _create_running_keyword(
                 "TEARDOWN",
-                _robot_library.teardown,  # type:ignore[no-any-expr]
+                robot_library.teardown,  # type:ignore[no-any-expr]
                 item,
             )
 
@@ -203,7 +254,7 @@ class PytestRuntestLogListener(ListenerV3):
         self.session = session
 
     def _get_item(self, data: running.TestCase) -> Item:
-        item = get_item_from_robot_test(self.session, data)
+        item = _get_item_from_robot_test(self.session, data)
         if not item:
             raise InternalError(
                 f"failed to find pytest item for robot test: {data.name}"

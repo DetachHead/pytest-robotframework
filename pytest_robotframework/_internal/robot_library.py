@@ -1,4 +1,6 @@
-"""robot library that contains the keywords added by the plugin"""
+"""robot library that contains the keywords added by the plugin. this module is imported as a robot
+library by `robot_classes.PytestRuntestProtocolInjector`"""
+
 from __future__ import annotations
 
 from typing import Literal, cast
@@ -15,7 +17,7 @@ from pytest import Item, StashKey, TestReport
 from robot.api.deco import keyword
 from robot.libraries.BuiltIn import BuiltIn
 
-from pytest_robotframework._errors import InternalError
+from pytest_robotframework._internal.errors import InternalError
 
 _report_key = StashKey[list[TestReport]]()
 
