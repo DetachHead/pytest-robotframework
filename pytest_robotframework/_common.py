@@ -105,22 +105,21 @@ class PytestCollector(SuiteVisitor):
                 item.stash[running_test_case_key] = test_case
         if self.collect_only:
             suite.tests.clear()  # type:ignore[no-untyped-call]
-            return
+        else:
+            # remove any .robot tests that were filtered out by pytest (and the fake test
+            # from `PythonParser`):
+            for test in suite.tests[:]:
+                if not get_item_from_robot_test(self.session, test):
+                    suite.tests.remove(test)
 
-        # remove any .robot tests that were filtered out by pytest (and the fake test
-        # from `PythonParser`):
-        for test in suite.tests[:]:
-            if not get_item_from_robot_test(self.session, test):
-                suite.tests.remove(test)
-
-        # add any .py tests that were collected by pytest
-        for item in self.session.items:
-            if isinstance(item, Function):
-                module = cast(ModuleType, item.module)
-                if module.__doc__ and not suite.doc:
-                    suite.doc = module.__doc__
-                if item.path == suite.source:
-                    suite.tests.append(item.stash[running_test_case_key])
+            # add any .py tests that were collected by pytest
+            for item in self.session.items:
+                if isinstance(item, Function):
+                    module = cast(ModuleType, item.module)
+                    if module.__doc__ and not suite.doc:
+                        suite.doc = module.__doc__
+                    if item.path == suite.source:
+                        suite.tests.append(item.stash[running_test_case_key])
         super().visit_suite(suite)
 
     @override

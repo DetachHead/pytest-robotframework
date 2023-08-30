@@ -196,6 +196,14 @@ def test_correct_items_collected_when_collect_only(pytester_dir: PytesterDir):
     assert "<RobotItem Bar>" in (line.strip() for line in result.outlines)
 
 
+# TODO: this test doesnt actually test anything
+# https://github.com/DetachHead/pytest-robotframework/issues/61
+def test_collect_only_nested_suites(pytester_dir: PytesterDir):
+    result = run_pytest(pytester_dir, "--collect-only")
+    assert result.parseoutcomes() == {"tests": 2}
+    assert "<RobotItem Bar>" in (line.strip() for line in result.outlines)
+
+
 def test_doesnt_run_tests_outside_path(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, pytest_args=["foo"], passed=1)
     assert_log_file_exists(pytester_dir)
