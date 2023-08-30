@@ -6,6 +6,7 @@ import inspect
 from collections import defaultdict
 from functools import wraps
 from pathlib import Path
+from types import FunctionType
 
 # yes lets put the Callable type in the collection module.... because THAT makes sense!!!
 # said no one ever
@@ -70,12 +71,40 @@ def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
         )
         with StatusReporter(
             running.Keyword(name=fn.__name__, args=log_args),
-            result.Keyword(kwname=fn.__name__, doc=fn.__doc__ or "", args=log_args),
+            result.Keyword(
+                kwname=fn.__name__,
+                libname=fn.__module__,
+                doc=fn.__doc__ or "",
+                args=log_args,
+            ),
             execution_context(),
         ):
             return fn(*args, **kwargs)
 
     return inner
+
+
+def keywordify(obj: object, methods: list[str] | None = None):
+    """patches the methods of the specifed object to make them show as keywords in the
+    robot log. if `methods` is not provided, then all methods are
+    keywordified except `_private` and `__dunder__` methods
+
+    you should only use this on third party modules that you don't control. if you want your own
+    function to show as a keyword you should decorate it with `@keyword` instead (the one from this
+    module, not the one from robot)"""
+    if methods is None:
+        methods = [
+            attribute
+            for attribute in dir(obj)
+            if isinstance(
+                getattr(obj, attribute), FunctionType  # type:ignore[no-any-expr]
+            )
+            and not attribute.startswith("_")
+        ]
+    for method in methods:
+        setattr(
+            obj, method, keyword(getattr(obj, method))  # type:ignore[no-any-expr]
+        )
 
 
 class _ListenerRegistry:
