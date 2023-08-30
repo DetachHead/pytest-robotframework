@@ -64,9 +64,13 @@ def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
 
     @wraps(fn)
     def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
+        log_args = (
+            *(str(arg) for arg in args),
+            *(f"{key}={value}" for key, value in kwargs.items()),
+        )
         with StatusReporter(
-            running.Keyword(name=fn.__name__),
-            result.Keyword(kwname=fn.__name__, doc=fn.__doc__ or ""),
+            running.Keyword(name=fn.__name__, args=log_args),
+            result.Keyword(kwname=fn.__name__, doc=fn.__doc__ or "", args=log_args),
             execution_context(),
         ):
             return fn(*args, **kwargs)
