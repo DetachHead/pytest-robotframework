@@ -17,6 +17,7 @@ from typing_extensions import override
 
 from pytest_robotframework._internal import robot_library
 from pytest_robotframework._internal.errors import InternalError
+from pytest_robotframework._internal.robot_utils import Cloaked
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -87,7 +88,9 @@ class PythonParser(Parser):
             _create_running_keyword(
                 "KEYWORD",
                 robot_library.internal_error,  # type:ignore[no-any-expr]
-                "fake placeholder test appeared. this should never happen :((",
+                Cloaked[str](
+                    "fake placeholder test appeared. this should never happen :(("
+                ),
             )
         ]
         suite.tests.append(test_case)
@@ -212,14 +215,14 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                     "this should NEVER happen, `PytestCollector` failed to filter out"
                     f" {test.name}"
                 )
-
+            cloaked_item = Cloaked(item)
             item.stash[original_setup_key] = test.setup
             # TODO: whats this mypy error
             #  https://github.com/DetachHead/pytest-robotframework/issues/36
             test.setup = _create_running_keyword(  # type:ignore[assignment]
                 "SETUP",
                 robot_library.setup,  # type:ignore[no-any-expr]
-                item,
+                cloaked_item,
             )
 
             item.stash[original_body_key] = test.body  # type:ignore[misc]
@@ -228,7 +231,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                     _create_running_keyword(
                         "KEYWORD",
                         robot_library.run_test,  # type:ignore[no-any-expr]
-                        item,
+                        cloaked_item,
                     )
                 ]
             )
@@ -237,7 +240,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             test.teardown = _create_running_keyword(
                 "TEARDOWN",
                 robot_library.teardown,  # type:ignore[no-any-expr]
-                item,
+                cloaked_item,
             )
 
 
