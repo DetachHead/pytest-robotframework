@@ -260,6 +260,7 @@ max-line-length = 200
 [tool.pytest.ini_options]
 addopts = ['-p no:robotframework', '--ignore=tests/fixtures']
 xfail_strict = true
+enable_assertion_pass_hook = true
 
 [tool.mypy]
 allow_redefinition = true
