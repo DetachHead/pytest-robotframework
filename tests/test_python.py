@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from pytest_robotframework._internal.errors import UserError
 from tests.utils import (
     PytesterDir,
     assert_log_file_exists,
@@ -316,6 +315,9 @@ def test_listener_decorator(pytester_dir: PytesterDir):
 
 
 def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
+    # not a top ledvel import due to https://github.com/DetachHead/pytest-robotframework/issues/38
+    from pytest_robotframework._internal.errors import UserError
+
     result = run_pytest(pytester_dir)
     result.assert_outcomes(errors=1)
     # pytest failed before test was collected so nothing in the robot run
