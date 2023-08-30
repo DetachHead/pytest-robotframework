@@ -62,24 +62,32 @@ def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
 
     unlike robot's `deco.keyword` decorator, this one will make your function appear
     as a keyword in the robot log even when ran from a python file."""
+    if hasattr(fn, "_pytest_robot_keyword"):
+        return fn
 
     @wraps(fn)
     def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
-        log_args = (
-            *(str(arg) for arg in args),
-            *(f"{key}={value}" for key, value in kwargs.items()),
-        )
-        with StatusReporter(
-            running.Keyword(name=fn.__name__, args=log_args),
-            result.Keyword(
-                kwname=fn.__name__,
-                libname=fn.__module__,
-                doc=fn.__doc__ or "",
-                args=log_args,
-            ),
-            execution_context(),
-        ):
+        context = execution_context()
+        if context:
+            log_args = (
+                *(str(arg) for arg in args),
+                *(f"{key}={value}" for key, value in kwargs.items()),
+            )
+            with StatusReporter(
+                running.Keyword(name=fn.__name__, args=log_args),
+                result.Keyword(
+                    kwname=fn.__name__,
+                    libname=fn.__module__,
+                    doc=fn.__doc__ or "",
+                    args=log_args,
+                ),
+                context=context,
+            ):
+                return fn(*args, **kwargs)
+        else:
             return fn(*args, **kwargs)
+
+    inner._pytest_robot_keyword = True  # type:ignore[attr-defined] # noqa: SLF001
 
     return inner
 
