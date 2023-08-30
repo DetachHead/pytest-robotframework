@@ -17,7 +17,6 @@ from typing_extensions import override
 
 from pytest_robotframework._internal import robot_library
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.robot_library import internal_error
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -33,9 +32,7 @@ def _create_running_keyword(
 ) -> running.Keyword:
     """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
     if kwargs:
-        raise internal_error(
-            f"kwargs not supported: {kwargs}"
-        )  # type:ignore[no-any-expr]
+        raise InternalError(f"kwargs not supported: {kwargs}")
     return running.Keyword(
         name=f"{fn.__module__}.{fn.__name__}",
         # robot says this can only be a str but keywords can take any object when called from
