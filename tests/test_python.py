@@ -349,3 +349,25 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
 def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, pytest_args=["asdfdsf"])
     assert_log_file_exists(pytester_dir)
+
+
+def test_keywordify_pytest_function(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='raises' and ./arg[.=\"<class 'ZeroDivisionError'>\"]]"
+    )
+
+
+def test_keywordify_module(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='patched_keyword' and not(./arg)]"
+    )
+
+
+def test_keywordify_class(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath("//kw[@name='patched_keyword']")

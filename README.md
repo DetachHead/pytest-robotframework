@@ -194,3 +194,45 @@ ROBOT_OPTIONS="-d results --listener foo.Foo"
 ```
 
 however, arguments that have pytest equivalents should not be set with robot as they will probably cause the plugin to behave incorrectly.
+
+## limitations
+### making keywords show in the robot log
+
+by default when writing tests in python, the only keywords that you'll see in the robot log are `Setup`, `Run Test` and `Teardown`. this is because robot is not capable of recognizing keywords called outside of robot code. (see [this issue](https://github.com/robotframework/robotframework/issues/4252))
+
+this plugin has several workarounds for the problem:
+
+#### `@keyword` decorator
+
+if you want a function you wrote to show up as a keyword in the log, decorate it with the `pytest_robotframework.keyword` instead of `robot.api.deco.keyword`
+
+```py
+from pytest_robotframework import keyword
+
+@keyword
+def foo():
+    ...
+```
+
+#### pytest functions are patched by the plugin
+
+most of the [pytest functions](https://docs.pytest.org/en/7.1.x/reference/reference.html#functions) are patched so that they show as keywords in the robot log
+
+#### patching third party functions with `keywordify`
+
+if you want a function from a third party module/robot library to be displayed as a keyword, you can patch it with the `keywordify` function:
+
+```py
+# in your conftest.py
+
+from pyest_robotframework import keywordify
+import some_module
+import another_module
+
+# patch two functions from the module:
+keywordify(some_module, ["some_function", "another_function"])
+# patch every public method:
+keywordify(another_module)
+# works on classes too:
+keywordify(some_module.SomeClass)
+```

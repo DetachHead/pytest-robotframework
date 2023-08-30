@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+import pytest
 from deepmerge import always_merger
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
@@ -14,6 +15,7 @@ from pytest_robotframework import (
     _resources,
     _suite_variables,
     import_resource,
+    keywordify,
 )
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
@@ -124,5 +126,19 @@ def pytest_runtest_setup(item: Item):
 def pytest_runtestloop(session: Session) -> object:
     if session.config.option.collectonly:  # type:ignore[no-any-expr]
         return None
+    keywordify(
+        pytest,
+        [
+            "fail",
+            "skip",
+            "importorskip",
+            "xfail",
+            "exit",
+            "main",
+            "raises",
+            "deprecated_call",
+            "warns",
+        ],
+    )
     _collect_slash_run(session, collect_only=False)
     return True
