@@ -3,7 +3,7 @@ library by `robot_classes.PytestRuntestProtocolInjector`"""
 
 from __future__ import annotations
 
-from typing import Literal, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from _pytest._code.code import (  # pylint:disable=import-private-name
     ExceptionInfo,
@@ -18,6 +18,9 @@ from robot.api.deco import keyword
 from robot.libraries.BuiltIn import BuiltIn
 
 from pytest_robotframework._internal.errors import InternalError
+
+if TYPE_CHECKING:
+    from pytest_robotframework._internal.robot_utils import Cloaked
 
 _report_key = StashKey[list[TestReport]]()
 
@@ -68,8 +71,9 @@ def _call_and_report_robot_edition(
 
 
 @keyword  # type:ignore[no-any-expr,misc]
-def setup(item: Item):  # type:ignore[no-any-decorated]
-    # mostly copied from the start of `_pytest.runner.runtestprotocol`
+def setup(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
+    item = arg.value
+    # mostly copied from the start of `_pytest.runner.runtestprotocol`:
     if (
         hasattr(item, "_request")
         and not item._request  # type: ignore[no-any-expr] # noqa: SLF001
@@ -81,8 +85,9 @@ def setup(item: Item):  # type:ignore[no-any-decorated]
 
 
 @keyword  # type:ignore[no-any-expr,misc]
-def run_test(item: Item):  # type:ignore[no-any-decorated]
-    # mostly copied from the middle of `_pytest.runner.runtestprotocol`
+def run_test(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
+    item = arg.value
+    # mostly copied from the middle of `_pytest.runner.runtestprotocol`:
     reports = item.stash[_report_key]
     if reports[0].passed:
         if item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
@@ -96,13 +101,14 @@ def run_test(item: Item):  # type:ignore[no-any-decorated]
 
 
 @keyword  # type:ignore[no-any-expr,misc]
-def teardown(item: Item):  # type:ignore[no-any-decorated]
-    # mostly copied from the end of `_pytest.runner.runtestprotocol`
+def teardown(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
+    item = arg.value
+    # mostly copied from the end of `_pytest.runner.runtestprotocol`:
     _call_and_report_robot_edition(
         item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
     )
 
 
 @keyword  # type:ignore[no-any-expr,misc]
-def internal_error(msg: str):  # type:ignore[no-any-decorated]
-    raise InternalError(msg)
+def internal_error(msg: Cloaked[str]):  # type:ignore[no-any-decorated]
+    raise InternalError(msg.value)

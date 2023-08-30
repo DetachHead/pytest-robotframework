@@ -239,9 +239,15 @@ def test_keyword_names(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     for index in range(2):
-        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Setup']")
-        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Run Test']")
-        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Teardown']")
+        assert xml.xpath(
+            f".//test[@name='test_{index}']/kw[@name='Setup' and not(./arg)]"
+        )
+        assert xml.xpath(
+            f".//test[@name='test_{index}']/kw[@name='Run Test' and not(./arg)]"
+        )
+        assert xml.xpath(
+            f".//test[@name='test_{index}']/kw[@name='Teardown' and not(./arg)]"
+        )
 
 
 def test_suite_variables(pytester_dir: PytesterDir):
