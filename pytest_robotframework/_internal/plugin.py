@@ -137,19 +137,6 @@ def pytest_runtest_setup(item: Item):
 def pytest_runtestloop(session: Session) -> object:
     if session.config.option.collectonly:  # type:ignore[no-any-expr]
         return None
-    keywordify(
-        pytest,
-        [
-            "fail",
-            "skip",
-            "importorskip",
-            "xfail",
-            "exit",
-            "main",
-            "raises",
-            "deprecated_call",
-            "warns",
-        ],
-    )
+    keywordify(pytest, ["fail", "xfail", "raises", "deprecated_call", "warns"])
     _collect_slash_run(session, collect_only=False)
     return True
