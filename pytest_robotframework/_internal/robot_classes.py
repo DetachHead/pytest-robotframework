@@ -122,7 +122,7 @@ class PytestCollector(SuiteVisitor):
             self.session.stash[collected_robot_suite_key] = suite
             try:
                 self.session.perform_collect()
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 # if collection fails we still need to clean up the suite (ie. delete all the fake
                 # tests), so we defer the error to `end_suite` for the top level suite
                 self.collection_error = e
