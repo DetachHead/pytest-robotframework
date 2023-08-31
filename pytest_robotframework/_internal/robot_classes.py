@@ -8,7 +8,7 @@ from types import ModuleType
 # callable is not a collection
 from typing import TYPE_CHECKING, Callable, Literal, ParamSpec, cast  # noqa: UP035
 
-from pytest import Function, Item, Session, StashKey, UsageError
+from pytest import Function, Item, Session, StashKey
 from robot import model, result, running
 from robot.api import SuiteVisitor
 from robot.api.interfaces import ListenerV3, Parser, TestDefaults
@@ -114,7 +114,7 @@ class PytestCollector(SuiteVisitor):
     def __init__(self, session: Session, *, collect_only: bool):
         self.session = session
         self.collect_only = collect_only
-        self.collection_error: UsageError | None = None
+        self.collection_error: Exception | None = None
 
     @override
     def visit_suite(self, suite: running.TestSuite):
@@ -122,7 +122,7 @@ class PytestCollector(SuiteVisitor):
             self.session.stash[collected_robot_suite_key] = suite
             try:
                 self.session.perform_collect()
-            except UsageError as e:
+            except Exception as e:
                 # if collection fails we still need to clean up the suite (ie. delete all the fake
                 # tests), so we defer the error to `end_suite` for the top level suite
                 self.collection_error = e
