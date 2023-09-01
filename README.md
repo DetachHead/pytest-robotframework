@@ -195,7 +195,18 @@ ROBOT_OPTIONS="-d results --listener foo.Foo"
 
 however, arguments that have pytest equivalents should not be set with robot as they will probably cause the plugin to behave incorrectly.
 
+### enabling pytest assertions in the robot log
+
+by default, only failed assertions will appear in the log. to make passed assertions show up, you'll have to add `enable_assertion_pass_hook = true` to your pytest ini options:
+
+```toml
+# pyproject.toml
+[tool.pytest.ini_options]
+enable_assertion_pass_hook = true
+```
+
 ## limitations
+
 ### making keywords show in the robot log
 
 by default when writing tests in python, the only keywords that you'll see in the robot log are `Setup`, `Run Test` and `Teardown`. this is because robot is not capable of recognizing keywords called outside of robot code. (see [this issue](https://github.com/robotframework/robotframework/issues/4252))
