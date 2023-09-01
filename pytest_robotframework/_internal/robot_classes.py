@@ -3,11 +3,21 @@ robot (some of them are not activated when running pytest in `--collect-only` mo
 
 from __future__ import annotations
 
+from contextlib import suppress
 from types import ModuleType
 
 # callable is not a collection
-from typing import TYPE_CHECKING, Callable, Literal, ParamSpec, cast  # noqa: UP035
+from typing import (  # noqa: UP035
+    TYPE_CHECKING,
+    Callable,
+    Generator,
+    Literal,
+    ParamSpec,
+    cast,
+)
 
+from _pytest import runner  # pylint:disable=import-private-name
+from pluggy import HookCaller, HookImpl
 from pytest import Function, Item, Session, StashKey
 from robot import model, result, running
 from robot.api import SuiteVisitor
@@ -187,9 +197,9 @@ original_teardown_key = StashKey[model.Keyword]()
 
 
 class PytestRuntestProtocolInjector(SuiteVisitor):
-    """injects the hooks from `pytest_runtest_protocol` into the robot test suite. this replaces any
-     existing setup/body/teardown with said hooks, which may or may not be an issue depending on
-     whether a python or robot test is being run.
+    """injects the setup, call and teardown hooks from `_pytest.runner.pytest_runtest_protocol` into
+    the robot test suite. this replaces any existing setup/body/teardown with said hooks, which may
+    or may not be an issue depending on whether a python or robot test is being run.
 
     - if running a `.robot` test: the test cases would already have setup/body/teardown keywords, so
     make sure the hooks actually call those keywords (`original_setup_key`, `original_body_key` and
@@ -198,6 +208,9 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     - if running a `.py` test, this is not an issue because the robot test cases are empty (see
     `PythonParser`) and the hook functions already have the actual contents of the tests, because
     they are just plain pytest tests
+
+    since the real life `pytest_runtest_protocol` no longer gets called, none of its hooks get
+    called either. calling those hooks is handled by the `PytestRuntestProtocolHooks` listener
     """
 
     def __init__(self, session: Session):
@@ -244,14 +257,23 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             )
 
 
-class PytestRuntestLogListener(ListenerV3):
+_HookWrapper = Generator[None, object, object]
+
+
+class PytestRuntestProtocolHooks(ListenerV3):
     """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from
     `pytest_runtest_protocol`. since all the other parts of `_pytest.runner.runtestprotocol` are
-    re-implemented in `PytestRuntestProtocolInjector`
+    re-implemented in `PytestRuntestProtocolInjector`.
+
+    also handles the execution of all other `pytest_runtest_protocol` hooks.
     """
 
     def __init__(self, session: Session):
         self.session = session
+        self.hookwrappers = dict[HookImpl, _HookWrapper]()
+        """hookwrappers that are in the middle of running"""
+        self.deferred_hookimpls = list[HookImpl]()
+        """hooks that will be executed in `end_test`"""
 
     def _get_item(self, data: running.TestCase) -> Item:
         item = _get_item_from_robot_test(self.session, data)
@@ -261,6 +283,16 @@ class PytestRuntestLogListener(ListenerV3):
             )
         return item
 
+    @staticmethod
+    def _get_hookcaller(item: Item) -> HookCaller:
+        return cast(
+            HookCaller, item.ihook.pytest_runtest_protocol  # type:ignore[no-any-expr]
+        )
+
+    @classmethod
+    def _call_hooks(cls, item: Item):
+        cls._get_hookcaller(item)(item=item, nextitem=cast(Item, item.nextitem))
+
     @override
     def start_test(
         self,
@@ -268,6 +300,71 @@ class PytestRuntestLogListener(ListenerV3):
         result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
         item = self._get_item(data)
+        hook_caller = self._get_hookcaller(item)
+
+        # remove the runner plugin because `PytestRuntestProtocolInjector` re-implements it
+        with suppress(ValueError):  # already been removed
+            hook_caller._remove_plugin(runner)  # noqa: SLF001
+
+        def enter_wrapper(hook: HookImpl, item: Item, nextitem: Item) -> object:
+            """calls the first half of a hookwrapper"""
+            wrapper_generator = cast(
+                _HookWrapper,
+                hook.function(
+                    *(
+                        {"item": item, "nextitem": nextitem}[argname]
+                        for argname in hook.argnames
+                    )
+                ),
+            )
+            self.hookwrappers[hook] = wrapper_generator
+            return next(wrapper_generator)
+
+        def exit_wrapper(hook: HookImpl) -> object:
+            """calss the second half of a hookwrapper"""
+            try:
+                next(self.hookwrappers[hook])
+            except StopIteration as e:
+                return cast(object, e.value)
+            raise InternalError(
+                f"pytest_runtest_protocol hookwrapper {hook} didn't raise StopIteration"
+            )
+
+        # the public get_hookimpls returns a copy but we need the original cuz we're changing it
+        hookimpls = hook_caller._hookimpls  # noqa: SLF001
+
+        for hook in hookimpls:
+            if hook.opts["hookwrapper"]:
+                # split the hook wrappers into separate tryfirst and trylast hooks so we can execute
+                # them separately (the trylast ones are called in end_test)
+                hookimpls.remove(hook)
+                hook_caller._add_hookimpl(  # noqa: SLF001
+                    HookImpl(
+                        hook.plugin,
+                        hook.plugin_name,
+                        lambda item, nextitem, *, hook=hook: enter_wrapper(
+                            hook, item, nextitem
+                        ),
+                        {**hook.opts, "hookwrapper": False, "tryfirst": True},
+                    )
+                )
+                self.deferred_hookimpls.append(
+                    HookImpl(
+                        hook.plugin,
+                        hook.plugin_name,
+                        lambda hook=hook: exit_wrapper(hook),
+                        {**hook.opts, "hookwrapper": False, "trylast": True},
+                    )
+                )
+            elif hook.opts["trylast"]:
+                # remove the trylast hooks and execute them at the end
+                hookimpls.remove(hook)
+                self.deferred_hookimpls.append(hook)
+
+        if self._call_hooks(item) is not None:
+            # stop on non-None result
+            self.deferred_hookimpls = []
+
         item.ihook.pytest_runtest_logstart(  # type:ignore[no-any-expr]
             nodeid=item.nodeid, location=item.location
         )
@@ -279,6 +376,15 @@ class PytestRuntestLogListener(ListenerV3):
         result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
         item = self._get_item(data)
+
         item.ihook.pytest_runtest_logfinish(  # type:ignore[no-any-expr]
             nodeid=item.nodeid, location=item.location
         )
+
+        hook_caller = self._get_hookcaller(item)
+        hook_caller._hookimpls[:] = []  # noqa: SLF001
+
+        for hook in self.deferred_hookimpls:
+            hook_caller._add_hookimpl(hook)  # noqa: SLF001
+
+        self._call_hooks(item)

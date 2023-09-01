@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Never, cast
 
 from lxml.etree import XML
-from pytest import Pytester, RunResult
+from pytest import Pytester
 
 if TYPE_CHECKING:
     from lxml.etree import _Element
@@ -59,28 +59,22 @@ def assert_log_file_exists(pytester: Pytester):
     assert (pytester.path / "log.html").exists()
 
 
-def run_pytest(
-    pytester: Pytester, *pytest_args: str, plugins: list[object] | None = None
-) -> RunResult:
-    # TODO: figure out why robot doesn't use pytester's cd anymore. started happening when
-    #  i added a test that calls a function from the plugin directly instead of using pytester
-    #  https://github.com/DetachHead/pytest-robotframework/issues/38
-    return pytester.runpytest(
-        *pytest_args, "--robotargs", f"-d {pytester.path}", plugins=plugins or []
-    )
-
-
 def run_and_assert_result(
     pytester: Pytester,
     *,
     pytest_args: list[str] | None = None,
+    subprocess=False,
     passed=0,
     skipped=0,
     failed=0,
     errors=0,
     xfailed=0,
 ):
-    result = run_pytest(pytester, *(pytest_args or []))
+    result = (
+        pytester.runpytest_subprocess
+        if subprocess
+        else pytester.runpytest  # type:ignore[no-any-expr]
+    )(*(pytest_args or []))
     result.assert_outcomes(
         passed=passed, skipped=skipped, failed=failed, errors=errors, xfailed=xfailed
     )

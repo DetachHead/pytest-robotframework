@@ -9,6 +9,16 @@ class UserError(PytestRobotError):
     """probably your fault"""
 
 
+class NotSupportedError(PytestRobotError):
+    """my fault"""
+
+    def __init__(self, message: str, issue_number: int) -> None:
+        super().__init__(
+            f"the pytest-robotframework plugindoes not yet support {message}. see"
+            f" https://github.com/detachhead/pytest-robotframework/issues/{issue_number}"
+        )
+
+
 class InternalError(PytestRobotError):
     """probably my fault"""
 

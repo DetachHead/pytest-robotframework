@@ -9,7 +9,6 @@ from tests.utils import (
     assert_robot_total_stats,
     output_xml,
     run_and_assert_result,
-    run_pytest,
 )
 
 if TYPE_CHECKING:
@@ -92,7 +91,7 @@ def test_teardown_passes(pytester_dir: PytesterDir):
 
 
 def test_teardown_fails(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir)
+    result = pytester_dir.runpytest()
     result.assert_outcomes(passed=1, errors=1)
     # unlike pytest, teardown failures in robot count as a test failure
     assert_robot_total_stats(pytester_dir, failed=1)
@@ -106,7 +105,7 @@ def test_teardown_fails(pytester_dir: PytesterDir):
 
 
 def test_teardown_skipped(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir)
+    result = pytester_dir.runpytest()
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
     assert_robot_total_stats(pytester_dir, skipped=1)
@@ -160,7 +159,7 @@ def test_tags_in_settings(pytester_dir: PytesterDir):
 def test_warning_on_unknown_tag(pytester_dir: PytesterDir):
     # TODO: figure out why the error message is wack
     #  https://github.com/DetachHead/pytest-robotframework/issues/37
-    result = run_pytest(pytester_dir, "--strict-markers", "-m", "m1")
+    result = pytester_dir.runpytest("--strict-markers", "-m", "m1")
     result.assert_outcomes(errors=1)
 
 
@@ -174,8 +173,10 @@ def test_parameterized_tags(pytester_dir: PytesterDir):
             for item in session.items:
                 markers = item.own_markers
 
-    result = run_pytest(
-        pytester_dir, "--collectonly", "--strict-markers", plugins=[TagGetter()]
+    result = pytester_dir.runpytest(
+        "--collectonly",
+        "--strict-markers",
+        plugins=[TagGetter()],  # type:ignore[no-any-expr]
     )
     result.assert_outcomes()
     assert markers
@@ -185,13 +186,13 @@ def test_parameterized_tags(pytester_dir: PytesterDir):
 
 
 def test_doesnt_run_when_collecting(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir, "--collect-only")
+    result = pytester_dir.runpytest("--collect-only")
     result.assert_outcomes()
     assert not (pytester_dir.path / "log.html").exists()
 
 
 def test_correct_items_collected_when_collect_only(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir, "--collect-only", "bar.robot")
+    result = pytester_dir.runpytest("--collect-only", "bar.robot")
     assert result.parseoutcomes() == {"test": 1}
     assert "<RobotItem Bar>" in (line.strip() for line in result.outlines)
 
@@ -199,7 +200,7 @@ def test_correct_items_collected_when_collect_only(pytester_dir: PytesterDir):
 # TODO: this test doesnt actually test anything
 # https://github.com/DetachHead/pytest-robotframework/issues/61
 def test_collect_only_nested_suites(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir, "--collect-only")
+    result = pytester_dir.runpytest("--collect-only")
     assert result.parseoutcomes() == {"tests": 2}
     assert "<RobotItem Bar>" in (line.strip() for line in result.outlines)
 
@@ -218,20 +219,20 @@ def test_run_keyword_and_ignore_error(pytester_dir: PytesterDir):
 
 
 def test_init_file(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir)
+    result = pytester_dir.runpytest()
     result.assert_outcomes(passed=1)
     assert (pytester_dir.path / "log.html").exists()
     assert output_xml(pytester_dir).xpath("/robot/suite[@name='Test Init File0']")
 
 
 def test_init_file_nested(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir, "foo")
+    result = pytester_dir.runpytest("foo")
     result.assert_outcomes(passed=2)
     assert (pytester_dir.path / "log.html").exists()
 
 
 def test_setup_with_args(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir)
+    result = pytester_dir.runpytest()
     result.assert_outcomes(passed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, cast
 
 import pytest
 from deepmerge import always_merger
+from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.run import RobotFramework
@@ -15,14 +16,13 @@ from pytest_robotframework import (
     _resources,
     _suite_variables,
     import_resource,
-    keyword,
     keywordify,
 )
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
 from pytest_robotframework._internal.robot_classes import (
     PytestCollector,
-    PytestRuntestLogListener,
+    PytestRuntestProtocolHooks,
     PytestRuntestProtocolInjector,
     PythonParser,
 )
@@ -58,6 +58,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 ]
             )[0],
             dict[str, object](
+                exitonerror=True,
                 parser=[PythonParser(session)],
                 prerunmodifier=[PytestCollector(session, collect_only=collect_only)],
             ),
@@ -70,7 +71,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             robot_args,
             dict[str, object](
                 prerunmodifier=[PytestRuntestProtocolInjector(session)],
-                listener=[PytestRuntestLogListener(session), *_listeners.instances],
+                listener=[PytestRuntestProtocolHooks(session), *_listeners.instances],
             ),
         )
     _listeners.too_late = True
@@ -97,14 +98,12 @@ def pytest_addoption(parser: Parser):
     )
 
 
-# TODO: make this work
-# https://github.com/DetachHead/pytest-robotframework/issues/68
-def pytest_assertion_pass(orig: str):
-    @keyword
-    def assertion(_expression: str):
-        pass
-
-    assertion(orig)
+def pytest_assertion_pass(orig: str, expl: str):
+    """without this hook, passing assertions won't show up at all in the robot log"""
+    logger.info(f"assert {orig}")  # type:ignore[no-untyped-call]
+    # this matches what's logged if an assertion fails, so we keep it the same here for consistency
+    # (idk why there's no pytest_assertion_fail hook, only reprcompare which is different)
+    logger.debug(f"assertion evaluated to: {expl}")  # type:ignore[no-untyped-call]
 
 
 def pytest_collection(session: Session) -> object:
