@@ -179,7 +179,7 @@ since this is a pytest plugin, you should avoid using robot options that have py
 
 if the robot option you want to use isn't mentioned here, check the pytest [command line options](https://docs.pytest.org/en/latest/reference/reference.html#command-line-flags) and [ini options](https://docs.pytest.org/en/latest/reference/reference.html#configuration-options) for a complete list of pytest settings as there are probably many missing from this list.
 
-#### specifying robot options directlty
+### specifying robot options directlty
 
 you can specify robot CLI arguments directly with the `--robotargs` argument:
 
