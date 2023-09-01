@@ -205,6 +205,8 @@ by default, only failed assertions will appear in the log. to make passed assert
 enable_assertion_pass_hook = true
 ```
 
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/ea8ef0ce-f318-454f-bec8-0bbe585fc296)
+
 ## limitations
 
 ### making keywords show in the robot log
@@ -228,6 +230,14 @@ def foo():
 #### pytest functions are patched by the plugin
 
 most of the [pytest functions](https://docs.pytest.org/en/7.1.x/reference/reference.html#functions) are patched so that they show as keywords in the robot log
+
+```py
+def test_foo():
+    with pytest.raises(ZeroDivisionError):
+        logger.info(1 / 0)
+```
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/fc15e9a9-578d-4c5d-bc0f-d5d68591c66c)
+
 
 #### patching third party functions with `keywordify`
 
