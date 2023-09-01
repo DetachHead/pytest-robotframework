@@ -11,7 +11,6 @@ from tests.utils import (
     assert_robot_total_stats,
     output_xml,
     run_and_assert_result,
-    run_pytest,
 )
 
 
@@ -120,7 +119,7 @@ def test_listener_calls_log_file(pytester_dir: PytesterDir):
 
 
 def test_doesnt_run_when_collecting(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir, "--collect-only")
+    result = pytester_dir.runpytest("--collect-only")
     result.assert_outcomes()
     assert not (pytester_dir.path / "log.html").exists()
 
@@ -128,13 +127,13 @@ def test_doesnt_run_when_collecting(pytester_dir: PytesterDir):
 # TODO: this test doesnt actually test anything
 # https://github.com/DetachHead/pytest-robotframework/issues/61
 def test_collect_only_nested_suites(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir, "--collect-only")
+    result = pytester_dir.runpytest("--collect-only")
     assert result.parseoutcomes() == {"tests": 2}
     assert "<Function test_func2>" in (line.strip() for line in result.outlines)
 
 
 def test_correct_items_collected_when_collect_only(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir, "--collect-only", "test_bar.py")
+    result = pytester_dir.runpytest("--collect-only", "test_bar.py")
     assert result.parseoutcomes() == {"test": 1}
     assert "<Function test_func2>" in (line.strip() for line in result.outlines)
 
@@ -174,7 +173,7 @@ def test_teardown_passes(pytester_dir: PytesterDir):
 
 
 def test_teardown_fails(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir)
+    result = pytester_dir.runpytest()
     result.assert_outcomes(passed=1, errors=1)
     # unlike pytest, teardown failures in robot count as a test failure
     assert_robot_total_stats(pytester_dir, failed=1)
@@ -187,7 +186,7 @@ def test_teardown_fails(pytester_dir: PytesterDir):
 
 
 def test_teardown_skipped(pytester_dir: PytesterDir):
-    result = run_pytest(pytester_dir)
+    result = pytester_dir.runpytest()
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
     assert_robot_total_stats(pytester_dir, skipped=1)
@@ -335,7 +334,7 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
     # not a top ledvel import due to https://github.com/DetachHead/pytest-robotframework/issues/38
     from pytest_robotframework._internal.errors import UserError
 
-    result = run_pytest(pytester_dir)
+    result = pytester_dir.runpytest()
     result.assert_outcomes(errors=1)
     # pytest failed before test was collected so nothing in the robot run
     assert_robot_total_stats(pytester_dir)
@@ -393,18 +392,19 @@ def test_assertion_fails(pytester_dir: PytesterDir):
     assert output_xml(pytester_dir).xpath("//msg[@level='FAIL' and .='assert 1 == 2']")
 
 
-# https://github.com/DetachHead/pytest-robotframework/issues/68
-@mark.xfail(
-    reason=(
-        "pytest_runtest_protocol hooks are broken which causes the builtin assertion"
-        " plugin to never call pytest_assertion_pass"
-    )
-)
 def test_assertion_passes(pytester_dir: PytesterDir):
     run_and_assert_result(
-        pytester_dir, pytest_args=["-o", "enable_assertion_pass_hook=true"], passed=1
+        pytester_dir,
+        pytest_args=[
+            "-o",
+            "enable_assertion_pass_hook=true",
+            "--robotargs",
+            "--loglevel DEBUG:INFO",
+        ],
+        subprocess=True,
+        passed=1,
     )
     assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath(
-        "//kw[@name='assertion' and ./arg[.='assert 1 == 1']]"
-    )
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("//msg[@level='INFO' and .='assert left == right']")
+    assert xml.xpath("//msg[@level='DEBUG' and .='assertion evaluated to: 1 == 1']")
