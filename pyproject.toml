@@ -265,13 +265,14 @@ enable_assertion_pass_hook = true
 [tool.mypy]
 allow_redefinition = true
 default_return = false
+cache_dir = 'nul'         # disable cache because it sucks
 
 [[tool.mypy.overrides]]
 module = ['robot.*']
 no_implicit_reexport = false
 ignore_missing_py_typed = true # https://github.com/robotframework/robotframework/issues/4822
-[[tool.mypy.overrides]]
 
+[[tool.mypy.overrides]]
 module = ['deepmerge.*']
 ignore_missing_py_typed = true
 
