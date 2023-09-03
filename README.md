@@ -236,8 +236,8 @@ def test_foo():
     with pytest.raises(ZeroDivisionError):
         logger.info(1 / 0)
 ```
-![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/fc15e9a9-578d-4c5d-bc0f-d5d68591c66c)
 
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/fc15e9a9-578d-4c5d-bc0f-d5d68591c66c)
 
 #### patching third party functions with `keywordify`
 
@@ -250,10 +250,10 @@ from pyest_robotframework import keywordify
 import some_module
 import another_module
 
-# patch two functions from the module:
-keywordify(some_module, ["some_function", "another_function"])
-# patch every public method:
-keywordify(another_module)
+# patch a function from the module:
+keywordify(some_module, "some_function")
+# patch a context manager:
+keywordify(another_module, "some_function", context_manager=True)
 # works on classes too:
-keywordify(some_module.SomeClass)
+keywordify(some_module.SomeClass, "some_method")
 ```
