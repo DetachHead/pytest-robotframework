@@ -18,6 +18,7 @@ from robot.api import deco
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.statusreporter import StatusReporter
+from robot.utils import getshortdoc
 from typing_extensions import override
 
 from pytest_robotframework._internal.errors import InternalError, UserError
@@ -102,7 +103,10 @@ class _KeywordDecorator:
                     result.Keyword(
                         kwname=keyword_name,
                         libname=fn.__module__,
-                        doc=fn.__doc__ or "",
+                        doc=getshortdoc(  # type:ignore[no-untyped-call,no-any-expr]
+                            fn.__doc__
+                        )
+                        or "",
                         args=log_args,
                         tags=self.tags,
                     ),
