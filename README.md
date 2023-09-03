@@ -205,7 +205,7 @@ by default, only failed assertions will appear in the log. to make passed assert
 enable_assertion_pass_hook = true
 ```
 
-![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/ea8ef0ce-f318-454f-bec8-0bbe585fc296)
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/c2525ccf-c1c6-4c06-be79-c36fefd3bed4)
 
 ## limitations
 
