@@ -12,6 +12,7 @@ from robot.output import LOGGER
 from robot.run import RobotFramework
 
 from pytest_robotframework import (
+    _errors,
     _listeners,
     _resources,
     _suite_variables,
@@ -88,6 +89,10 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             )
     finally:
         _listeners.too_late = False
+    if _errors:
+        raise ExceptionGroup(
+            "the following errors occurred inside robot listeners", _errors
+        )
 
 
 def pytest_addoption(parser: Parser):

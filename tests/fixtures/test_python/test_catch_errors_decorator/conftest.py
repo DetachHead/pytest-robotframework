@@ -1,5 +1,3 @@
-# noqa: INP001
-# init file breaks it
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -18,6 +16,5 @@ ran = False
 @listener
 class Listener(ListenerV3):
     @override
-    def start_test(self, data: model.TestCase, result: result.TestCase):
-        global ran
-        ran = True
+    def end_test(self, data: model.TestCase, result: result.TestCase):
+        raise Exception("asdf")

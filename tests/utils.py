@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Never, cast
 
 from lxml.etree import XML
-from pytest import Pytester
+from pytest import ExitCode, Pytester
 
 if TYPE_CHECKING:
     from lxml.etree import _Element
@@ -69,6 +69,7 @@ def run_and_assert_result(
     failed=0,
     errors=0,
     xfailed=0,
+    exit_code: ExitCode | None = None,
 ):
     result = (
         pytester.runpytest_subprocess
@@ -78,6 +79,14 @@ def run_and_assert_result(
     result.assert_outcomes(
         passed=passed, skipped=skipped, failed=failed, errors=errors, xfailed=xfailed
     )
+    if not exit_code:
+        if errors:
+            exit_code = ExitCode.INTERNAL_ERROR
+        elif failed:
+            exit_code = ExitCode.TESTS_FAILED
+        else:
+            exit_code = ExitCode.OK
+    assert result.ret == exit_code
     assert_robot_total_stats(
         pytester,
         passed=passed,

@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from pytest import ExitCode
+
 from tests.utils import (
     PytesterDir,
     assert_log_file_exists,
@@ -145,7 +147,7 @@ def test_setup_passes(pytester_dir: PytesterDir):
 
 
 def test_setup_fails(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, errors=1)
+    run_and_assert_result(pytester_dir, errors=1, exit_code=ExitCode.TESTS_FAILED)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
@@ -388,8 +390,15 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
     )
 
 
+def test_catch_errors_decorator(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1, exit_code=ExitCode.INTERNAL_ERROR)
+    assert_log_file_exists(pytester_dir)
+
+
 def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, pytest_args=["asdfdsf"])
+    run_and_assert_result(
+        pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.NO_TESTS_COLLECTED
+    )
     assert_log_file_exists(pytester_dir)
 
 

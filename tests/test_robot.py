@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pytest import ExitCode
+
 from tests.utils import (
     PytesterDir,
     assert_log_file_exists,
@@ -59,7 +61,7 @@ def test_setup_passes(pytester_dir: PytesterDir):
 
 
 def test_setup_fails(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, errors=1)
+    run_and_assert_result(pytester_dir, errors=1, exit_code=ExitCode.TESTS_FAILED)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
@@ -256,5 +258,7 @@ def test_keyword_with_conflicting_name(pytester_dir: PytesterDir):
 
 
 def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, pytest_args=["asdfdsf"])
+    run_and_assert_result(
+        pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.NO_TESTS_COLLECTED
+    )
     assert_log_file_exists(pytester_dir)

@@ -26,6 +26,7 @@ from robot.api.interfaces import ListenerV3, Parser, TestDefaults
 from robot.running.model import Body
 from typing_extensions import override
 
+from pytest_robotframework import catch_errors
 from pytest_robotframework._internal import robot_library
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot_utils import Cloaked
@@ -261,6 +262,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 _HookWrapper = Generator[None, object, object]
 
 
+@catch_errors
 class PytestRuntestProtocolHooks(ListenerV3):
     """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from
     `pytest_runtest_protocol`. since all the other parts of `_pytest.runner.runtestprotocol` are
