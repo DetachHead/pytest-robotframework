@@ -285,7 +285,10 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
             attr
         )
         # only wrap methods that are overwritten on the subclass
-        and attr.__name__ in vars(cls),  # type:ignore[no-any-expr]
+        and attr.__name__ in vars(cls)  # type:ignore[no-any-expr]
+        # don't wrap private/dunder methods since they'll get called by the public ones and we don't
+        # want to duplicate errors
+        and not attr.__name__.startswith("_"),
     ):
         setattr(cls, name, wrapped(method))  # type:ignore[arg-type,no-any-expr]
     return cls
