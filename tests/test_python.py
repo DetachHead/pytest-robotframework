@@ -236,6 +236,41 @@ def test_keyword_decorator_custom_name_and_tags(pytester_dir: PytesterDir):
     )
 
 
+def test_keyword_decorator_context_manager_that_doesnt_suppress(
+    pytester_dir: PytesterDir,
+):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='asdf' and ./status[@status='FAIL']]"
+    )
+
+
+def test_keywordify_keyword_inside_context_manager(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//kw[@name='raises' and ./arg[.=\"<class"
+        " 'ZeroDivisionError'>\"]]/kw[@name='asdf']"
+    )
+
+
+def test_keywordify_function(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath("//kw[@name='fail' and ./arg[.='asdf']]")
+
+
+def test_keywordify_context_manager(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='raises' and ./arg[.=\"<class 'ZeroDivisionError'>\"] and"
+        " ./status[@status='PASS']]"
+    )
+
+
 def test_tags(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
@@ -356,30 +391,6 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
 def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, pytest_args=["asdfdsf"])
     assert_log_file_exists(pytester_dir)
-
-
-def test_keywordify_function(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, failed=1)
-    assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath("//kw[@name='fail' and ./arg[.='asdf']]")
-
-
-def test_keywordify_context_manager(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, passed=1)
-    assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath(
-        "//kw[@name='raises' and ./arg[.=\"<class 'ZeroDivisionError'>\"]]"
-    )
-
-
-def test_keyword_inside_context_manager(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, passed=1)
-    assert_log_file_exists(pytester_dir)
-    xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        "//kw[@name='raises' and ./arg[.=\"<class"
-        " 'ZeroDivisionError'>\"]]/kw[@name='asdf']"
-    )
 
 
 def test_assertion_fails(pytester_dir: PytesterDir):

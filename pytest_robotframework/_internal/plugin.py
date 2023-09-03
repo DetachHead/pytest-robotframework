@@ -138,9 +138,7 @@ def pytest_runtestloop(session: Session) -> object:
         return None
     # TODO: should probably keywordify skip as well, but it messes with the handling in robot_library
     # https://github.com/DetachHead/pytest-robotframework/issues/51
-    for method in ("fail", "xfail"):
+    for method in ("fail", "xfail", "raises", "deprecated_call", "warns"):
         keywordify(pytest, method)
-    for method in ("raises", "deprecated_call", "warns"):
-        keywordify(pytest, method, context_manager=True)
     _collect_slash_run(session, collect_only=False)
     return True
