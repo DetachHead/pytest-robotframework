@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar, overload  # noqa
 
 from basedtyping import T
 from robot import result, running
-from robot.api import deco
+from robot.api import SuiteVisitor, deco
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.statusreporter import StatusReporter
@@ -250,6 +250,47 @@ def keywordify(
     )
 
 
+_errors = list[Exception]()
+
+_T_ListenerOrSuiteVisitor = TypeVar(
+    "_T_ListenerOrSuiteVisitor", bound=type[Listener | SuiteVisitor]
+)
+
+
+def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
+    """errors that occur inside suite visitors and listeners do not cause the test run to fail. even
+    `--exitonerror` doesn't catch every exception (see https://github.com/robotframework/robotframework/issues/4853).
+
+    this decorator will remember any errors that occurred inside listeners and suite visitors, then
+    raise them after robot has finished running.
+
+    you don't need this if you registered your listener with the `@listener` decorator, as it
+    applies this decorator as well"""
+
+    def wrapped(fn: Callable[_P, T]) -> Callable[_P, T]:
+        @wraps(fn)
+        def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
+            try:
+                return fn(*args, **kwargs)
+            except Exception as e:
+                _errors.append(e)
+                raise
+
+        return inner
+
+    for name, method in inspect.getmembers(
+        cls,
+        # https://github.com/python/mypy/issues/16025
+        predicate=lambda attr: inspect.isfunction(  # type:ignore[arg-type,no-any-expr]
+            attr
+        )
+        # only wrap methods that are overwritten on the subclass
+        and attr.__name__ in vars(cls),  # type:ignore[no-any-expr]
+    ):
+        setattr(cls, name, wrapped(method))  # type:ignore[arg-type,no-any-expr]
+    return cls
+
+
 class _ListenerRegistry:
     def __init__(self):
         self.instances = list[Listener]()
@@ -272,5 +313,5 @@ def listener(cls: _T_Listener) -> _T_Listener:
             f"listener {cls.__name__!r} cannot be registered because robot has already"
             " started running. make sure it's defined in a `conftest.py` file"
         )
-    _listeners.instances.append(cls())
+    _listeners.instances.append(catch_errors(cls)())
     return cls
