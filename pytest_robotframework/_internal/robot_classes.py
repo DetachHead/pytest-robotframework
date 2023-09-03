@@ -113,6 +113,7 @@ class PythonParser(Parser):
         return self._create_suite(source.parent)
 
 
+@catch_errors
 class PytestCollector(SuiteVisitor):
     """
     calls the pytest collection hooks.
@@ -198,6 +199,7 @@ original_body_key = StashKey[Body]()
 original_teardown_key = StashKey[model.Keyword]()
 
 
+@catch_errors
 class PytestRuntestProtocolInjector(SuiteVisitor):
     """injects the setup, call and teardown hooks from `_pytest.runner.pytest_runtest_protocol` into
     the robot test suite. this replaces any existing setup/body/teardown with said hooks, which may

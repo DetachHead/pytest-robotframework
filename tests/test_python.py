@@ -397,7 +397,7 @@ def test_catch_errors_decorator(pytester_dir: PytesterDir):
 
 def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
     run_and_assert_result(
-        pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.NO_TESTS_COLLECTED
+        pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
     )
     assert_log_file_exists(pytester_dir)
 
