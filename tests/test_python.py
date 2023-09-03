@@ -421,9 +421,10 @@ def test_assertion_passes(pytester_dir: PytesterDir):
         passed=1,
     )
     assert_log_file_exists(pytester_dir)
-    xml = output_xml(pytester_dir)
-    assert xml.xpath("//msg[@level='INFO' and .='assert left == right']")
-    assert xml.xpath("//msg[@level='DEBUG' and .='assertion evaluated to: 1 == 1']")
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and"
+        " .='1 == 1']"
+    )
 
 
 def test_pytest_runtest_protocol_hook_multiple_tests(pytester_dir: PytesterDir):
@@ -441,8 +442,10 @@ def test_pytest_runtest_protocol_hook_multiple_tests(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//test[@name='test_foo']//msg[@level='INFO' and .='assert left == right']"
+        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and"
+        " .='1 == 1']"
     )
     assert xml.xpath(
-        "//test[@name='test_bar']//msg[@level='INFO' and .='assert right == left']"
+        "//kw[@name='assert' and ./arg['right == left']]/msg[@level='INFO' and"
+        " .='1 == 1']"
     )
