@@ -273,6 +273,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
 
     def __init__(self, session: Session):
         self.session = session
+        self.original_hookimpls: list[HookImpl] | None = None
+        self.stop_running_hooks = False
         self.hookwrappers = dict[HookImpl, _HookWrapper]()
         """hookwrappers that are in the middle of running"""
         self.deferred_hookimpls = list[HookImpl]()
@@ -286,24 +288,28 @@ class PytestRuntestProtocolHooks(ListenerV3):
             )
         return item
 
-    @staticmethod
-    def _get_hookcaller(item: Item) -> HookCaller:
+    def _get_hookcaller(self) -> HookCaller:
         return cast(
-            HookCaller, item.ihook.pytest_runtest_protocol  # type:ignore[no-any-expr]
+            HookCaller,
+            self.session.ihook.pytest_runtest_protocol,  # type:ignore[no-any-expr]
         )
 
-    @classmethod
-    def _call_hooks(cls, item: Item):
-        cls._get_hookcaller(item)(item=item, nextitem=cast(Item, item.nextitem))
+    def _call_hooks(self, item: Item) -> object:
+        return cast(
+            object,
+            self._get_hookcaller()(item=item, nextitem=cast(Item, item.nextitem)),
+        )
 
     @override
-    def start_test(
+    def start_suite(
         self,
-        data: running.TestCase,
-        result: result.TestCase,  # pylint:disable=redefined-outer-name
+        data: running.TestSuite,
+        result: result.TestSuite,  # pylint:disable=redefined-outer-name
     ):
-        item = self._get_item(data)
-        hook_caller = self._get_hookcaller(item)
+        if data.parent:
+            # only need to do this once, so we only do it for the top level suite
+            return
+        hook_caller = self._get_hookcaller()
 
         # remove the runner plugin because `PytestRuntestProtocolInjector` re-implements it
         with suppress(ValueError):  # already been removed
@@ -333,6 +339,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
                 f"pytest_runtest_protocol hookwrapper {hook} didn't raise StopIteration"
             )
 
+        self.original_hookimpls = hook_caller.get_hookimpls()
+
         # the public get_hookimpls returns a copy but we need the original cuz we're changing it
         hookimpls = hook_caller._hookimpls  # noqa: SLF001
 
@@ -348,7 +356,12 @@ class PytestRuntestProtocolHooks(ListenerV3):
                         lambda item, nextitem, *, hook=hook: enter_wrapper(
                             hook, item, nextitem
                         ),
-                        {**hook.opts, "hookwrapper": False, "tryfirst": True},
+                        {
+                            **hook.opts,
+                            "hookwrapper": False,
+                            "tryfirst": True,
+                            "trylast": False,
+                        },
                     )
                 )
                 self.deferred_hookimpls.append(
@@ -356,7 +369,12 @@ class PytestRuntestProtocolHooks(ListenerV3):
                         hook.plugin,
                         hook.plugin_name,
                         lambda hook=hook: exit_wrapper(hook),
-                        {**hook.opts, "hookwrapper": False, "trylast": True},
+                        {
+                            **hook.opts,
+                            "hookwrapper": False,
+                            "tryfirst": False,
+                            "trylast": True,
+                        },
                     )
                 )
             elif hook.opts["trylast"]:
@@ -364,9 +382,17 @@ class PytestRuntestProtocolHooks(ListenerV3):
                 hookimpls.remove(hook)
                 self.deferred_hookimpls.append(hook)
 
+    @override
+    def start_test(
+        self,
+        data: running.TestCase,
+        result: result.TestCase,  # pylint:disable=redefined-outer-name
+    ):
+        item = self._get_item(data)
+
         if self._call_hooks(item) is not None:
             # stop on non-None result
-            self.deferred_hookimpls = []
+            self.stop_running_hooks = True
 
         item.ihook.pytest_runtest_logstart(  # type:ignore[no-any-expr]
             nodeid=item.nodeid, location=item.location
@@ -384,11 +410,15 @@ class PytestRuntestProtocolHooks(ListenerV3):
             nodeid=item.nodeid, location=item.location
         )
 
-        hook_caller = self._get_hookcaller(item)
-        hook_caller._hookimpls[:] = []  # noqa: SLF001
-
-        for hook in self.deferred_hookimpls:
-            hook_caller._add_hookimpl(hook)  # noqa: SLF001
-        self.deferred_hookimpls.clear()
-        self._call_hooks(item)
-        self.hookwrappers.clear()
+        hook_caller = self._get_hookcaller()
+        if not self.stop_running_hooks:
+            hook_caller._hookimpls[:] = []  # noqa: SLF001
+            for hook in self.deferred_hookimpls:
+                hook_caller._add_hookimpl(hook)  # noqa: SLF001
+            self._call_hooks(item)
+        if self.original_hookimpls is None:
+            raise InternalError(
+                "PytestRuntestProtocolHooks.end_test was somehow run before"
+                " original_hookimpls was set"
+            )
+        hook_caller._hookimpls[:] = self.original_hookimpls  # noqa: SLF001
