@@ -387,5 +387,6 @@ class PytestRuntestProtocolHooks(ListenerV3):
 
         for hook in self.deferred_hookimpls:
             hook_caller._add_hookimpl(hook)  # noqa: SLF001
-
+        self.deferred_hookimpls.clear()
+        self.hookwrappers.clear()
         self._call_hooks(item)
