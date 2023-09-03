@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from pytest import mark
-
 from tests.utils import (
     PytesterDir,
     assert_log_file_exists,
@@ -230,6 +228,14 @@ def test_keyword_decorator_args(pytester_dir: PytesterDir):
     )
 
 
+def test_keyword_decorator_custom_name_and_tags(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        ".//kw[@name='Run Test']/kw[@name='foo bar' and ./tag['a'] and ./tag['b']]"
+    )
+
+
 def test_tags(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
@@ -352,7 +358,13 @@ def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
 
 
-def test_keywordify_pytest_function(pytester_dir: PytesterDir):
+def test_keywordify_function(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath("//kw[@name='fail' and ./arg[.='asdf']]")
+
+
+def test_keywordify_context_manager(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
@@ -360,30 +372,14 @@ def test_keywordify_pytest_function(pytester_dir: PytesterDir):
     )
 
 
-# https://github.com/DetachHead/pytest-robotframework/issues/67
-@mark.xfail(reason="keywords don't work with context managers")
 def test_keyword_inside_context_manager(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
         "//kw[@name='raises' and ./arg[.=\"<class"
-        " 'ZeroDivisionError'>\"]/kw[@name='asdf']]"
+        " 'ZeroDivisionError'>\"]]/kw[@name='asdf']"
     )
-
-
-def test_keywordify_module(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, passed=1)
-    assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath(
-        "//kw[@name='patched_keyword' and not(./arg)]"
-    )
-
-
-def test_keywordify_class(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, passed=1)
-    assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath("//kw[@name='patched_keyword']")
 
 
 def test_assertion_fails(pytester_dir: PytesterDir):

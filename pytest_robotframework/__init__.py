@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import inspect
 from collections import defaultdict
+from contextlib import AbstractContextManager, contextmanager
 from functools import wraps
 from pathlib import Path
-from types import FunctionType
 
 # yes lets put the Callable type in the collection module.... because THAT makes sense!!!
 # said no one ever
-from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar  # noqa: UP035
+from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar, overload  # noqa: UP035
 
+from black import nullcontext
 from robot import result, running
+from robot.api import deco
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.statusreporter import StatusReporter
@@ -56,63 +58,135 @@ def import_resource(path: Path | str):
 
 _P = ParamSpec("_P")
 
+_T_ContextManager = TypeVar("_T_ContextManager", bound=AbstractContextManager[object])
 
+
+@overload
+def keyword(
+    *, name: str | None = ..., tags: tuple[str, ...] | None = ..., context_manager: True
+) -> Callable[[Callable[_P, _T_ContextManager]], Callable[_P, _T_ContextManager]]:
+    ...
+
+
+@overload
+def keyword(
+    *,
+    name: str | None = ...,
+    tags: tuple[str, ...] | None = ...,
+    context_manager: bool = ...,
+) -> Callable[[Callable[_P, T]], Callable[_P, T]]:
+    ...
+
+
+@overload
 def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
+    ...
+
+
+def keyword(  # pylint:disable=missing-param-doc
+    fn: Callable[_P, T] | None = None, *, name=None, tags=None, context_manager=False
+):
     """marks a function as a keyword and makes it show in the robot log.
 
     unlike robot's `deco.keyword` decorator, this one will make your function appear
-    as a keyword in the robot log even when ran from a python file."""
-    if hasattr(fn, "_pytest_robot_keyword"):
-        return fn
+    as a keyword in the robot log even when ran from a python file.
 
-    @wraps(fn)
-    def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
-        context = execution_context()
-        if context:
+    :param name: set a custom name for the keyword in the robot log (default is inferred from the
+    decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
+    :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
+    :param context_manager: whether the decorated function is a context manager or not
+    """
+    if fn is not None:
+        return keyword(name=name, tags=tags, context_manager=context_manager)(fn)
+
+    def decorator(fn: Callable[_P, T]) -> Callable[_P, T]:
+        if hasattr(fn, "_pytest_robot_keyword"):
+            return fn
+
+        # this doesn't really do anything in python land but we call the original robot keyword
+        # decorator for completeness
+        deco.keyword(name=name, tags=tags)(fn)
+
+        def create_status_reporter(
+            *args: _P.args, **kwargs: _P.kwargs
+        ) -> AbstractContextManager[None]:
             log_args = (
                 *(str(arg) for arg in args),
                 *(f"{key}={value}" for key, value in kwargs.items()),
             )
-            with StatusReporter(
-                running.Keyword(name=fn.__name__, args=log_args),
-                result.Keyword(
-                    kwname=fn.__name__,
-                    libname=fn.__module__,
-                    doc=fn.__doc__ or "",
-                    args=log_args,
-                ),
-                context=context,
-            ):
-                return fn(*args, **kwargs)
+            context = execution_context()
+            keyword_name = name or fn.__name__
+            return (
+                StatusReporter(
+                    running.Keyword(name=keyword_name, args=log_args),
+                    result.Keyword(
+                        kwname=keyword_name,
+                        libname=fn.__module__,
+                        doc=fn.__doc__ or "",
+                        args=log_args,
+                        tags=tags or [],
+                    ),
+                    context=context,
+                )
+                if context
+                else nullcontext()
+            )
+
+        if context_manager:
+
+            @contextmanager  # type:ignore[arg-type]
+            def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:  # type:ignore[misc]
+                with (
+                    create_status_reporter(*args, **kwargs),
+                    fn(  # type:ignore[attr-defined]
+                        *args, **kwargs
+                    ) as context_manager_result,
+                ):
+                    yield context_manager_result
+
         else:
-            return fn(*args, **kwargs)
 
-    inner._pytest_robot_keyword = True  # type:ignore[attr-defined] # noqa: SLF001
+            @wraps(fn)
+            def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
+                with create_status_reporter(*args, **kwargs):
+                    return fn(*args, **kwargs)
 
-    return inner
+        inner._pytest_robot_keyword = True  # type:ignore[attr-defined] # noqa: SLF001
+
+        return inner  # type:ignore[return-value]
+
+    return decorator
 
 
-def keywordify(obj: object, methods: list[str] | None = None):
-    """patches the methods of the specifed object to make them show as keywords in the
-    robot log. if `methods` is not provided, then all methods are
-    keywordified except `_private` and `__dunder__` methods
+def keywordify(
+    obj: object,
+    method_name: str,
+    *,
+    name: str | None = None,
+    tags: tuple[str, ...] | None = None,
+    context_manager=False,
+):
+    """patches a function to make it show as a keyword in the robot log.
 
     you should only use this on third party modules that you don't control. if you want your own
     function to show as a keyword you should decorate it with `@keyword` instead (the one from this
-    module, not the one from robot)"""
-    if methods is None:
-        methods = [
-            attribute
-            for attribute in dir(obj)
-            if isinstance(
-                getattr(obj, attribute), FunctionType  # type:ignore[no-any-expr]
-            )
-            and not attribute.startswith("_")
-        ]
-    for method in methods:
-        setattr(
-            obj, method, keyword(getattr(obj, method))  # type:ignore[no-any-expr]
-        )
+    module, not the one from robot)
+
+    :param obj: the object with the method to patch on it (this has to be specified separately as
+    the object itself needs to be modified with the patched method)
+    :param method_name: the name of the method to patch
+    :param name: set a custom name for the keyword in the robot log (default is inferred from the
+    decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
+    :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
+    :param context_manager: whether the patched function is a context manager or not
+    """
+    setattr(
+        obj,
+        method_name,
+        keyword(name=name, tags=tags, context_manager=context_manager)(
+            getattr(obj, method_name)  # type:ignore[no-any-expr]
+        ),
+    )
 
 
 class _ListenerRegistry:

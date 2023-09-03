@@ -136,6 +136,11 @@ def pytest_runtest_setup(item: Item):
 def pytest_runtestloop(session: Session) -> object:
     if session.config.option.collectonly:  # type:ignore[no-any-expr]
         return None
-    keywordify(pytest, ["fail", "xfail", "raises", "deprecated_call", "warns"])
+    # TODO: should probably keywordify skip as well, but it messes with the handling in robot_library
+    # https://github.com/DetachHead/pytest-robotframework/issues/51
+    for method in ("fail", "xfail"):
+        keywordify(pytest, method)
+    for method in ("raises", "deprecated_call", "warns"):
+        keywordify(pytest, method, context_manager=True)
     _collect_slash_run(session, collect_only=False)
     return True
