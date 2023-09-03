@@ -64,10 +64,11 @@ _P = ParamSpec("_P")
 
 class _KeywordDecorator:
     def __init__(
-        self, *, name: str | None = None, tags: tuple[str, ...] | None = None
+        self, *, name: str | None, tags: tuple[str, ...] | None, module: str | None
     ) -> None:
         self.name = name
         self.tags = tags or ()
+        self.module = module
 
     @overload
     def __call__(
@@ -83,7 +84,6 @@ class _KeywordDecorator:
         if isinstance(fn, _KeywordDecorator):
             # https://github.com/python/mypy/issues/16024
             return fn  # type:ignore[unreachable]
-
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
         deco.keyword(name=self.name, tags=self.tags)(fn)
@@ -91,6 +91,8 @@ class _KeywordDecorator:
         def create_status_reporter(
             *args: _P.args, **kwargs: _P.kwargs
         ) -> AbstractContextManager[None]:
+            if self.module is None:
+                self.module = fn.__module__
             log_args = (
                 *(str(arg) for arg in args),
                 *(f"{key}={value}" for key, value in kwargs.items()),
@@ -102,7 +104,7 @@ class _KeywordDecorator:
                     running.Keyword(name=keyword_name, args=log_args),
                     result.Keyword(
                         kwname=keyword_name,
-                        libname=fn.__module__,
+                        libname=self.module,
                         doc=getshortdoc(  # type:ignore[no-untyped-call,no-any-expr]
                             fn.__doc__
                         )
@@ -184,7 +186,10 @@ class _KeywordDecorator:
 
 @overload
 def keyword(
-    *, name: str | None = ..., tags: tuple[str, ...] | None = ...
+    *,
+    name: str | None = ...,
+    tags: tuple[str, ...] | None = ...,
+    module: str | None = ...,
 ) -> _KeywordDecorator:
     ...
 
@@ -202,7 +207,7 @@ def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
 
 
 def keyword(  # pylint:disable=missing-param-doc
-    fn: Callable[_P, T] | None = None, *, name=None, tags=None
+    fn: Callable[_P, T] | None = None, *, name=None, tags=None, module=None
 ):
     """marks a function as a keyword and makes it show in the robot log.
 
@@ -215,10 +220,12 @@ def keyword(  # pylint:disable=missing-param-doc
     :param name: set a custom name for the keyword in the robot log (default is inferred from the
     decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
     :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
+    :param module: customize the module that appears top the left of the keyword name in the log.
+    defaults to the function's actual module
     """
     if fn is None:
-        return _KeywordDecorator(name=name, tags=tags)
-    return keyword(name=name, tags=tags)(fn)
+        return _KeywordDecorator(name=name, tags=tags, module=module)
+    return keyword(name=name, tags=tags, module=module)(fn)
 
 
 def keywordify(
@@ -227,6 +234,7 @@ def keywordify(
     *,
     name: str | None = None,
     tags: tuple[str, ...] | None = None,
+    module: str | None = None,
 ):
     """patches a function to make it show as a keyword in the robot log.
 
@@ -240,11 +248,13 @@ def keywordify(
     :param name: set a custom name for the keyword in the robot log (default is inferred from the
     decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
     :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
+    :param module: customize the module that appears top the left of the keyword name in the log.
+    defaults to the function's actual module
     """
     setattr(
         obj,
         method_name,
-        keyword(name=name, tags=tags)(
+        keyword(name=name, tags=tags, module=module)(
             getattr(obj, method_name)  # type:ignore[no-any-expr]
         ),
     )
