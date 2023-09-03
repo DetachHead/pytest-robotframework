@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import inspect
 from collections import defaultdict
-from contextlib import AbstractContextManager, contextmanager
+from contextlib import AbstractContextManager, nullcontext
 from functools import wraps
 from pathlib import Path
 
@@ -12,18 +12,20 @@ from pathlib import Path
 # said no one ever
 from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar, overload  # noqa: UP035
 
-from black import nullcontext
+from basedtyping import T
 from robot import result, running
 from robot.api import deco
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.statusreporter import StatusReporter
+from typing_extensions import override
 
-from pytest_robotframework._internal.errors import UserError
+from pytest_robotframework._internal.errors import InternalError, UserError
 from pytest_robotframework._internal.robot_utils import execution_context
 
 if TYPE_CHECKING:
-    from basedtyping import T
+    from types import TracebackType
+
 
 RobotVariables = dict[str, object]
 
@@ -58,54 +60,32 @@ def import_resource(path: Path | str):
 
 _P = ParamSpec("_P")
 
-_T_ContextManager = TypeVar("_T_ContextManager", bound=AbstractContextManager[object])
 
+class _KeywordDecorator:
+    def __init__(
+        self, *, name: str | None = None, tags: tuple[str, ...] | None = None
+    ) -> None:
+        self.name = name
+        self.tags = tags or ()
 
-@overload
-def keyword(
-    *, name: str | None = ..., tags: tuple[str, ...] | None = ..., context_manager: True
-) -> Callable[[Callable[_P, _T_ContextManager]], Callable[_P, _T_ContextManager]]:
-    ...
+    @overload
+    def __call__(
+        self, fn: Callable[_P, AbstractContextManager[T]]
+    ) -> Callable[_P, AbstractContextManager[T]]:
+        ...
 
+    @overload
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
+        ...
 
-@overload
-def keyword(
-    *,
-    name: str | None = ...,
-    tags: tuple[str, ...] | None = ...,
-    context_manager: bool = ...,
-) -> Callable[[Callable[_P, T]], Callable[_P, T]]:
-    ...
-
-
-@overload
-def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
-    ...
-
-
-def keyword(  # pylint:disable=missing-param-doc
-    fn: Callable[_P, T] | None = None, *, name=None, tags=None, context_manager=False
-):
-    """marks a function as a keyword and makes it show in the robot log.
-
-    unlike robot's `deco.keyword` decorator, this one will make your function appear
-    as a keyword in the robot log even when ran from a python file.
-
-    :param name: set a custom name for the keyword in the robot log (default is inferred from the
-    decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
-    :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
-    :param context_manager: whether the decorated function is a context manager or not
-    """
-    if fn is not None:
-        return keyword(name=name, tags=tags, context_manager=context_manager)(fn)
-
-    def decorator(fn: Callable[_P, T]) -> Callable[_P, T]:
-        if hasattr(fn, "_pytest_robot_keyword"):
-            return fn
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
+        if isinstance(fn, _KeywordDecorator):
+            # https://github.com/python/mypy/issues/16024
+            return fn  # type:ignore[unreachable]
 
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
-        deco.keyword(name=name, tags=tags)(fn)
+        deco.keyword(name=self.name, tags=self.tags)(fn)
 
         def create_status_reporter(
             *args: _P.args, **kwargs: _P.kwargs
@@ -115,7 +95,7 @@ def keyword(  # pylint:disable=missing-param-doc
                 *(f"{key}={value}" for key, value in kwargs.items()),
             )
             context = execution_context()
-            keyword_name = name or fn.__name__
+            keyword_name = self.name or fn.__name__
             return (
                 StatusReporter(
                     running.Keyword(name=keyword_name, args=log_args),
@@ -124,7 +104,7 @@ def keyword(  # pylint:disable=missing-param-doc
                         libname=fn.__module__,
                         doc=fn.__doc__ or "",
                         args=log_args,
-                        tags=tags or [],
+                        tags=self.tags,
                     ),
                     context=context,
                 )
@@ -132,30 +112,109 @@ def keyword(  # pylint:disable=missing-param-doc
                 else nullcontext()
             )
 
-        if context_manager:
+        def exit_status_reporter(
+            status_reporter: AbstractContextManager[None],
+            error: BaseException | None = None,
+        ):
+            suppress = (
+                status_reporter.__exit__(None, None, None)
+                if error is None
+                else status_reporter.__exit__(type(error), error, error.__traceback__)
+            )
+            if suppress:
+                raise InternalError(
+                    "StatusReporter encountered an exception and"
+                    f" `suppress=True`: {error}"
+                ) from error
 
-            @contextmanager  # type:ignore[arg-type]
-            def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:  # type:ignore[misc]
-                with (
-                    create_status_reporter(*args, **kwargs),
-                    fn(  # type:ignore[attr-defined]
-                        *args, **kwargs
-                    ) as context_manager_result,
-                ):
-                    yield context_manager_result
+        class WrappedContextManager(AbstractContextManager[T]):
+            """defers exiting the status reporter until after the wrapped context
+            manager is finished"""
 
-        else:
+            def __init__(
+                self,
+                wrapped: AbstractContextManager[T],
+                status_reporter: AbstractContextManager[None],
+            ) -> None:
+                self.wrapped = wrapped
+                self.status_reporter = status_reporter
 
-            @wraps(fn)
-            def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
-                with create_status_reporter(*args, **kwargs):
-                    return fn(*args, **kwargs)
+            @override
+            def __enter__(self) -> T:
+                return self.wrapped.__enter__()
 
-        inner._pytest_robot_keyword = True  # type:ignore[attr-defined] # noqa: SLF001
+            @override
+            def __exit__(
+                self,
+                exc_type: type[BaseException] | None,
+                exc_value: BaseException | None,
+                traceback: TracebackType | None,
+                /,
+            ) -> bool | None:
+                suppress = self.wrapped.__exit__(exc_type, exc_value, traceback)
+                exit_status_reporter(self.status_reporter)
+                return suppress
 
-        return inner  # type:ignore[return-value]
+        @wraps(fn)
+        def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
+            status_reporter = create_status_reporter(*args, **kwargs)
+            status_reporter.__enter__()
+            try:
+                fn_result = fn(*args, **kwargs)
+            except BaseException as e:
+                exit_status_reporter(status_reporter, e)
+                raise
+            else:
+                if isinstance(fn_result, AbstractContextManager):
+                    return (
+                        # 🚀 independently verified for safety by the overloads
+                        WrappedContextManager(  # type:ignore[return-value]
+                            fn_result, status_reporter
+                        )
+                    )
+                exit_status_reporter(status_reporter)
+            return fn_result
 
-    return decorator
+        return inner
+
+
+@overload
+def keyword(
+    *, name: str | None = ..., tags: tuple[str, ...] | None = ...
+) -> _KeywordDecorator:
+    ...
+
+
+@overload
+def keyword(
+    fn: Callable[_P, AbstractContextManager[T]]
+) -> Callable[_P, AbstractContextManager[T]]:
+    ...
+
+
+@overload
+def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
+    ...
+
+
+def keyword(  # pylint:disable=missing-param-doc
+    fn: Callable[_P, T] | None = None, *, name=None, tags=None
+):
+    """marks a function as a keyword and makes it show in the robot log.
+
+    unlike robot's `deco.keyword` decorator, this one will make your function appear as a keyword in
+    the robot log even when ran from a python file.
+
+    if the function returns a context manager, its body is included in the keyword (just make sure
+    the `@keyword` decorator is above `@contextmanager`)
+
+    :param name: set a custom name for the keyword in the robot log (default is inferred from the
+    decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
+    :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
+    """
+    if fn is None:
+        return _KeywordDecorator(name=name, tags=tags)
+    return keyword(name=name, tags=tags)(fn)
 
 
 def keywordify(
@@ -164,7 +223,6 @@ def keywordify(
     *,
     name: str | None = None,
     tags: tuple[str, ...] | None = None,
-    context_manager=False,
 ):
     """patches a function to make it show as a keyword in the robot log.
 
@@ -178,12 +236,11 @@ def keywordify(
     :param name: set a custom name for the keyword in the robot log (default is inferred from the
     decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
     :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
-    :param context_manager: whether the patched function is a context manager or not
     """
     setattr(
         obj,
         method_name,
-        keyword(name=name, tags=tags, context_manager=context_manager)(
+        keyword(name=name, tags=tags)(
             getattr(obj, method_name)  # type:ignore[no-any-expr]
         ),
     )

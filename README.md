@@ -248,12 +248,9 @@ if you want a function from a third party module/robot library to be displayed a
 
 from pyest_robotframework import keywordify
 import some_module
-import another_module
 
 # patch a function from the module:
 keywordify(some_module, "some_function")
-# patch a context manager:
-keywordify(another_module, "some_function", context_manager=True)
 # works on classes too:
 keywordify(some_module.SomeClass, "some_method")
 ```

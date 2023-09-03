@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from contextlib import AbstractContextManager, contextmanager
 
-# Callable isnt a collection
+# callable isnt a collection
 from typing import TYPE_CHECKING, Callable, assert_type  # noqa: UP035
+
+from robot.api import logger
 
 from pytest_robotframework import keyword
 
@@ -11,22 +13,17 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 
-@keyword(name="foo bar", tags=("a", "b"))
-def foo():
-    ...
-
-
-@keyword(name="foo bar", tags=("a", "b"))
+@keyword
 @contextmanager
-def bar() -> Iterator[None]:
-    yield
+def asdf() -> Iterator[None]:
+    raise Exception
 
 
 # type tests
 if TYPE_CHECKING:
-    assert_type(foo, Callable[[], None])
-    assert_type(bar, Callable[[], AbstractContextManager[None]])
+    assert_type(asdf, Callable[[], AbstractContextManager[None]])
 
 
-def test_docstring():
-    foo()
+def test_foo():
+    with asdf():
+        logger.info(1)  # type:ignore[no-untyped-call]
