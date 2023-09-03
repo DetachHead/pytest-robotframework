@@ -275,7 +275,6 @@ class PytestRuntestProtocolHooks(ListenerV3):
 
     def __init__(self, session: Session):
         self.session = session
-        self.original_hookimpls: list[HookImpl] | None = None
         self.stop_running_hooks = False
         self.hookwrappers = dict[HookImpl, _HookWrapper]()
         """hookwrappers that are in the middle of running"""
