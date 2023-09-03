@@ -324,6 +324,7 @@ extend-select = [
     "NPY",
     "AIR",
     "PERF",
+    "FURB",
     # nursery rules:
     # https://github.com/astral-sh/ruff/issues/6910
     "E111",
@@ -363,6 +364,9 @@ extend-select = [
     "PLW1641",
     "PLW3201",
     "RUF017",
+    "FURB113",
+    "FURB131",
+    "FURB132",
 ]
 ignore = [
     "PLR0913", # Too many arguments to function call
