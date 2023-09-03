@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, cast
 
+# we need to re-implement some internal pytest stuff. maybe theres a better way idk
 from _pytest._code.code import (  # pylint:disable=import-private-name
     ExceptionInfo,
     ExceptionRepr,
