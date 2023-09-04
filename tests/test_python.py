@@ -10,6 +10,7 @@ from tests.utils import (
     assert_log_file_exists,
     assert_robot_total_stats,
     output_xml,
+    run_and_assert_assert_pytest_result,
     run_and_assert_result,
 )
 
@@ -183,6 +184,18 @@ def test_teardown_fails(pytester_dir: PytesterDir):
     assert xml.xpath(
         ".//test/kw[@name='Teardown']/msg[@level='FAIL' and .='Exception: 2']"
     )
+
+
+def test_error_moment(pytester_dir: PytesterDir):
+    # unfortunately pytest still thinks the test passed but that's robot's fault
+    run_and_assert_assert_pytest_result(
+        pytester_dir, passed=1, exit_code=ExitCode.INTERNAL_ERROR
+    )
+    assert_robot_total_stats(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='ERROR' and .='foo']")
+    assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='INFO' and .='bar']")
 
 
 def test_teardown_skipped(pytester_dir: PytesterDir):

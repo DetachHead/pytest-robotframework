@@ -24,11 +24,12 @@ from robot import model, result, running
 from robot.api import SuiteVisitor
 from robot.api.interfaces import ListenerV3, Parser, TestDefaults
 from robot.running.model import Body
+from robot.running.status import TestMessage
 from typing_extensions import override
 
 from pytest_robotframework import catch_errors
 from pytest_robotframework._internal import robot_library
-from pytest_robotframework._internal.errors import InternalError
+from pytest_robotframework._internal.errors import InternalError, PytestRobotError
 from pytest_robotframework._internal.robot_utils import Cloaked
 
 if TYPE_CHECKING:
@@ -415,3 +416,18 @@ class PytestRuntestProtocolHooks(ListenerV3):
             self.stop_running_hooks = False  # for next time
         else:
             self._call_hooks(item, self.end_test_hooks)
+
+
+@catch_errors
+class ExitOnErrorDetector(ListenerV3):
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    @override
+    def end_test(
+        self,
+        data: running.TestCase,
+        result: result.TestCase,  # pylint:disable=redefined-outer-name
+    ):
+        if result.message == TestMessage.exit_on_error_message:
+            raise PytestRobotError(result.message)

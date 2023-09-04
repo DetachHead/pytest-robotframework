@@ -59,7 +59,7 @@ def assert_log_file_exists(pytester: Pytester):
     assert (pytester.path / "log.html").exists()
 
 
-def run_and_assert_result(
+def run_and_assert_assert_pytest_result(
     pytester: Pytester,
     *,
     pytest_args: list[str] | None = None,
@@ -87,6 +87,31 @@ def run_and_assert_result(
         else:
             exit_code = ExitCode.OK
     assert result.ret == exit_code
+
+
+def run_and_assert_result(
+    pytester: Pytester,
+    *,
+    pytest_args: list[str] | None = None,
+    subprocess=False,
+    passed=0,
+    skipped=0,
+    failed=0,
+    errors=0,
+    xfailed=0,
+    exit_code: ExitCode | None = None,
+):
+    run_and_assert_assert_pytest_result(
+        pytester,
+        pytest_args=pytest_args,
+        subprocess=subprocess,
+        passed=passed,
+        skipped=skipped,
+        failed=failed,
+        errors=errors,
+        xfailed=xfailed,
+        exit_code=exit_code,
+    )
     assert_robot_total_stats(
         pytester,
         passed=passed,

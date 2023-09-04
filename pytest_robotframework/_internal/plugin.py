@@ -23,6 +23,7 @@ from pytest_robotframework import (
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
 from pytest_robotframework._internal.robot_classes import (
+    ExitOnErrorDetector,
     PytestCollector,
     PytestRuntestProtocolHooks,
     PytestRuntestProtocolInjector,
@@ -73,7 +74,11 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             robot_args,
             dict[str, object](
                 prerunmodifier=[PytestRuntestProtocolInjector(session)],
-                listener=[PytestRuntestProtocolHooks(session), *_listeners.instances],
+                listener=[
+                    PytestRuntestProtocolHooks(session),
+                    ExitOnErrorDetector(session),
+                    *_listeners.instances,
+                ],
             ),
         )
     _listeners.too_late = True
