@@ -2,7 +2,7 @@
 authors = ["DetachHead <detachhead@users.noreply.github.com>"]
 description = "a pytest plugin that can run both python and robotframework tests while generating robot reports for them"
 name = "pytest_robotframework"
-version = "1.5.0"
+version = "1.6.0"
 readme = "README.md"
 repository = "https://github.com/detachhead/pytest-robotframework"
 
