@@ -174,10 +174,9 @@ def test_teardown_passes(pytester_dir: PytesterDir):
 
 
 def test_teardown_fails(pytester_dir: PytesterDir):
-    result = pytester_dir.runpytest()
-    result.assert_outcomes(passed=1, errors=1)
-    # unlike pytest, teardown failures in robot count as a test failure
-    assert_robot_total_stats(pytester_dir, failed=1)
+    run_and_assert_assert_pytest_result(
+        pytester_dir, passed=1, errors=1, exit_code=ExitCode.TESTS_FAILED
+    )
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(".//test/kw[@name='Run Test']")
@@ -187,15 +186,78 @@ def test_teardown_fails(pytester_dir: PytesterDir):
 
 
 def test_error_moment(pytester_dir: PytesterDir):
-    # unfortunately pytest still thinks the test passed but that's robot's fault
-    run_and_assert_assert_pytest_result(
-        pytester_dir, passed=1, exit_code=ExitCode.INTERNAL_ERROR
-    )
-    assert_robot_total_stats(pytester_dir, failed=1)
+    run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='ERROR' and .='foo']")
+    # make sure it didn't prevent the rest of the test from running
     assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='INFO' and .='bar']")
+
+
+def test_error_moment_setup(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, errors=1, exit_code=ExitCode.TESTS_FAILED)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(".//test/kw[@name='Setup']/msg[@level='ERROR' and .='foo']")
+    assert xml.xpath(".//test/kw[@name='Setup']/msg[@level='INFO' and .='bar']")
+    assert not xml.xpath(".//test/kw[@name='Run Test']")
+
+
+def test_error_moment_teardown(pytester_dir: PytesterDir):
+    run_and_assert_assert_pytest_result(
+        pytester_dir, passed=1, errors=1, exit_code=ExitCode.TESTS_FAILED
+    )
+    # unlike pytest, teardown failures in robot count as a test failure
+    assert_robot_total_stats(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='INFO' and .='baz']")
+    assert xml.xpath(".//test/kw[@name='Teardown']/msg[@level='ERROR' and .='foo']")
+    # make sure it didn't prevent the rest of the test from running
+    assert xml.xpath(".//test/kw[@name='Teardown']/msg[@level='INFO' and .='bar']")
+
+
+def test_error_moment_and_second_test(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1, failed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        ".//test[@name='test_foo' and ./status[@status='FAIL']]/kw[@name='Run"
+        " Test']/msg[@level='ERROR' and .='foo']"
+    )
+    assert xml.xpath(
+        ".//test[@name='test_bar' and ./status[@status='PASS']]/kw[@name='Run"
+        " Test']/msg[@level='INFO' and .='bar']"
+    )
+
+
+def test_error_moment_exitonerror(pytester_dir: PytesterDir):
+    run_and_assert_result(
+        pytester_dir, failed=1, pytest_args=["--robotargs=--exitonerror"]
+    )
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='ERROR' and .='foo']")
+    # make sure it didn't prevent the rest of the test from running
+    assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='INFO' and .='bar']")
+
+
+def test_error_moment_exitonerror_multiple_tests(pytester_dir: PytesterDir):
+    run_and_assert_assert_pytest_result(
+        pytester_dir, failed=1, pytest_args=["--robotargs=--exitonerror"]
+    )
+    # robot marks the remaining tests as failed but pytest never gets to actually run them
+    assert_robot_total_stats(pytester_dir, failed=2)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        ".//test[@name='test_foo' and ./status[@status='FAIL']]/kw[@name='Run"
+        " Test']/msg[@level='ERROR' and .='foo']"
+    )
+    assert xml.xpath(
+        ".//test[@name='test_bar']/status[@status='FAIL' and .='Error occurred and"
+        " exit-on-error mode is in use.']"
+    )
 
 
 def test_teardown_skipped(pytester_dir: PytesterDir):

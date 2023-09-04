@@ -24,12 +24,11 @@ from robot import model, result, running
 from robot.api import SuiteVisitor
 from robot.api.interfaces import ListenerV3, Parser, TestDefaults
 from robot.running.model import Body
-from robot.running.status import TestMessage
 from typing_extensions import override
 
 from pytest_robotframework import catch_errors
 from pytest_robotframework._internal import robot_library
-from pytest_robotframework._internal.errors import InternalError, PytestRobotError
+from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot_utils import Cloaked
 
 if TYPE_CHECKING:
@@ -418,10 +417,27 @@ class PytestRuntestProtocolHooks(ListenerV3):
             self._call_hooks(item, self.end_test_hooks)
 
 
+robot_errors_key = StashKey[list[model.Message]]()
+
+
 @catch_errors
-class ExitOnErrorDetector(ListenerV3):
+class ErrorDetector(ListenerV3):
+    """since errors logged by robot don't raise an exception and therefore won't cause the pytest
+    test to fail (or even the robot test unless `--exitonerror` is enabled), we need to listen for
+    errors and save them to the item to be used in the plugin's `pytest_runtest_makereport` hook
+    """
+
     def __init__(self, session: Session) -> None:
         self.session = session
+        self.current_test: running.TestCase | None = None
+
+    @override
+    def start_test(
+        self,
+        data: running.TestCase,
+        result: result.TestCase,  # pylint:disable=redefined-outer-name
+    ):
+        self.current_test = data
 
     @override
     def end_test(
@@ -429,5 +445,24 @@ class ExitOnErrorDetector(ListenerV3):
         data: running.TestCase,
         result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
-        if result.message == TestMessage.exit_on_error_message:
-            raise PytestRobotError(result.message)
+        self.current_test = None
+
+    @override
+    def log_message(self, message: model.Message):
+        if message.level != "ERROR":
+            return
+        if not self.current_test:
+            raise InternalError(
+                "a robot error occurred and ErrorDetector failed to figure out what"
+                f" test it came from: {message.message}"
+            )
+        item = _get_item_from_robot_test(self.session, self.current_test)
+        if not item:
+            raise InternalError(
+                "a robot error occurred and ErrorDetector failed to find the pytest"
+                f" item matching the robot test (error: {message.message}, test:"
+                f" {self.current_test})"
+            )
+        if not item.stash.get(robot_errors_key, None):
+            item.stash[robot_errors_key] = list[model.Message]()
+        item.stash[robot_errors_key].append(message)

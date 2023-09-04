@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, cast
 
 import pytest
 from deepmerge import always_merger
+from pytest import TestReport
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
@@ -23,17 +24,18 @@ from pytest_robotframework import (
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
 from pytest_robotframework._internal.robot_classes import (
-    ExitOnErrorDetector,
+    ErrorDetector,
     PytestCollector,
     PytestRuntestProtocolHooks,
     PytestRuntestProtocolInjector,
     PythonParser,
+    robot_errors_key,
 )
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from pytest import Collector, Item, Parser, Session
+    from pytest import CallInfo, Collector, Item, Parser, Session
 
 
 def _collect_slash_run(session: Session, *, collect_only: bool):
@@ -61,14 +63,13 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 ]
             )[0],
             dict[str, object](
-                exitonerror=True,
                 parser=[PythonParser(session)],
                 prerunmodifier=[PytestCollector(session, collect_only=collect_only)],
             ),
         ),
     )
     if collect_only:
-        robot_args |= {"report": None, "output": None, "log": None}
+        robot_args |= {"report": None, "output": None, "log": None, "exitonerror": True}
     else:
         robot_args = always_merger.merge(  # type:ignore[no-untyped-call]
             robot_args,
@@ -76,7 +77,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 prerunmodifier=[PytestRuntestProtocolInjector(session)],
                 listener=[
                     PytestRuntestProtocolHooks(session),
-                    ExitOnErrorDetector(session),
+                    ErrorDetector(session),
                     *_listeners.instances,
                 ],
             ),
@@ -122,6 +123,19 @@ def pytest_assertion_pass(orig: str, expl: str):
     # this matches what's logged if an assertion fails, so we keep it the same here for consistency
     # (idk why there's no pytest_assertion_fail hook, only reprcompare which is different)
     assertion(orig)
+
+
+def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:
+    errors = item.stash.get(robot_errors_key, None)
+    if errors:
+        result = TestReport.from_item_and_call(item, call)
+        result.outcome = "failed"
+        result.longrepr = (
+            f"robot errors detected: {[error.message for error in errors]}"
+        )
+        del item.stash[robot_errors_key]
+        return result
+    return None
 
 
 def pytest_collection(session: Session) -> object:
