@@ -262,3 +262,21 @@ def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
         pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
     )
     assert_log_file_exists(pytester_dir)
+
+
+def test_keyword_decorator(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    # make sure it doesn't get double keyworded
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']"
+    )
+
+
+def test_keyword_decorator_and_other_decorator(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    # make sure it doesn't get double keyworded
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']"
+    )

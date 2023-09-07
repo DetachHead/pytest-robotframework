@@ -10,22 +10,33 @@ from pathlib import Path
 
 # yes lets put the Callable type in the collection module.... because THAT makes sense!!!
 # said no one ever
-from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar, overload  # noqa: UP035
+from typing import (  # noqa: UP035
+    TYPE_CHECKING,
+    Callable,
+    ParamSpec,
+    TypeVar,
+    cast,
+    overload,
+)
 
-from basedtyping import T
+from basedtyping import Function, T
 from robot import result, running
 from robot.api import SuiteVisitor, deco
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
+from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc
 from typing_extensions import override
 
 from pytest_robotframework._internal.errors import InternalError, UserError
 from pytest_robotframework._internal.robot_utils import execution_context
+from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
     from types import TracebackType
+
+    from robot.running.context import _ExecutionContext
 
 
 RobotVariables = dict[str, object]
@@ -57,6 +68,29 @@ def import_resource(path: Path | str):
         BuiltIn().import_resource(str(path))
     else:
         _resources.append(Path(path))
+
+
+@patch_method(LibraryKeywordRunner)  # type:ignore[no-any-expr]
+def _runner_for(  # type:ignore[no-any-decorated]
+    old_method: Callable[
+        [
+            LibraryKeywordRunner,
+            _ExecutionContext,
+            Function,
+            list[object],
+            dict[str, object],
+        ],
+        Function,
+    ],
+    self: LibraryKeywordRunner,
+    context: _ExecutionContext,
+    handler: Function,
+    positional: list[object],
+    named: dict[str, object],
+) -> Function:
+    """use the original function instead of the `@keyword` wrapped one"""
+    handler = cast(Function, getattr(handler, "_keyword_original_function", handler))
+    return old_method(self, context, handler, positional, named)
 
 
 _P = ParamSpec("_P")
@@ -181,6 +215,9 @@ class _KeywordDecorator:
                 exit_status_reporter(status_reporter)
             return fn_result
 
+        inner._keyword_original_function = (  # type:ignore[attr-defined] # noqa: SLF001
+            fn
+        )
         return inner
 
 
