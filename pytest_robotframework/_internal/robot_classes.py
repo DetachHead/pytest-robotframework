@@ -16,8 +16,7 @@ from typing import (  # noqa: UP035
     cast,
 )
 
-# needed to disable this plugin because we re-implement it
-from _pytest import runner  # pylint:disable=import-private-name
+from _pytest import runner
 from pluggy import HookCaller, HookImpl
 from pytest import Function, Item, Session, StashKey
 from robot import model, result, running

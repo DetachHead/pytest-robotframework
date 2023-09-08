@@ -3,9 +3,7 @@ from __future__ import annotations
 from typing import Generic, cast
 
 from basedtyping import T
-from robot.running.context import (  # pylint:disable=import-private-name
-    _ExecutionContext,
-)
+from robot.running.context import _ExecutionContext
 from typing_extensions import override
 
 
