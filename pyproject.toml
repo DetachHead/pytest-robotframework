@@ -218,7 +218,6 @@ enable = [
     "bad-mcs-classmethod-argument",
     "bad-mcs-method-argument",
     "dict-init-mutate",
-    "import-private-name",
     "invalid-characters-in-docstring",
     "mixed-line-endings",
     "non-ascii-module-import",

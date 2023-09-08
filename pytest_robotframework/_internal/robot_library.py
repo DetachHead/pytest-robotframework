@@ -5,15 +5,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, cast
 
-# we need to re-implement some internal pytest stuff. maybe theres a better way idk
-from _pytest._code.code import (  # pylint:disable=import-private-name
-    ExceptionInfo,
-    ExceptionRepr,
-)
-from _pytest.runner import (  # pylint:disable=import-private-name
-    call_and_report,
-    show_test_item,
-)
+from _pytest._code.code import ExceptionInfo, ExceptionRepr
+from _pytest.runner import call_and_report, show_test_item
 from pytest import Item, StashKey, TestReport
 from robot.api.deco import keyword
 from robot.libraries.BuiltIn import BuiltIn
