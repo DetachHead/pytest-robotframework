@@ -405,6 +405,7 @@ ignore = [
     "TD002",   # Missing author in TODO
     "PGH003",  # Use specific rule codes when ignoring type issues (covered by mypy)
     "S101",    # Use of assert detected (pytest uses assert statements)
+    "E701",    # Multiple statements on one line (sometimes conflicts with black)
 ]
 target-version = "py311"
 respect-gitignore = true
