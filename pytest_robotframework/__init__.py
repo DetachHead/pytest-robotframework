@@ -107,12 +107,10 @@ class _KeywordDecorator:
     @overload
     def __call__(
         self, fn: Callable[_P, AbstractContextManager[T]]
-    ) -> Callable[_P, AbstractContextManager[T]]:
-        ...
+    ) -> Callable[_P, AbstractContextManager[T]]: ...
 
     @overload
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
-        ...
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]: ...
 
     def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
         if isinstance(fn, _KeywordDecorator):
@@ -227,20 +225,17 @@ def keyword(
     name: str | None = ...,
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
-) -> _KeywordDecorator:
-    ...
+) -> _KeywordDecorator: ...
 
 
 @overload
 def keyword(
     fn: Callable[_P, AbstractContextManager[T]]
-) -> Callable[_P, AbstractContextManager[T]]:
-    ...
+) -> Callable[_P, AbstractContextManager[T]]: ...
 
 
 @overload
-def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
-    ...
+def keyword(fn: Callable[_P, T]) -> Callable[_P, T]: ...
 
 
 def keyword(  # pylint:disable=missing-param-doc

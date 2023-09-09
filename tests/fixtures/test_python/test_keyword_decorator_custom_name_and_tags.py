@@ -12,8 +12,7 @@ if TYPE_CHECKING:
 
 
 @keyword(name="foo bar", tags=("a", "b"))
-def foo():
-    ...
+def foo(): ...
 
 
 @keyword(name="foo bar", tags=("a", "b"))
