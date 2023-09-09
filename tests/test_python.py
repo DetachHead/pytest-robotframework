@@ -524,3 +524,11 @@ def test_pytest_runtest_protocol_hook_multiple_tests(pytester_dir: PytesterDir):
         "//kw[@name='assert' and ./arg['right == left']]/msg[@level='INFO' and"
         " .='1 == 1']"
     )
+
+
+def test_keyword_and_pytest_raises(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='raises']/kw[@name='bar']/status[@status='FAIL']"
+    )
