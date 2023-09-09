@@ -29,7 +29,7 @@ from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc
 from typing_extensions import override
 
-from pytest_robotframework._internal.errors import InternalError, UserError
+from pytest_robotframework._internal.errors import UserError
 from pytest_robotframework._internal.robot_utils import execution_context
 from pytest_robotframework._internal.utils import patch_method
 
@@ -145,6 +145,10 @@ class _KeywordDecorator:
                         tags=self.tags,
                     ),
                     context=context,
+                    # we suppress the error in the status reporter because we raise it ourselves
+                    # afterwards, so that context managers like `pytest.raises` can see the actual
+                    # exception instead of `robot.errors.HandlerExecutionFailed`
+                    suppress=True,
                 )
                 if context
                 else nullcontext()
@@ -154,16 +158,10 @@ class _KeywordDecorator:
             status_reporter: AbstractContextManager[None],
             error: BaseException | None = None,
         ):
-            suppress = (
+            if error is None:
                 status_reporter.__exit__(None, None, None)
-                if error is None
-                else status_reporter.__exit__(type(error), error, error.__traceback__)
-            )
-            if suppress:
-                raise InternalError(
-                    "StatusReporter encountered an exception and"
-                    f" `suppress=True`: {error}"
-                ) from error
+            else:
+                status_reporter.__exit__(type(error), error, error.__traceback__)
 
         class WrappedContextManager(AbstractContextManager[T]):
             """defers exiting the status reporter until after the wrapped context
