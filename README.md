@@ -181,19 +181,30 @@ if the robot option you want to use isn't mentioned here, check the pytest [comm
 
 ### specifying robot options directlty
 
-you can specify robot CLI arguments directly with the `--robotargs` argument:
+there are multiple ways you can specify the robot arguments directly. however, arguments that have pytest equivalents should not be set with robot as they will probably cause the plugin to behave incorrectly.
+
+#### `pytest_robot_modify_args` hook
+
+you can specify a `pytest_robot_modify_args` hook in your `conftest.py` to programmatically modify the arguments
+
+```py
+def pytest_robot_modify_args(args: list[str], session: Session) -> None:
+    args.extend(["--listener", "Foo"])
+```
+
+note that not all arguments that the plugin passes to robot will be present in the `args` list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook
+
+#### `--robotargs` pytest argument
 
 ```
 pytest --robotargs="-d results --listener foo.Foo"
 ```
 
-or you could use the `ROBOT_OPTIONS` environment variable:
+#### `ROBOT_OPTIONS` environment variable
 
 ```
 ROBOT_OPTIONS="-d results --listener foo.Foo"
 ```
-
-however, arguments that have pytest equivalents should not be set with robot as they will probably cause the plugin to behave incorrectly.
 
 ### enabling pytest assertions in the robot log
 
