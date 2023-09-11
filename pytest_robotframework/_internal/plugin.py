@@ -21,6 +21,7 @@ from pytest_robotframework import (
     keyword,
     keywordify,
 )
+from pytest_robotframework._internal import hooks
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
 from pytest_robotframework._internal.robot_classes import (
@@ -35,6 +36,7 @@ from pytest_robotframework._internal.robot_classes import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from pluggy import PluginManager
     from pytest import CallInfo, Collector, Item, Parser, Session
 
 
@@ -47,22 +49,23 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     if _listeners.too_late:
         raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()  # type:ignore[no-untyped-call]
+    robot_arg_list = list[str]()
+    session.ihook.pytest_robot_modify_args(  # type:ignore[no-any-expr]
+        args=robot_arg_list, session=session
+    )
     robot_args = cast(
         dict[str, object],
         always_merger.merge(  # type:ignore[no-untyped-call]
-            robot.parse_arguments(  # type:ignore[no-any-expr]
-                [
-                    *cast(
-                        str,
-                        session.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
-                            "--robotargs"
-                        ),
-                    ).split(" "),
+            robot.parse_arguments(  # type:ignore[no-untyped-call]
+                [  # type:ignore[no-any-expr]
+                    *robot_arg_list,
                     # not actually used here, but the argument parser requires at least one path
                     session.path,
                 ]
             )[0],
             dict[str, object](
+                extension="py:robot",
+                runemptysuite=True,
                 parser=[PythonParser(session)],
                 prerunmodifier=[PytestCollector(session, collect_only=collect_only)],
             ),
@@ -89,9 +92,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
         with LOGGER:
             robot.main(  # type:ignore[no-untyped-call]
                 [session.path],  # type:ignore[no-any-expr]
-                extension="py:robot",
                 # needed because PythonParser.visit_init creates an empty suite
-                runemptysuite=True,
                 **robot_args,
             )
     finally:
@@ -102,11 +103,26 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
         )
 
 
+def pytest_addhooks(pluginmanager: PluginManager):
+    pluginmanager.add_hookspecs(hooks)
+
+
 def pytest_addoption(parser: Parser):
     parser.addoption(
         "--robotargs",
         default="",
         help="additional arguments to be passed to robotframework",
+    )
+
+
+def pytest_robot_modify_args(args: list[str], session: Session):
+    args.extend(
+        cast(
+            str,
+            session.config.getoption(  # type:ignore[no-untyped-call]
+                "--robotargs"
+            ),
+        ).split(" ")
     )
 
 

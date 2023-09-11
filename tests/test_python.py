@@ -110,6 +110,11 @@ def test_robot_options_variable_merge_listeners(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
 
 
+def test_robot_modify_args_hook(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+
+
 def test_listener_calls_log_file(pytester_dir: PytesterDir):
     result = pytester_dir.runpytest(
         "--robotargs", f"--listener {pytester_dir.path / 'Listener.py'}"
