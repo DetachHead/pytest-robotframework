@@ -50,7 +50,9 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
         raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot_arg_list = list[str]()
-    session.config.hook.pytest_robot_modify_args(args=robot_arg_list, session=session)
+    session.config.hook.pytest_robot_modify_args(
+        args=robot_arg_list, session=session, collect_only=collect_only
+    )
     robot_args = cast(
         dict[str, object],
         always_merger.merge(  # type:ignore[no-untyped-call]
