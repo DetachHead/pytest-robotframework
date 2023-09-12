@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Dict, cast
 
 import pytest
 from deepmerge import always_merger
+from exceptiongroup import ExceptionGroup
 from pytest import TestReport
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
@@ -49,12 +50,12 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     if _listeners.too_late:
         raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()  # type:ignore[no-untyped-call]
-    robot_arg_list = list[str]()
+    robot_arg_list: list[str] = []
     session.config.hook.pytest_robot_modify_args(
         args=robot_arg_list, session=session, collect_only=collect_only
     )
     robot_args = cast(
-        dict[str, object],
+        Dict[str, object],
         always_merger.merge(  # type:ignore[no-untyped-call]
             robot.parse_arguments(  # type:ignore[no-untyped-call]
                 [  # type:ignore[no-any-expr]
@@ -63,27 +64,37 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                     session.path,
                 ]
             )[0],
-            dict[str, object](
-                extension="py:robot",
-                runemptysuite=True,
-                parser=[PythonParser(session)],
-                prerunmodifier=[PytestCollector(session, collect_only=collect_only)],
-            ),
+            {  # type:ignore[no-any-expr]
+                "extension": "py:robot",
+                "runemptysuite": True,
+                "parser": [PythonParser(session)],  # type:ignore[no-any-expr]
+                "prerunmodifier": [  # type:ignore[no-any-expr]
+                    PytestCollector(session, collect_only=collect_only)
+                ],
+            },
         ),
     )
     if collect_only:
-        robot_args |= {"report": None, "output": None, "log": None, "exitonerror": True}
+        robot_args = {
+            **robot_args,
+            "report": None,
+            "output": None,
+            "log": None,
+            "exitonerror": True,
+        }
     else:
         robot_args = always_merger.merge(  # type:ignore[no-untyped-call]
             robot_args,
-            dict[str, object](
-                prerunmodifier=[PytestRuntestProtocolInjector(session)],
-                listener=[
+            {  # type:ignore[no-any-expr]
+                "prerunmodifier": [  # type:ignore[no-any-expr]
+                    PytestRuntestProtocolInjector(session)
+                ],
+                "listener": [  # type:ignore[no-any-expr]
                     PytestRuntestProtocolHooks(session),
                     ErrorDetector(session),
                     *_listeners.instances,
                 ],
-            ),
+            },
         )
     _listeners.too_late = True
     # needed for log_file listener methods to prevent logger from deactivating after the test is

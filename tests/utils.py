@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Never, cast
+from typing import TYPE_CHECKING, Dict, cast
 
 from lxml.etree import XML
 from pytest import ExitCode, Pytester
 
 if TYPE_CHECKING:
     from lxml.etree import _Element
-    from typing_extensions import override
+    from typing_extensions import Never, override
 
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ def assert_robot_total_stats(pytester: Pytester, *, passed=0, skipped=0, failed=
     statistics = next(child for child in root if child.tag == "statistics")
     total = next(child for child in statistics if child.tag == "total")
     result = cast(
-        dict[str, str],
+        Dict[str, str],
         next(child for child in total if child.tag == "stat").attrib.__copy__(),
     )
     assert result == {"pass": str(passed), "fail": str(failed), "skip": str(skipped)}

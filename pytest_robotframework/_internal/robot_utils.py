@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, cast
+from typing import Generic, Union, cast
 
 from basedtyping import T
 from robot.running.context import _ExecutionContext
@@ -22,4 +22,4 @@ def execution_context() -> _ExecutionContext | None:
     # need to import it every time because it changes
     from robot.running import EXECUTION_CONTEXTS
 
-    return cast(_ExecutionContext | None, EXECUTION_CONTEXTS.current)
+    return cast(Union[_ExecutionContext, None], EXECUTION_CONTEXTS.current)

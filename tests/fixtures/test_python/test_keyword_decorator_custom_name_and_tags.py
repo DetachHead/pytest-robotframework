@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from contextlib import AbstractContextManager, contextmanager
-
-# Callable isnt a collection
-from typing import TYPE_CHECKING, Callable, assert_type  # noqa: UP035
+from typing import TYPE_CHECKING, Callable
 
 from pytest_robotframework import keyword
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+    from typing_extensions import assert_type
 
 
 @keyword(name="foo bar", tags=("a", "b"))
