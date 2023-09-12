@@ -3,18 +3,17 @@
 from __future__ import annotations
 
 import inspect
-from collections import defaultdict
 from contextlib import AbstractContextManager, nullcontext
 from functools import wraps
 from pathlib import Path
-
-# yes lets put the Callable type in the collection module.... because THAT makes sense!!!
-# said no one ever
-from typing import (  # noqa: UP035
+from typing import (
     TYPE_CHECKING,
     Callable,
-    ParamSpec,
+    DefaultDict,
+    Dict,
+    Type,
     TypeVar,
+    Union,
     cast,
     overload,
 )
@@ -27,7 +26,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc
-from typing_extensions import override
+from typing_extensions import ParamSpec, override
 
 from pytest_robotframework._internal.errors import UserError
 from pytest_robotframework._internal.robot_utils import execution_context
@@ -39,12 +38,12 @@ if TYPE_CHECKING:
     from robot.running.context import _ExecutionContext
 
 
-RobotVariables = dict[str, object]
+RobotVariables = Dict[str, object]
 
-Listener = ListenerV2 | ListenerV3
+Listener = Union[ListenerV2, ListenerV3]
 
 
-_suite_variables = defaultdict[Path, RobotVariables](dict)
+_suite_variables = DefaultDict[Path, RobotVariables](dict)
 
 
 def set_variables(variables: RobotVariables):
@@ -56,7 +55,7 @@ def set_variables(variables: RobotVariables):
     _suite_variables[suite_path] = variables
 
 
-_resources = list[Path]()
+_resources: list[Path] = []
 
 
 def import_resource(path: Path | str):
@@ -163,21 +162,24 @@ class _KeywordDecorator:
             else:
                 status_reporter.__exit__(type(error), error, error.__traceback__)
 
-        class WrappedContextManager(AbstractContextManager[T]):
+        # https://github.com/python/mypy/issues/16097
+        class WrappedContextManager(AbstractContextManager):  # type:ignore[type-arg]
             """defers exiting the status reporter until after the wrapped context
             manager is finished"""
 
             def __init__(
                 self,
-                wrapped: AbstractContextManager[T],
-                status_reporter: AbstractContextManager[None],
+                wrapped: AbstractContextManager,  # type:ignore[type-arg]
+                status_reporter: AbstractContextManager,  # type:ignore[type-arg]
             ) -> None:
-                self.wrapped = wrapped
-                self.status_reporter = status_reporter
+                self.wrapped = wrapped  # type:ignore[no-any-expr]
+                self.status_reporter = status_reporter  # type:ignore[no-any-expr]
 
             @override
             def __enter__(self) -> T:
-                return self.wrapped.__enter__()
+                return (  # type:ignore[no-any-return]
+                    self.wrapped.__enter__()  # type:ignore[no-any-expr,no-untyped-call]
+                )
 
             @override
             def __exit__(
@@ -187,8 +189,10 @@ class _KeywordDecorator:
                 traceback: TracebackType | None,
                 /,
             ) -> bool | None:
-                suppress = self.wrapped.__exit__(exc_type, exc_value, traceback)
-                exit_status_reporter(self.status_reporter)
+                suppress = self.wrapped.__exit__(  # type:ignore[no-any-expr]
+                    exc_type, exc_value, traceback
+                )
+                exit_status_reporter(self.status_reporter)  # type:ignore[no-any-expr]
                 return suppress
 
         @wraps(fn)
@@ -290,10 +294,10 @@ def keywordify(
     )
 
 
-_errors = list[Exception]()
+_errors: list[Exception] = []
 
 _T_ListenerOrSuiteVisitor = TypeVar(
-    "_T_ListenerOrSuiteVisitor", bound=type[Listener | SuiteVisitor]
+    "_T_ListenerOrSuiteVisitor", bound=Type[Union[Listener, SuiteVisitor]]
 )
 
 
@@ -336,13 +340,13 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
 
 class _ListenerRegistry:
     def __init__(self):
-        self.instances = list[Listener]()
+        self.instances: list[Listener] = []
         self.too_late = False
 
 
 _listeners = _ListenerRegistry()
 
-_T_Listener = TypeVar("_T_Listener", bound=type[Listener])
+_T_Listener = TypeVar("_T_Listener", bound=Type[Listener])
 
 
 def listener(cls: _T_Listener) -> _T_Listener:

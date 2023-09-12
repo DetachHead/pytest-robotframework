@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import Callable, Concatenate, ParamSpec, cast  # noqa: UP035
+from typing import Callable, cast
 
 from basedtyping import T
+from typing_extensions import Concatenate, ParamSpec
 
 P = ParamSpec("P")
 

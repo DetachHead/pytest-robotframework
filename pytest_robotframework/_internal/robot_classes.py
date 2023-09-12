@@ -5,16 +5,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 from types import ModuleType
-
-# callable is not a collection
-from typing import (  # noqa: UP035
-    TYPE_CHECKING,
-    Callable,
-    Generator,
-    Literal,
-    ParamSpec,
-    cast,
-)
+from typing import TYPE_CHECKING, Callable, Generator, List, Literal, Tuple, cast
 
 from _pytest import runner
 from pluggy import HookCaller, HookImpl
@@ -23,7 +14,7 @@ from robot import model, result, running
 from robot.api import SuiteVisitor
 from robot.api.interfaces import ListenerV3, Parser, TestDefaults
 from robot.running.model import Body
-from typing_extensions import override
+from typing_extensions import ParamSpec, override
 
 from pytest_robotframework import catch_errors
 from pytest_robotframework._internal import robot_library
@@ -157,7 +148,7 @@ class PytestCollector(SuiteVisitor):
                                 marker.name,
                                 *(
                                     str(arg)
-                                    for arg in cast(tuple[object, ...], marker.args)
+                                    for arg in cast(Tuple[object, ...], marker.args)
                                 ),
                             ]
                         )
@@ -275,10 +266,10 @@ class PytestRuntestProtocolHooks(ListenerV3):
     def __init__(self, session: Session):
         self.session = session
         self.stop_running_hooks = False
-        self.hookwrappers = dict[HookImpl, _HookWrapper]()
+        self.hookwrappers: dict[HookImpl, _HookWrapper] = {}
         """hookwrappers that are in the middle of running"""
-        self.start_test_hooks = list[HookImpl]()
-        self.end_test_hooks = list[HookImpl]()
+        self.start_test_hooks: list[HookImpl] = []
+        self.end_test_hooks: list[HookImpl] = []
 
     def _get_item(self, data: running.TestCase) -> Item:
         item = _get_item_from_robot_test(self.session, data)
@@ -416,7 +407,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
             self._call_hooks(item, self.end_test_hooks)
 
 
-robot_errors_key = StashKey[list[model.Message]]()
+robot_errors_key = StashKey[List[model.Message]]()
 
 
 @catch_errors
@@ -463,5 +454,7 @@ class ErrorDetector(ListenerV3):
                 f" {self.current_test})"
             )
         if not item.stash.get(robot_errors_key, None):
-            item.stash[robot_errors_key] = list[model.Message]()
+            # TODO: why can't mypy infer the type here?
+            # https://github.com/DetachHead/pytest-robotframework/issues/36
+            item.stash[robot_errors_key] = []  # type:ignore[misc]
         item.stash[robot_errors_key].append(message)

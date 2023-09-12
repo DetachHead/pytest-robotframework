@@ -3,7 +3,7 @@ library by `robot_classes.PytestRuntestProtocolInjector`"""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, List, Literal, cast
 
 from _pytest._code.code import ExceptionInfo, ExceptionRepr
 from _pytest.runner import call_and_report, show_test_item
@@ -16,7 +16,7 @@ from pytest_robotframework._internal.errors import InternalError
 if TYPE_CHECKING:
     from pytest_robotframework._internal.robot_utils import Cloaked
 
-_report_key = StashKey[list[TestReport]]()
+_report_key = StashKey[List[TestReport]]()
 
 
 def _call_and_report_robot_edition(
@@ -24,10 +24,11 @@ def _call_and_report_robot_edition(
 ):
     """wrapper for the `call_and_report` function used by `_pytest.runner.runtestprotocol`
     with additional logic to show the result in the robot log"""
+    reports: list[TestReport]
     if _report_key in item.stash:
         reports = item.stash[_report_key]
     else:
-        reports = list[TestReport]()
+        reports = []
         item.stash[_report_key] = reports
     report = call_and_report(  # type:ignore[no-untyped-call]
         item, when, log=True, **kwargs

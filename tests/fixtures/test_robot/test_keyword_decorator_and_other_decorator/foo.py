@@ -2,11 +2,10 @@
 from __future__ import annotations
 
 from functools import wraps
-
-# callable isnt a collection
-from typing import TYPE_CHECKING, Callable, ParamSpec  # noqa: UP035
+from typing import TYPE_CHECKING, Callable
 
 from robot.api import logger
+from typing_extensions import ParamSpec
 
 from pytest_robotframework import keyword
 
