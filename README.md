@@ -188,8 +188,9 @@ there are multiple ways you can specify the robot arguments directly. however, a
 you can specify a `pytest_robot_modify_args` hook in your `conftest.py` to programmatically modify the arguments
 
 ```py
-def pytest_robot_modify_args(args: list[str], session: Session) -> None:
-    args.extend(["--listener", "Foo"])
+def pytest_robot_modify_args(args: list[str], collect_only: bool, session: Session) -> None:
+    if not collect_only:
+        args.extend(["--listener", "Foo"])
 ```
 
 note that not all arguments that the plugin passes to robot will be present in the `args` list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook
