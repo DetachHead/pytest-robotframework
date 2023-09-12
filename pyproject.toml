@@ -326,48 +326,6 @@ extend-select = [
     "AIR",
     "PERF",
     "FURB",
-    # nursery rules:
-    # https://github.com/astral-sh/ruff/issues/6910
-    "E111",
-    "E113",
-    "E114",
-    "E115",
-    "E116",
-    "E117",
-    "E201",
-    "E202",
-    "E203",
-    "E211",
-    "E221",
-    "E222",
-    "E223",
-    "E224",
-    "E225",
-    "E226",
-    "E227",
-    "E228",
-    "E231",
-    "E241",
-    "E242",
-    "E251",
-    "E252",
-    "E261",
-    "E262",
-    "E265",
-    "E266",
-    "E271",
-    "E272",
-    "E273",
-    "E274",
-    "E275",
-    "PLC1901",
-    "PLR6301",
-    "PLW1641",
-    "PLW3201",
-    "RUF017",
-    "FURB113",
-    "FURB131",
-    "FURB132",
 ]
 ignore = [
     "PLR0913", # Too many arguments to function call
@@ -410,6 +368,7 @@ ignore = [
 target-version = "py311"
 respect-gitignore = true
 line-length = 100
+preview = true
 
 [tool.ruff.pycodestyle]
 ignore-overlong-task-comments = true
