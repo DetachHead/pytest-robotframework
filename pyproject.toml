@@ -31,7 +31,7 @@ requires = ["poetry-core>=1.1.0b2"]
 robotframework = "pytest_robotframework._internal.plugin"
 
 [tool.black]
-target-version = ["py311"]
+target-version = ["py38"]
 skip-magic-trailing-comma = true
 preview = true
 
@@ -265,6 +265,7 @@ enable_assertion_pass_hook = true
 allow_redefinition = true
 default_return = false
 cache_dir = 'nul'         # disable cache because it sucks
+python_version = '3.8'
 
 [[tool.mypy.overrides]]
 module = ['robot.*']
@@ -365,7 +366,7 @@ ignore = [
     "S101",    # Use of assert detected (pytest uses assert statements)
     "E701",    # Multiple statements on one line (sometimes conflicts with black)
 ]
-target-version = "py311"
+target-version = "py38"
 respect-gitignore = true
 line-length = 100
 preview = true

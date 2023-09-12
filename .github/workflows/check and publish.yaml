@@ -33,8 +33,8 @@ jobs:
           poetry-version: "1.3.2"
       - run: poetry lock --check
       - run: poetry install
-      - run: poetry run mypy -p pytest_robotframework
-      - run: poetry run mypy tests
+      - run: poetry run mypy -p pytest_robotframework --python-version ${{ matrix.python_version }}
+      - run: poetry run mypy tests --python-version 3.11
       - run: poetry run black --check --diff .
       - run: poetry run ruff .
       - run: poetry run pylint pytest_robotframework tests
