@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 from types import ModuleType
-from typing import TYPE_CHECKING, Callable, Generator, List, Literal, Tuple, cast
+from typing import TYPE_CHECKING, Callable, Generator, Literal, Tuple, cast
 
 from _pytest import runner
 from pluggy import HookCaller, HookImpl
@@ -19,7 +19,13 @@ from typing_extensions import ParamSpec, override
 from pytest_robotframework import catch_errors
 from pytest_robotframework._internal import robot_library
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.robot_utils import Cloaked
+from pytest_robotframework._internal.robot_utils import (
+    Cloaked,
+    get_item_from_robot_test,
+    robot_late_failures_key,
+    running_test_case_key,
+    setup_late_failures,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -46,17 +52,6 @@ def _create_running_keyword(
 
 
 collected_robot_suite_key = StashKey[model.TestSuite]()
-running_test_case_key = StashKey[running.TestCase]()
-
-
-def _get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
-    try:
-        return next(
-            item for item in session.items if item.stash[running_test_case_key] == test
-        )
-    except StopIteration:
-        # the robot test was found but got filtered out by pytest
-        return None
 
 
 class PythonParser(Parser):
@@ -163,7 +158,7 @@ class PytestCollector(SuiteVisitor):
             # remove any .robot tests that were filtered out by pytest (and the fake test
             # from `PythonParser`):
             for test in suite.tests[:]:
-                if not _get_item_from_robot_test(self.session, test):
+                if not get_item_from_robot_test(self.session, test):
                     suite.tests.remove(test)
 
             # add any .py tests that were collected by pytest
@@ -216,7 +211,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             robot_library.__name__, alias=robot_library.__name__
         )
         for test in suite.tests:
-            item = _get_item_from_robot_test(self.session, test)
+            item = get_item_from_robot_test(self.session, test)
             if not item:
                 raise InternalError(
                     "this should NEVER happen, `PytestCollector` failed to filter out"
@@ -272,7 +267,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         self.end_test_hooks: list[HookImpl] = []
 
     def _get_item(self, data: running.TestCase) -> Item:
-        item = _get_item_from_robot_test(self.session, data)
+        item = get_item_from_robot_test(self.session, data)
         if not item:
             raise InternalError(
                 f"failed to find pytest item for robot test: {data.name}"
@@ -407,9 +402,6 @@ class PytestRuntestProtocolHooks(ListenerV3):
             self._call_hooks(item, self.end_test_hooks)
 
 
-robot_errors_key = StashKey[List[model.Message]]()
-
-
 @catch_errors
 class ErrorDetector(ListenerV3):
     """since errors logged by robot don't raise an exception and therefore won't cause the pytest
@@ -446,15 +438,12 @@ class ErrorDetector(ListenerV3):
                 "a robot error occurred and ErrorDetector failed to figure out what"
                 f" test it came from: {message.message}"
             )
-        item = _get_item_from_robot_test(self.session, self.current_test)
+        item = get_item_from_robot_test(self.session, self.current_test)
         if not item:
             raise InternalError(
                 "a robot error occurred and ErrorDetector failed to find the pytest"
                 f" item matching the robot test (error: {message.message}, test:"
                 f" {self.current_test})"
             )
-        if not item.stash.get(robot_errors_key, None):
-            # TODO: why can't mypy infer the type here?
-            # https://github.com/DetachHead/pytest-robotframework/issues/36
-            item.stash[robot_errors_key] = []  # type:ignore[misc]
-        item.stash[robot_errors_key].append(message)
+        setup_late_failures(item)
+        item.stash[robot_late_failures_key].errors.append(message.message)

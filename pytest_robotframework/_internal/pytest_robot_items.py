@@ -16,9 +16,11 @@ from pytest_robotframework._internal.robot_classes import (
     original_body_key,
     original_setup_key,
     original_teardown_key,
+)
+from pytest_robotframework._internal.robot_utils import (
+    execution_context,
     running_test_case_key,
 )
-from pytest_robotframework._internal.robot_utils import execution_context
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
