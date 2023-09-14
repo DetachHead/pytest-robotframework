@@ -31,8 +31,8 @@ from pytest_robotframework._internal.robot_classes import (
     PytestRuntestProtocolHooks,
     PytestRuntestProtocolInjector,
     PythonParser,
-    robot_errors_key,
 )
+from pytest_robotframework._internal.robot_utils import robot_late_failures_key
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -153,14 +153,24 @@ def pytest_assertion_pass(orig: str, expl: str):
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:
-    errors = item.stash.get(robot_errors_key, None)
-    if errors:
+    late_failures = item.stash.get(robot_late_failures_key, None)
+    if late_failures:
         result = TestReport.from_item_and_call(item, call)
         result.outcome = "failed"
-        result.longrepr = (
-            f"robot errors detected: {[error.message for error in errors]}"
-        )
-        del item.stash[robot_errors_key]
+        result.longrepr = ""
+        for description, failures in (
+            ("errors from listeners or suite visitors", late_failures.errors),
+            (
+                "failures from keywords with `continue_on_failure` enabled",
+                late_failures.failures,
+            ),
+        ):
+            if not failures:
+                continue
+            # need separate variable because \n doesn't work inside nested f strings
+            list_str = "\n- ".join(failures)
+            result.longrepr += f"{description}:\n\n- {list_str}\n\n"
+        del item.stash[robot_late_failures_key]
         return result
     return None
 

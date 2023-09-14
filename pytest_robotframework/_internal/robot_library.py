@@ -11,6 +11,7 @@ from pytest import Item, StashKey, TestReport
 from robot.api.deco import keyword
 from robot.libraries.BuiltIn import BuiltIn
 
+import pytest_robotframework
 from pytest_robotframework._internal.errors import InternalError
 
 if TYPE_CHECKING:
@@ -68,6 +69,7 @@ def _call_and_report_robot_edition(
 @keyword  # type:ignore[no-any-expr,misc]
 def setup(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
     item = arg.value
+    pytest_robotframework._current_test = item  # noqa: SLF001
     # mostly copied from the start of `_pytest.runner.runtestprotocol`:
     if (
         hasattr(item, "_request")
@@ -102,6 +104,7 @@ def teardown(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
     _call_and_report_robot_edition(
         item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
     )
+    pytest_robotframework._current_test = None  # noqa: SLF001
 
 
 @keyword  # type:ignore[no-any-expr,misc]
