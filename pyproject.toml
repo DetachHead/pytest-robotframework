@@ -266,7 +266,6 @@ enable_assertion_pass_hook = true
 allow_redefinition = true
 default_return = false
 cache_dir = 'nul'         # disable cache because it sucks
-python_version = '3.8'
 
 [[tool.mypy.overrides]]
 module = ['robot.*']
