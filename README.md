@@ -219,7 +219,9 @@ enable_assertion_pass_hook = true
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/c2525ccf-c1c6-4c06-be79-c36fefd3bed4)
 
-## limitations
+## limitations with python tests
+
+there are several limitations with using robotframework without the language that this plugin includes workarounds for
 
 ### making keywords show in the robot log
 
@@ -265,4 +267,34 @@ import some_module
 keywordify(some_module, "some_function")
 # works on classes too:
 keywordify(some_module.SomeClass, "some_method")
+```
+
+### `run keyword and continue on failure` doesn't continue after the failure
+
+#### `@keyword` decorator
+
+the `@keyword` decorator has a `continue_on_failure` argument which marks the test as failed but continues test execution:
+
+```py
+from pytest_robotframework import keyword
+
+@keyword(continue_on_failure=True)
+def foo():
+    raise Exception
+
+def test_foo():
+    foo()
+    logger.info("hi")  # gets run
+```
+
+#### `continue_on_failure` context manager
+
+```py
+from pytest_robotframework import continue_on_failure
+
+def test_foo():
+    with continue_on_failure():
+        assert 1 == 2  # marks the test as failed but continues the test
+        logger.info("foo")  # doesn't run
+    logger.info("bar")  # does run
 ```
