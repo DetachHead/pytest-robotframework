@@ -192,7 +192,10 @@ class _KeywordDecorator:
                 suppress = self.wrapped.__exit__(  # type:ignore[no-any-expr]
                     exc_type, exc_value, traceback
                 )
-                exit_status_reporter(self.status_reporter)  # type:ignore[no-any-expr]
+                exit_status_reporter(
+                    self.status_reporter,  # type:ignore[no-any-expr]
+                    (None if suppress else exc_value),
+                )
                 return suppress
 
         @wraps(fn)

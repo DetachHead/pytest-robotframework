@@ -16,7 +16,11 @@ if TYPE_CHECKING:
 @keyword
 @contextmanager
 def asdf() -> Iterator[None]:
-    raise Exception
+    logger.info("start")  # type:ignore[no-untyped-call]
+    try:
+        yield
+    finally:
+        logger.info("end")  # type:ignore[no-untyped-call]
 
 
 # type tests
@@ -26,4 +30,6 @@ if TYPE_CHECKING:
 
 def test_foo():
     with asdf():
-        logger.info(1)  # type:ignore[no-untyped-call]
+        logger.info(0)  # type:ignore[no-untyped-call]
+        raise Exception
+    logger.info(1)  # type:ignore[unreachable]

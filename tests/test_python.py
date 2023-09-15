@@ -329,9 +329,14 @@ def test_keyword_decorator_context_manager_that_doesnt_suppress(
 ):
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath(
-        "//kw[@name='asdf' and ./status[@status='FAIL']]"
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='start']")
+    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='0']")
+    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='end']")
+    assert xml.xpath(
+        "//kw[@name='asdf' and ./status[@status='FAIL'] and ./msg[.='Exception']]"
     )
+    assert not xml.xpath("//msg[.='1']")
 
 
 def test_keywordify_keyword_inside_context_manager(pytester_dir: PytesterDir):
@@ -542,4 +547,12 @@ def test_keyword_and_pytest_raises(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
         "//kw[@name='raises']/kw[@name='bar']/status[@status='FAIL']"
+    )
+
+
+def test_keyword_raises(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    assert output_xml(pytester_dir).xpath(
+        "//kw[@name='bar' and ./status[@status='FAIL'] and ./msg[.='FooError']]"
     )
