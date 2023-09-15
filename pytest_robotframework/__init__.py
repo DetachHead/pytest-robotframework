@@ -19,7 +19,7 @@ from typing import (
     overload,
 )
 
-from basedtyping import Function, ReifiedGeneric, T
+from basedtyping import Function, T
 from robot import result, running
 from robot.api import SuiteVisitor, deco
 from robot.api.interfaces import ListenerV2, ListenerV3
@@ -27,7 +27,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc
-from typing_extensions import Never, ParamSpec, override
+from typing_extensions import ParamSpec, override
 
 from pytest_robotframework._internal.errors import InternalError, UserError
 from pytest_robotframework._internal.robot_utils import (
@@ -100,11 +100,8 @@ def _runner_for(  # type:ignore[no-any-decorated]
 
 _current_test: Item | None = None
 
-_P = ParamSpec("_P")
-_T_return_if_fail = TypeVar("_T_return_if_fail", BaseException, Never)
 
-
-class _KeywordDecorator(ReifiedGeneric[_T_return_if_fail]):
+class _BaseKeywordDecorator:
     def __init__(
         self, *, name: str | None, tags: tuple[str, ...] | None, module: str | None
     ) -> None:
@@ -112,23 +109,15 @@ class _KeywordDecorator(ReifiedGeneric[_T_return_if_fail]):
         self.tags = tags or ()
         self.module = module
 
-    @overload
-    def __call__(
-        self, fn: Callable[_P, AbstractContextManager[T]]
-    ) -> Callable[_P, AbstractContextManager[T] | _T_return_if_fail]: ...
-
-    @overload
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T | _T_return_if_fail]: ...
-
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T | _T_return_if_fail]:
-        if isinstance(fn, _KeywordDecorator):
+    def __call__(self, fn: Function) -> Function:
+        if isinstance(fn, _BaseKeywordDecorator):
             return fn
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
         deco.keyword(name=self.name, tags=self.tags)(fn)
 
         def create_status_reporter(
-            *args: _P.args, **kwargs: _P.kwargs
+            *args: object, **kwargs: object
         ) -> AbstractContextManager[None]:
             if self.module is None:
                 self.module = fn.__module__
@@ -170,6 +159,17 @@ class _KeywordDecorator(ReifiedGeneric[_T_return_if_fail]):
             else:
                 status_reporter.__exit__(type(error), error, error.__traceback__)
 
+        continue_on_error = isinstance(self, _ContinuableFailureKeywordDecorator)
+
+        def add_continuable_failure(e: BaseException):
+            if not _current_test:
+                raise InternalError(
+                    "failed to find current test to save continuable failure for"
+                    f" keyword: {fn.__name__}"
+                ) from e
+            setup_late_failures(_current_test)
+            _current_test.stash[robot_late_failures_key].failures.append(str(e))
+
         # https://github.com/python/mypy/issues/16097
         class WrappedContextManager(AbstractContextManager):  # type:ignore[type-arg]
             """defers exiting the status reporter until after the wrapped context
@@ -183,15 +183,14 @@ class _KeywordDecorator(ReifiedGeneric[_T_return_if_fail]):
                 self.wrapped = wrapped  # type:ignore[no-any-expr]
                 self.status_reporter = status_reporter  # type:ignore[no-any-expr]
 
-            # https://github.com/DetachHead/pytest-robotframework/issues/36
             @override
-            def __enter__(self) -> T:  # type:ignore[explicit-override]
-                return (  # type:ignore[no-any-return]
+            def __enter__(self) -> object:
+                return (
                     self.wrapped.__enter__()  # type:ignore[no-any-expr,no-untyped-call]
                 )
 
             @override
-            def __exit__(  # type:ignore[explicit-override]
+            def __exit__(
                 self,
                 exc_type: type[BaseException] | None,
                 exc_value: BaseException | None,
@@ -205,40 +204,30 @@ class _KeywordDecorator(ReifiedGeneric[_T_return_if_fail]):
                     self.status_reporter,  # type:ignore[no-any-expr]
                     (None if suppress else exc_value),
                 )
-                return suppress
+                if exc_value and continue_on_error:
+                    add_continuable_failure(exc_value)
+                return suppress or continue_on_error
 
         @wraps(fn)
-        def inner(*args: _P.args, **kwargs: _P.kwargs) -> T | _T_return_if_fail:
+        def inner(*args: object, **kwargs: object) -> object:
             status_reporter = create_status_reporter(*args, **kwargs)
             status_reporter.__enter__()
-            fn_result: T | _T_return_if_fail
+            fn_result: object
             try:
                 fn_result = fn(*args, **kwargs)
             # ideally we would only be catching Exception here, but we keywordify some pytest
             # functions that raise Failed, which extends BaseException
             except BaseException as e:  # noqa: BLE001
                 exit_status_reporter(status_reporter, e)
-                if self.__reified_generics__[  # type:ignore[comparison-overlap]
-                    0
-                ] is Never or isinstance(e, (KeyboardInterrupt, SystemExit)):
+                if not continue_on_error or isinstance(
+                    e, (KeyboardInterrupt, SystemExit)
+                ):
                     raise
-                if not _current_test:
-                    raise InternalError(
-                        "failed to find current test to save continuable failure for"
-                        f" keyword: {fn.__name__}"
-                    ) from e
-                setup_late_failures(_current_test)
-                _current_test.stash[robot_late_failures_key].failures.append(str(e))
-                # 🚀 independently verified for safety by the reified generic check
-                fn_result = e  # type:ignore[assignment]
+                add_continuable_failure(e)
+                fn_result = e
             else:
                 if isinstance(fn_result, AbstractContextManager):
-                    return (
-                        # 🚀 independently verified for safety by the overloads
-                        WrappedContextManager(  # type:ignore[return-value]
-                            fn_result, status_reporter
-                        )
-                    )
+                    return WrappedContextManager(fn_result, status_reporter)
                 exit_status_reporter(status_reporter)
             return fn_result
 
@@ -248,6 +237,37 @@ class _KeywordDecorator(ReifiedGeneric[_T_return_if_fail]):
         return inner
 
 
+_P = ParamSpec("_P")
+
+
+class _KeywordDecorator(_BaseKeywordDecorator):
+    @overload
+    def __call__(
+        self, fn: Callable[_P, AbstractContextManager[T]]
+    ) -> Callable[_P, AbstractContextManager[T]]: ...
+
+    @overload
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]: ...
+
+    @override
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
+        return super().__call__(fn)  # type:ignore[return-value]
+
+
+class _ContinuableFailureKeywordDecorator(_BaseKeywordDecorator):
+    @overload
+    def __call__(
+        self, fn: Callable[_P, AbstractContextManager[T]]
+    ) -> Callable[_P, AbstractContextManager[T]]: ...
+
+    @overload
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T | BaseException]: ...
+
+    @override
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T | BaseException]:
+        return super().__call__(fn)  # type:ignore[return-value]
+
+
 @overload
 def keyword(
     *,
@@ -255,7 +275,7 @@ def keyword(
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
     continue_on_failure: True,  # pylint:disable=redefined-outer-name
-) -> _KeywordDecorator[BaseException]: ...
+) -> _ContinuableFailureKeywordDecorator: ...
 
 
 @overload
@@ -265,7 +285,7 @@ def keyword(
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
     continue_on_failure: False = ...,  # pylint:disable=redefined-outer-name
-) -> _KeywordDecorator[Never]: ...
+) -> _KeywordDecorator: ...
 
 
 @overload
@@ -306,10 +326,10 @@ def keyword(  # pylint:disable=missing-param-doc
     """
     if fn is None:
         return (
-            _KeywordDecorator[BaseException](name=name, tags=tags, module=module)
+            _ContinuableFailureKeywordDecorator
             if continue_on_failure
-            else _KeywordDecorator[Never](name=name, tags=tags, module=module)
-        )
+            else _KeywordDecorator
+        )(name=name, tags=tags, module=module)
     return keyword(name=name, tags=tags, module=module)(fn)
 
 
@@ -418,4 +438,6 @@ def listener(cls: _T_Listener) -> _T_Listener:
 @keyword(continue_on_failure=True)
 @contextmanager
 def continue_on_failure() -> Iterator[None]:
+    """continues test execution if the body fails, then re-raises the exception at the end of the
+    test"""
     yield
