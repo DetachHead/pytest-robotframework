@@ -271,23 +271,7 @@ keywordify(some_module.SomeClass, "some_method")
 
 ### `run keyword and continue on failure` doesn't continue after the failure
 
-#### `@keyword` decorator
-
-the `@keyword` decorator has a `continue_on_failure` argument which marks the test as failed but continues test execution:
-
-```py
-from pytest_robotframework import keyword
-
-@keyword(continue_on_failure=True)
-def foo():
-    raise Exception
-
-def test_foo():
-    foo()
-    logger.info("hi")  # gets run
-```
-
-#### `continue_on_failure` context manager
+use the `continue_on_failure` context manager instead
 
 ```py
 from pytest_robotframework import continue_on_failure
