@@ -102,7 +102,10 @@ def _runner_for(  # type:ignore[no-any-decorated]
 _current_test: Item | None = None
 
 
-class _BaseKeywordDecorator:
+_P = ParamSpec("_P")
+
+
+class _KeywordDecorator:
     def __init__(
         self,
         *,
@@ -116,15 +119,23 @@ class _BaseKeywordDecorator:
         self.module = module
         self.on_error = on_error
 
-    def __call__(self, fn: Function) -> Function:
-        if isinstance(fn, _BaseKeywordDecorator):
-            return fn
+    @overload
+    def __call__(
+        self, fn: Callable[_P, AbstractContextManager[T]]
+    ) -> Callable[_P, AbstractContextManager[T]]: ...
+
+    @overload
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]: ...
+
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
+        if isinstance(fn, _KeywordDecorator):
+            return fn  # type:ignore[unreachable]
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
         deco.keyword(name=self.name, tags=self.tags)(fn)
 
         def create_status_reporter(
-            *args: object, **kwargs: object
+            *args: _P.args, **kwargs: _P.kwargs
         ) -> AbstractContextManager[None]:
             if self.module is None:
                 self.module = fn.__module__
@@ -218,10 +229,9 @@ class _BaseKeywordDecorator:
                 return suppress or on_error != "fail now"
 
         @wraps(fn)
-        def inner(*args: object, **kwargs: object) -> object:
+        def inner(*args: _P.args, **kwargs: _P.kwargs) -> T | None:
             status_reporter = create_status_reporter(*args, **kwargs)
             status_reporter.__enter__()
-            fn_result: object
             try:
                 fn_result = fn(*args, **kwargs)
             # ideally we would only be catching Exception here, but we keywordify some pytest
@@ -233,48 +243,25 @@ class _BaseKeywordDecorator:
                 ):
                     raise
                 add_late_failure(e)
-                fn_result = e
+                fn_result = None
             else:
                 if isinstance(fn_result, AbstractContextManager):
-                    return WrappedContextManager(fn_result, status_reporter)
+                    # 🚀 independently verified for safety by the overloads
+                    return WrappedContextManager(  # type:ignore[return-value]
+                        fn_result, status_reporter
+                    )
                 exit_status_reporter(status_reporter)
             return fn_result
 
         inner._keyword_original_function = (  # type:ignore[attr-defined] # noqa: SLF001
             fn
         )
-        return inner
-
-
-_P = ParamSpec("_P")
-
-
-class _KeywordDecorator(_BaseKeywordDecorator):
-    @overload
-    def __call__(
-        self, fn: Callable[_P, AbstractContextManager[T]]
-    ) -> Callable[_P, AbstractContextManager[T]]: ...
-
-    @overload
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]: ...
-
-    @override
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
-        return super().__call__(fn)  # type:ignore[return-value]
-
-
-class _ContinuableFailureKeywordDecorator(_BaseKeywordDecorator):
-    @overload
-    def __call__(
-        self, fn: Callable[_P, AbstractContextManager[T]]
-    ) -> Callable[_P, AbstractContextManager[T]]: ...
-
-    @overload
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T | BaseException]: ...
-
-    @override
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T | BaseException]:
-        return super().__call__(fn)  # type:ignore[return-value]
+        # the inner function will return None if the error is ignored or deferred which is not
+        # typesafe, but we are not exposing `on_error` as part of the public api, and our usages do
+        # not look at the reuturn value.
+        # TODO: add a way to get the error from those context managers
+        # https://github.com/DetachHead/pytest-robotframework/issues/88
+        return inner  # type:ignore[return-value]
 
 
 @overload
@@ -283,17 +270,6 @@ def keyword(
     name: str | None = ...,
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
-    continue_on_failure: True,  # pylint:disable=redefined-outer-name
-) -> _ContinuableFailureKeywordDecorator: ...
-
-
-@overload
-def keyword(
-    *,
-    name: str | None = ...,
-    tags: tuple[str, ...] | None = ...,
-    module: str | None = ...,
-    continue_on_failure: False = ...,  # pylint:disable=redefined-outer-name
 ) -> _KeywordDecorator: ...
 
 
@@ -308,12 +284,7 @@ def keyword(fn: Callable[_P, T]) -> Callable[_P, T]: ...
 
 
 def keyword(  # pylint:disable=missing-param-doc
-    fn: Callable[_P, T] | None = None,
-    *,
-    name=None,
-    tags=None,
-    module=None,
-    continue_on_failure=False,  # pylint:disable=redefined-outer-name
+    fn: Callable[_P, T] | None = None, *, name=None, tags=None, module=None
 ):
     """marks a function as a keyword and makes it show in the robot log.
 
@@ -330,11 +301,9 @@ def keyword(  # pylint:disable=missing-param-doc
     defaults to the function's actual module
     """
     if fn is None:
-        return (
-            _ContinuableFailureKeywordDecorator
-            if continue_on_failure
-            else _KeywordDecorator
-        )(name=name, tags=tags, module=module, on_error="fail now")
+        return _KeywordDecorator(
+            name=name, tags=tags, module=module, on_error="fail now"
+        )
     return keyword(name=name, tags=tags, module=module)(fn)
 
 
@@ -370,7 +339,7 @@ def keywordify(
     )
 
 
-@_ContinuableFailureKeywordDecorator(on_error="fail later")
+@_KeywordDecorator(on_error="fail later")
 @contextmanager
 def continue_on_failure() -> Iterator[None]:
     """continues test execution if the body fails, then re-raises the exception at the end of the
@@ -378,7 +347,7 @@ def continue_on_failure() -> Iterator[None]:
     yield
 
 
-@_ContinuableFailureKeywordDecorator(on_error="ignore")
+@_KeywordDecorator(on_error="ignore")
 @contextmanager
 def ignore_failure() -> Iterator[None]:
     """continues test execution if the body fails, so the test will still pass. equivalent to
