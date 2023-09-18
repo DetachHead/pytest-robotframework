@@ -327,6 +327,7 @@ extend-select = [
     "AIR",
     "PERF",
     "FURB",
+    "LOG",
 ]
 ignore = [
     "PLR0913", # Too many arguments to function call
