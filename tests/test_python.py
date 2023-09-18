@@ -586,3 +586,17 @@ def test_ignore_failure_context_manager(pytester_dir: PytesterDir):
         "//status[.='failures from"
         " keywords with `continue_on_failure` enabled:\n\n- division by zero\n\n']"
     )
+
+
+def test_late_failures_and_normal_failure(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//kw[@name='Run Test']/kw[@name='continue_on_failure' and"
+        " ./status[@status='FAIL'] and ./msg[.='ZeroDivisionError: division by zero']]"
+    )
+    assert xml.xpath(
+        "//test[@name='test_foo']/status[contains(., 'FooError') and contains(.,"
+        " 'division by zero')]"
+    )

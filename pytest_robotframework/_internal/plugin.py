@@ -157,7 +157,7 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
     if late_failures:
         result = TestReport.from_item_and_call(item, call)
         result.outcome = "failed"
-        result.longrepr = ""
+        result.longrepr = f"{result.longrepr}\n\n" if result.longrepr else ""
         for description, failures in (
             ("errors from listeners or suite visitors", late_failures.errors),
             (
