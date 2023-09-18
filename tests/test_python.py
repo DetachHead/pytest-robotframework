@@ -558,25 +558,6 @@ def test_keyword_raises(pytester_dir: PytesterDir):
     )
 
 
-def test_keyword_continue_on_failure(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, failed=1)
-    assert_log_file_exists(pytester_dir)
-    xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='bar' and ./status[@status='FAIL'] and"
-        " ./msg[.='ZeroDivisionError: division by zero']]"
-    )
-    assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='baz' and ./status[@status='PASS'] and"
-        " ./msg[.='1']]"
-    )
-    assert xml.xpath("//kw[@name='Run Test']/msg[.='2']")
-    assert xml.xpath(
-        "//test[@name='test_foo']/status[.='failures from"
-        " keywords with `continue_on_failure` enabled:\n\n- division by zero\n\n']"
-    )
-
-
 def test_continue_on_failure_context_manager(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
@@ -588,5 +569,20 @@ def test_continue_on_failure_context_manager(pytester_dir: PytesterDir):
     assert xml.xpath("//kw[@name='Run Test']/msg[.='1']")
     assert xml.xpath(
         "//test[@name='test_foo']/status[.='failures from"
+        " keywords with `continue_on_failure` enabled:\n\n- division by zero\n\n']"
+    )
+
+
+def test_ignore_failure_context_manager(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//kw[@name='Run Test']/kw[@name='ignore_failure' and"
+        " ./status[@status='FAIL'] and ./msg[.='ZeroDivisionError: division by zero']]"
+    )
+    assert xml.xpath("//kw[@name='Run Test']/msg[.='1']")
+    assert not xml.xpath(
+        "//status[.='failures from"
         " keywords with `continue_on_failure` enabled:\n\n- division by zero\n\n']"
     )

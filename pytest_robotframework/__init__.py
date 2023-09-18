@@ -12,6 +12,7 @@ from typing import (
     DefaultDict,
     Dict,
     Iterator,
+    Literal,
     Type,
     TypeVar,
     Union,
@@ -103,11 +104,17 @@ _current_test: Item | None = None
 
 class _BaseKeywordDecorator:
     def __init__(
-        self, *, name: str | None, tags: tuple[str, ...] | None, module: str | None
+        self,
+        *,
+        name: str | None = None,
+        tags: tuple[str, ...] | None = None,
+        module: str | None = None,
+        on_error: Literal["fail now", "fail later", "ignore"],
     ) -> None:
         self.name = name
         self.tags = tags or ()
         self.module = module
+        self.on_error = on_error
 
     def __call__(self, fn: Function) -> Function:
         if isinstance(fn, _BaseKeywordDecorator):
@@ -159,9 +166,11 @@ class _BaseKeywordDecorator:
             else:
                 status_reporter.__exit__(type(error), error, error.__traceback__)
 
-        continue_on_error = isinstance(self, _ContinuableFailureKeywordDecorator)
+        on_error = self.on_error
 
-        def add_continuable_failure(e: BaseException):
+        def add_late_failure(e: BaseException):
+            if self.on_error != "fail later":
+                return
             if not _current_test:
                 raise InternalError(
                     "failed to find current test to save continuable failure for"
@@ -204,9 +213,9 @@ class _BaseKeywordDecorator:
                     self.status_reporter,  # type:ignore[no-any-expr]
                     (None if suppress else exc_value),
                 )
-                if exc_value and continue_on_error:
-                    add_continuable_failure(exc_value)
-                return suppress or continue_on_error
+                if exc_value:
+                    add_late_failure(exc_value)
+                return suppress or on_error != "fail now"
 
         @wraps(fn)
         def inner(*args: object, **kwargs: object) -> object:
@@ -219,11 +228,11 @@ class _BaseKeywordDecorator:
             # functions that raise Failed, which extends BaseException
             except BaseException as e:  # noqa: BLE001
                 exit_status_reporter(status_reporter, e)
-                if not continue_on_error or isinstance(
+                if on_error == "fail now" or isinstance(
                     e, (KeyboardInterrupt, SystemExit)
                 ):
                     raise
-                add_continuable_failure(e)
+                add_late_failure(e)
                 fn_result = e
             else:
                 if isinstance(fn_result, AbstractContextManager):
@@ -319,17 +328,13 @@ def keyword(  # pylint:disable=missing-param-doc
     :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
     :param module: customize the module that appears top the left of the keyword name in the log.
     defaults to the function's actual module
-    :param continue_on_failure: whether to continue test execution if the keyword fails. if a
-    failure occurs inside a keyword where `continue_on_failure` is `True`, the keyword stops and
-    returns the exception instead of its usual return type, the test keeps running and the failure
-    is re-raised at the end of the test, causing the test to fail.
     """
     if fn is None:
         return (
             _ContinuableFailureKeywordDecorator
             if continue_on_failure
             else _KeywordDecorator
-        )(name=name, tags=tags, module=module)
+        )(name=name, tags=tags, module=module, on_error="fail now")
     return keyword(name=name, tags=tags, module=module)(fn)
 
 
@@ -363,6 +368,25 @@ def keywordify(
             getattr(obj, method_name)  # type:ignore[no-any-expr]
         ),
     )
+
+
+@_ContinuableFailureKeywordDecorator(on_error="fail later")
+@contextmanager
+def continue_on_failure() -> Iterator[None]:
+    """continues test execution if the body fails, then re-raises the exception at the end of the
+    test. equivalent to robot's `run_keyword_and_continue_on_failure` keyword"""
+    yield
+
+
+@_ContinuableFailureKeywordDecorator(on_error="ignore")
+@contextmanager
+def ignore_failure() -> Iterator[None]:
+    """continues test execution if the body fails, so the test will still pass. equivalent to
+    robot's `run_keyword_and_ignore_error` keyword.
+
+    this should only be used if you are not sure whether the body will fail. if you are expecting an
+    error, you should use `pytest.raises` instead"""
+    yield
 
 
 _errors: list[Exception] = []
@@ -433,11 +457,3 @@ def listener(cls: _T_Listener) -> _T_Listener:
         )
     _listeners.instances.append(catch_errors(cls)())
     return cls
-
-
-@keyword(continue_on_failure=True)
-@contextmanager
-def continue_on_failure() -> Iterator[None]:
-    """continues test execution if the body fails, then re-raises the exception at the end of the
-    test"""
-    yield
