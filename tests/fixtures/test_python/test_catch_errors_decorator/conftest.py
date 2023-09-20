@@ -10,8 +10,6 @@ from pytest_robotframework import listener
 if TYPE_CHECKING:
     from robot import model, result
 
-ran = False
-
 
 @listener
 class Listener(ListenerV3):
