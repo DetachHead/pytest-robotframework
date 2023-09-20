@@ -486,6 +486,11 @@ def test_catch_errors_decorator(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
 
 
+def test_catch_errors_decorator_with_non_instance_method(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+
+
 def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
     run_and_assert_result(
         pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
