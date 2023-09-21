@@ -573,8 +573,8 @@ def test_continue_on_failure_context_manager(pytester_dir: PytesterDir):
     )
     assert xml.xpath("//kw[@name='Run Test']/msg[.='1']")
     assert xml.xpath(
-        "//test[@name='test_foo']/status[.='failures from"
-        " keywords with `continue_on_failure` enabled:\n\n- division by zero\n\n']"
+        "//test[@name='test_foo']/status[.='failures that occurred inside a"
+        " `continue_on_failure`:\n\n- division by zero\n\n']"
     )
 
 

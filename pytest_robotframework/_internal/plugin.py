@@ -6,15 +6,13 @@ from typing import TYPE_CHECKING, Dict, cast
 
 import pytest
 from deepmerge import always_merger
-from exceptiongroup import ExceptionGroup
-from pytest import TestReport
+from pytest import TestReport, hookimpl
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.run import RobotFramework
 
 from pytest_robotframework import (
-    _errors,
     _listeners,
     _resources,
     _suite_variables,
@@ -22,7 +20,7 @@ from pytest_robotframework import (
     keyword,
     keywordify,
 )
-from pytest_robotframework._internal import hooks
+from pytest_robotframework._internal import cringe_globals, hooks
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
 from pytest_robotframework._internal.robot_classes import (
@@ -32,7 +30,7 @@ from pytest_robotframework._internal.robot_classes import (
     PytestRuntestProtocolInjector,
     PythonParser,
 )
-from pytest_robotframework._internal.robot_utils import robot_late_failures_key
+from pytest_robotframework._internal.robot_utils import describe_late_failures
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -108,10 +106,9 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             )
     finally:
         _listeners.too_late = False
-    if _errors:
-        raise ExceptionGroup(
-            "the following errors occurred inside robot listeners", _errors
-        )
+    robot_errors = describe_late_failures(session)
+    if robot_errors:
+        raise Exception(robot_errors)
 
 
 def pytest_addhooks(pluginmanager: PluginManager):
@@ -137,6 +134,16 @@ def pytest_robot_modify_args(args: list[str], session: Session):
     )
 
 
+@hookimpl(tryfirst=True)  # type:ignore[no-any-expr]
+def pytest_sessionstart(session: Session):
+    cringe_globals._current_session = session  # noqa: SLF001
+
+
+@hookimpl(trylast=True)  # type:ignore[no-any-expr]
+def pytest_sessionfinish():
+    cringe_globals._current_session = None  # noqa: SLF001
+
+
 def pytest_assertion_pass(orig: str, expl: str):
     """without this hook, passing assertions won't show up at all in the robot log"""
 
@@ -153,24 +160,13 @@ def pytest_assertion_pass(orig: str, expl: str):
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:
-    late_failures = item.stash.get(robot_late_failures_key, None)
+    late_failures = describe_late_failures(item)
     if late_failures:
         result = TestReport.from_item_and_call(item, call)
         result.outcome = "failed"
-        result.longrepr = f"{result.longrepr}\n\n" if result.longrepr else ""
-        for description, failures in (
-            ("errors from listeners or suite visitors", late_failures.errors),
-            (
-                "failures from keywords with `continue_on_failure` enabled",
-                late_failures.failures,
-            ),
-        ):
-            if not failures:
-                continue
-            # need separate variable because \n doesn't work inside nested f strings
-            list_str = "\n- ".join(failures)
-            result.longrepr += f"{description}:\n\n- {list_str}\n\n"
-        del item.stash[robot_late_failures_key]
+        result.longrepr = (
+            f"{result.longrepr}\n\n" if result.longrepr else ""
+        ) + late_failures
         return result
     return None
 

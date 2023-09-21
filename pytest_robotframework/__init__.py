@@ -30,18 +30,19 @@ from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc
 from typing_extensions import ParamSpec, override
 
+from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
 from pytest_robotframework._internal.robot_utils import (
+    ContinuableFailure,
+    RobotError,
+    add_late_failure,
     execution_context,
-    robot_late_failures_key,
-    setup_late_failures,
 )
 from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from pytest import Item
     from robot.running.context import _ExecutionContext
 
 
@@ -97,9 +98,6 @@ def _runner_for(  # type:ignore[no-any-decorated]
     """use the original function instead of the `@keyword` wrapped one"""
     handler = cast(Function, getattr(handler, "_keyword_original_function", handler))
     return old_method(self, context, handler, positional, named)
-
-
-_current_test: Item | None = None
 
 
 _P = ParamSpec("_P")
@@ -179,16 +177,15 @@ class _KeywordDecorator:
 
         on_error = self.on_error
 
-        def add_late_failure(e: BaseException):
-            if self.on_error != "fail later":
-                return
-            if not _current_test:
-                raise InternalError(
-                    "failed to find current test to save continuable failure for"
-                    f" keyword: {fn.__name__}"
-                ) from e
-            setup_late_failures(_current_test)
-            _current_test.stash[robot_late_failures_key].failures.append(str(e))
+        def fail_later(e: BaseException):
+            if on_error == "fail later":
+                item = current_item()
+                if not item:
+                    raise InternalError(
+                        "failed to find current test to save continuable failure for"
+                        f" keyword: {fn.__name__}"
+                    ) from e
+                add_late_failure(item, ContinuableFailure(e))
 
         # https://github.com/python/mypy/issues/16097
         class WrappedContextManager(AbstractContextManager):  # type:ignore[type-arg]
@@ -225,7 +222,7 @@ class _KeywordDecorator:
                     (None if suppress else exc_value),
                 )
                 if exc_value:
-                    add_late_failure(exc_value)
+                    fail_later(exc_value)
                 return suppress or on_error != "fail now"
 
         @wraps(fn)
@@ -242,7 +239,7 @@ class _KeywordDecorator:
                     e, (KeyboardInterrupt, SystemExit)
                 ):
                     raise
-                add_late_failure(e)
+                fail_later(e)
                 fn_result = None
             else:
                 if isinstance(fn_result, AbstractContextManager):
@@ -358,8 +355,6 @@ def ignore_failure() -> Iterator[None]:
     yield
 
 
-_errors: list[Exception] = []
-
 _T_ListenerOrSuiteVisitor = TypeVar(
     "_T_ListenerOrSuiteVisitor", bound=Type[Union[Listener, SuiteVisitor]]
 )
@@ -381,7 +376,13 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
             try:
                 return fn(*args, **kwargs)
             except Exception as e:
-                _errors.append(e)
+                item_or_session = current_item() or current_session()
+                if not item_or_session:
+                    raise InternalError(
+                        f"an error occurred inside {cls.__name__} and failed to get the"
+                        " current pytest item/session"
+                    ) from e
+                add_late_failure(item_or_session, RobotError(str(e)))
                 raise
 
         return inner
