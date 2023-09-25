@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
@@ -24,7 +23,9 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
     fixtures_folder = Path(__file__).parent / "fixtures"
     test_file_fixture_dir = (
         fixtures_folder
-        / Path(os.path.relpath(cast(str, cast(ModuleType, test.module).__file__))).stem
+        / Path(cast(str, cast(ModuleType, test.module).__file__))
+        .relative_to(Path(__file__).parent)
+        .stem
     )
     fixture_dir_for_current_test = test_file_fixture_dir / test_name
     if fixture_dir_for_current_test.exists():
