@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 from contextlib import AbstractContextManager, contextmanager
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from robot.api import logger
 
 from pytest_robotframework import keyword
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from typing_extensions import assert_type
+    from collections.abc import Callable, Iterator
+    from typing import assert_type
 
 
 @keyword

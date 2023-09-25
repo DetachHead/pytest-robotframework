@@ -19,6 +19,7 @@ basedmypy = ">=2.1"
 lxml = ">=4.9.3"
 lxml-stubs = ">=0.4.0"
 pylint = ">=2.15"
+python-transpiler = { git = "https://github.com/DetachHead/python-transpiler", rev = "0b86fd415b7942b2f3889c72211ed79af9c6988a" }
 ruff = ">=0.0.290"
 robotframework-robocop = ">=4.1.0"
 robotframework-tidy = ">=4.5.0"
@@ -31,7 +32,6 @@ requires = ["poetry-core>=1.1.0b2"]
 robotframework = "pytest_robotframework._internal.plugin"
 
 [tool.black]
-target-version = ["py38"]
 skip-magic-trailing-comma = true
 preview = true
 
@@ -264,7 +264,6 @@ enable_assertion_pass_hook = true
 [tool.mypy]
 allow_redefinition = true
 default_return = false
-cache_dir = 'nul'         # disable cache because it sucks
 
 [[tool.mypy.overrides]]
 module = ['robot.*']
@@ -366,7 +365,7 @@ ignore = [
     "S101",    # Use of assert detected (pytest uses assert statements)
     "E701",    # Multiple statements on one line (sometimes conflicts with black)
 ]
-target-version = "py38"
+target-version = "py311"
 respect-gitignore = true
 line-length = 100
 preview = true

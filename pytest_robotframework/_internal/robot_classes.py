@@ -3,9 +3,10 @@ robot (some of them are not activated when running pytest in `--collect-only` mo
 
 from __future__ import annotations
 
+from collections.abc import Callable, Generator
 from contextlib import suppress
 from types import ModuleType
-from typing import TYPE_CHECKING, Callable, Generator, Literal, Tuple, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from _pytest import runner
 from pluggy import HookCaller, HookImpl
@@ -143,7 +144,7 @@ class PytestCollector(SuiteVisitor):
                                 marker.name,
                                 *(
                                     str(arg)
-                                    for arg in cast(Tuple[object, ...], marker.args)
+                                    for arg in cast(tuple[object, ...], marker.args)
                                 ),
                             ]
                         )

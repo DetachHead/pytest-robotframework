@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from robot.api import logger
 from typing_extensions import ParamSpec
@@ -10,6 +10,8 @@ from typing_extensions import ParamSpec
 from pytest_robotframework import keyword
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from basedtyping import T
 
 P = ParamSpec("P")
