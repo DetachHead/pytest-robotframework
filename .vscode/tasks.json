@@ -4,30 +4,30 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "poetry install requirements",
+      "label": "pdm install requirements",
       "type": "shell",
-      "command": "poetry",
-      "args": ["install"],
+      "command": "./pw",
+      "args": ["pdm", "install"],
       "presentation": {
         "clear": true
       },
       "problemMatcher": []
     },
     {
-      "label": "poetry update lockfile",
+      "label": "pdm update lockfile",
       "type": "shell",
-      "command": "poetry",
-      "args": ["update"],
+      "command": "./pw",
+      "args": ["pdm", "update"],
       "presentation": {
         "clear": true
       },
       "problemMatcher": []
     },
     {
-      "label": "poetry refresh lockfile (no update)",
+      "label": "pdm refresh lockfile (no update)",
       "type": "shell",
-      "command": "poetry",
-      "args": ["lock", "--no-update"],
+      "command": "./pw",
+      "args": ["pdm", "lock", "--refresh"],
       "presentation": {
         "clear": true
       },

@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ExternalDependencies">
     <plugin id="com.intellij.plugins.watcher" />
-    <plugin id="com.koxudaxi.poetry" />
     <plugin id="com.leinardi.pycharm.mypy" />
     <plugin id="com.leinardi.pycharm.pylint" />
     <plugin id="zielu.gittoolbox" />
