@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, cast
+from typing import TYPE_CHECKING, cast
 
 import pytest
 from deepmerge import always_merger
@@ -56,7 +56,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
         args=robot_arg_list, session=session, collect_only=collect_only
     )
     robot_args = cast(
-        Dict[str, object],
+        dict[str, object],
         always_merger.merge(  # type:ignore[no-untyped-call]
             robot.parse_arguments(  # type:ignore[no-untyped-call]
                 [  # type:ignore[no-any-expr]

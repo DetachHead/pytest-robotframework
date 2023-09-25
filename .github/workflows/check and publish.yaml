@@ -2,6 +2,8 @@ name: check and publish
 
 env:
   POETRY_VERSION: "1.3.2"
+  PYTHON_VERSION: "3.11"
+  TRANSPILED_DIR: "transpiled"
 
 on: push
 
@@ -11,7 +13,33 @@ permissions:
   pull-requests: "read"
 
 jobs:
-  check:
+  static-check-and-transpile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: setup poetry
+        uses: abatilo/actions-poetry@v2.1.4
+        with:
+          poetry-version: ${{ env.POETRY_VERSION }}
+      - run: poetry lock --check
+      - run: poetry install
+      - run: poetry run mypy -p pytest_robotframework
+      - run: poetry run mypy tests
+      - run: poetry run black --check --diff .
+      - run: poetry run ruff .
+      - run: poetry run pylint pytest_robotframework tests
+      - run: poetry run robocop
+      - run: poetry run robotidy --color --check --diff .
+      - run: poetry run transpile --target=3.8 --compile-all
+      - uses: actions/upload-artifact@v3
+        with:
+          name: transpiled
+          path: transpiled
+  test:
+    needs: static-check-and-transpile
     strategy:
         fail-fast: false
         matrix:
@@ -20,46 +48,51 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
+        with:
+          name: transpiled
+          path: transpiled
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python_version }}
-      - name: Run image
+      - name: setup poetry
         uses: abatilo/actions-poetry@v2.1.4
         with:
-          poetry-version: "1.3.2"
-      - run: poetry lock --check
+          poetry-version: ${{ env.POETRY_VERSION }}
       - run: poetry install
-      - run: poetry run mypy -p pytest_robotframework
-      - run: poetry run mypy tests
-      - run: poetry run black --check --diff .
-      - run: poetry run ruff .
-      - run: poetry run pylint pytest_robotframework tests
+        working-directory: ${{ env.TRANSPILED_DIR }}
       - run: poetry run pytest
-      - run: poetry run robocop
-      - run: poetry run robotidy --color --check --diff .
+        working-directory: ${{ env.TRANSPILED_DIR }}
   publish:
+    needs: test
     runs-on: 'ubuntu-latest'
     if: github.ref == 'refs/heads/master'
-    needs: check
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
+        with:
+          name: transpiled
+          path: transpiled
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.11"
-      - name: Run image
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: setup poetry
         uses: abatilo/actions-poetry@v2.1.4
         with:
           poetry-version: ${{ env.POETRY_VERSION }}
       - name: set token
         run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
       - run: poetry build
+        working-directory: ${{ env.TRANSPILED_DIR }}
       - run: poetry publish
+        working-directory: ${{ env.TRANSPILED_DIR }}
       - name: get version number
+        working-directory: ${{ env.TRANSPILED_DIR }}
         id: current-version
         run: echo ::set-output name=CURRENT_VERSION::$(poetry version -s)
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
             repo_token: ${{ secrets.GITHUB_TOKEN }}
             prerelease: false
-            files: dist/*
+            files: ${{ env.TRANSPILED_DIR }}/dist/*
             automatic_release_tag: ${{ steps.current-version.outputs.CURRENT_VERSION }}

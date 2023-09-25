@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from itertools import groupby
-from typing import Generic, List, Union, cast
+from typing import Generic, cast
 
 from basedtyping import T
 from pytest import Item, Session, StashKey
@@ -26,7 +26,7 @@ def execution_context() -> _ExecutionContext | None:
     # need to import it every time because it changes
     from robot.running import EXECUTION_CONTEXTS
 
-    return cast(Union[_ExecutionContext, None], EXECUTION_CONTEXTS.current)
+    return cast(_ExecutionContext | None, EXECUTION_CONTEXTS.current)
 
 
 running_test_case_key = StashKey[running.TestCase]()
@@ -70,7 +70,7 @@ class RobotError(_LateFailure):
         return "robot errors"
 
 
-robot_late_failures_key = StashKey[List[_LateFailure]]()
+robot_late_failures_key = StashKey[list[_LateFailure]]()
 
 
 def add_late_failure(item_or_session: Item | Session, failure: _LateFailure):

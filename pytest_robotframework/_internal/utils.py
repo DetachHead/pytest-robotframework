@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, cast
+from typing import Concatenate, cast
 
 from basedtyping import T
-from typing_extensions import Concatenate, ParamSpec
+from typing_extensions import ParamSpec
 
 P = ParamSpec("P")
 

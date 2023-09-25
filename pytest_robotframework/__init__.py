@@ -3,22 +3,11 @@
 from __future__ import annotations
 
 import inspect
+from collections import defaultdict
 from contextlib import AbstractContextManager, contextmanager, nullcontext
 from functools import wraps
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    DefaultDict,
-    Dict,
-    Iterator,
-    Literal,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Literal, TypeVar, cast, overload
 
 from basedtyping import Function, T
 from robot import result, running
@@ -42,17 +31,18 @@ from pytest_robotframework._internal.robot_utils import (
 from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
     from types import TracebackType
 
     from robot.running.context import _ExecutionContext
 
 
-RobotVariables = Dict[str, object]
+RobotVariables = dict[str, object]
 
-Listener = Union[ListenerV2, ListenerV3]
+Listener = ListenerV2 | ListenerV3
 
 
-_suite_variables = DefaultDict[Path, RobotVariables](dict)
+_suite_variables = defaultdict[Path, RobotVariables](dict)
 
 
 def set_variables(variables: RobotVariables):
@@ -188,24 +178,21 @@ class _KeywordDecorator:
                     ) from e
                 add_late_failure(item, ContinuableFailure(e))
 
-        # https://github.com/python/mypy/issues/16097
-        class WrappedContextManager(AbstractContextManager):  # type:ignore[type-arg]
+        class WrappedContextManager(AbstractContextManager[T]):
             """defers exiting the status reporter until after the wrapped context
             manager is finished"""
 
             def __init__(
                 self,
-                wrapped: AbstractContextManager,  # type:ignore[type-arg]
-                status_reporter: AbstractContextManager,  # type:ignore[type-arg]
+                wrapped: AbstractContextManager[T],
+                status_reporter: AbstractContextManager[None],
             ) -> None:
-                self.wrapped = wrapped  # type:ignore[no-any-expr]
-                self.status_reporter = status_reporter  # type:ignore[no-any-expr]
+                self.wrapped = wrapped
+                self.status_reporter = status_reporter
 
             @override
-            def __enter__(self) -> object:
-                return (
-                    self.wrapped.__enter__()  # type:ignore[no-any-expr,no-untyped-call]
-                )
+            def __enter__(self) -> T:
+                return self.wrapped.__enter__()
 
             @override
             def __exit__(
@@ -215,12 +202,9 @@ class _KeywordDecorator:
                 traceback: TracebackType | None,
                 /,
             ) -> bool | None:
-                suppress = self.wrapped.__exit__(  # type:ignore[no-any-expr]
-                    exc_type, exc_value, traceback
-                )
+                suppress = self.wrapped.__exit__(exc_type, exc_value, traceback)
                 exit_status_reporter(
-                    self.status_reporter,  # type:ignore[no-any-expr]
-                    (None if suppress else exc_value),
+                    self.status_reporter, (None if suppress else exc_value)
                 )
                 if exc_value:
                     fail_later(exc_value)
@@ -237,7 +221,7 @@ class _KeywordDecorator:
             except BaseException as e:  # noqa: BLE001
                 exit_status_reporter(status_reporter, e)
                 if on_error == "fail now" or isinstance(
-                    e, (KeyboardInterrupt, SystemExit)
+                    e, KeyboardInterrupt | SystemExit
                 ):
                     raise
                 fail_later(e)
@@ -357,7 +341,7 @@ def ignore_failure() -> Iterator[None]:
 
 
 _T_ListenerOrSuiteVisitor = TypeVar(
-    "_T_ListenerOrSuiteVisitor", bound=Type[Union[Listener, SuiteVisitor]]
+    "_T_ListenerOrSuiteVisitor", bound=type[Listener | SuiteVisitor]
 )
 
 
@@ -398,7 +382,7 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
         # because robot listeners/suite visitors don't call any static/class methods
         and not isinstance(
             inspect.getattr_static(cls, attr.__name__),  # type:ignore[no-any-expr]
-            (staticmethod, classmethod),
+            staticmethod | classmethod,
         )
         # only wrap methods that are overwritten on the subclass
         and attr.__name__ in vars(cls)  # type:ignore[no-any-expr]
@@ -418,7 +402,7 @@ class _ListenerRegistry:
 
 _listeners = _ListenerRegistry()
 
-_T_Listener = TypeVar("_T_Listener", bound=Type[Listener])
+_T_Listener = TypeVar("_T_Listener", bound=type[Listener])
 
 
 def listener(cls: _T_Listener) -> _T_Listener:

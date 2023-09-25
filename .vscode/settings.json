@@ -9,7 +9,7 @@
   "git.supportCancellation": true,
   "git.useEditorAsCommitInput": false,
   "diffEditor.ignoreTrimWhitespace": false,
-  "python.linting.mypyArgs": ["--show-column-numbers", "--python-version", "3.8"],
+  "python.linting.mypyArgs": ["--show-column-numbers"],
   "python.linting.mypyEnabled": true,
   "files.autoSave": "onFocusChange",
   "search.useIgnoreFiles": true,

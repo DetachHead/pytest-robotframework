@@ -3,7 +3,7 @@ library by `robot_classes.PytestRuntestProtocolInjector`"""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from _pytest._code.code import ExceptionInfo, ExceptionRepr
 from _pytest.runner import call_and_report, show_test_item
@@ -17,7 +17,7 @@ from pytest_robotframework._internal.errors import InternalError
 if TYPE_CHECKING:
     from pytest_robotframework._internal.robot_utils import Cloaked
 
-_report_key = StashKey[List[TestReport]]()
+_report_key = StashKey[list[TestReport]]()
 
 
 def _call_and_report_robot_edition(
