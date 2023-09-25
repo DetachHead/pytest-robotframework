@@ -36,6 +36,7 @@ from pytest_robotframework._internal.robot_utils import (
     ContinuableFailure,
     RobotError,
     add_late_failure,
+    escape_robot_str,
     execution_context,
 )
 from pytest_robotframework._internal.utils import patch_method
@@ -72,7 +73,7 @@ def import_resource(path: Path | str):
 
     to import libraries, use a regular python import"""
     if execution_context():
-        BuiltIn().import_resource(str(path))
+        BuiltIn().import_resource(escape_robot_str(str(path)))
     else:
         _resources.append(Path(path))
 

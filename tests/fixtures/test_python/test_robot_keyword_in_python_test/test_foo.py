@@ -6,7 +6,7 @@ from robot.libraries.BuiltIn import BuiltIn
 
 from pytest_robotframework import import_resource
 
-import_resource("bar.resource")
+import_resource("bar/bar.resource")
 
 
 def test_foo():

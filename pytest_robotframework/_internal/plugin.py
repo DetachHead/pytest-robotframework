@@ -30,7 +30,10 @@ from pytest_robotframework._internal.robot_classes import (
     PytestRuntestProtocolInjector,
     PythonParser,
 )
-from pytest_robotframework._internal.robot_utils import describe_late_failures
+from pytest_robotframework._internal.robot_utils import (
+    describe_late_failures,
+    escape_robot_str,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -193,7 +196,10 @@ def pytest_runtest_setup(item: Item):
         return
     builtin = BuiltIn()
     for key, value in _suite_variables[item.path].items():
-        builtin.set_suite_variable(r"${" + key + "}", value)
+        builtin.set_suite_variable(
+            r"${" + key + "}",
+            escape_robot_str(value) if isinstance(value, str) else value,
+        )
     for resource in _resources:
         import_resource(resource)
 
