@@ -1,33 +1,51 @@
-[tool.poetry]
-authors = ["DetachHead <detachhead@users.noreply.github.com>"]
-description = "a pytest plugin that can run both python and robotframework tests while generating robot reports for them"
+[project]
 name = "pytest_robotframework"
 version = "1.8.3"
+description = "a pytest plugin that can run both python and robotframework tests while generating robot reports for them"
+authors = [
+    { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
+]
+dependencies = [
+    "pytest<8,>=7",
+    "robotframework<7.0.0,>=6.1.1",
+    "deepmerge<2.0.0,>=1.1.0",
+    "basedtyping<0.2,>=0.0.3",
+]
+requires-python = ">=3.8,<4.0"
 readme = "README.md"
+license = { text = "MIT" }
+
+[tool.pdm.dev-dependencies]
+lint = [
+    'black>=23',
+    'basedmypy>=2.1',
+    'pylint>=2.15',
+    'ruff>=0.0.290',
+    "robotframework-robocop>=4.1.0",
+    "robotframework-tidy>=4.5.0",
+]
+test = ["lxml>=4.9.3", "lxml-stubs>=0.4.0"]
+
+[project.urls]
 repository = "https://github.com/detachhead/pytest-robotframework"
 
-[tool.poetry.dependencies]
-python = "^3.8"
-pytest = "^7"
-robotframework = "^6.1.1"
-deepmerge = "^1.1.0"
-basedtyping = ">=0.0.3 <0.2"
+[project.entry-points.pytest11]
+robotframework = "pytest_robotframework._internal.plugin"
 
-[tool.poetry.group.dev.dependencies]
-black = ">=23"
-basedmypy = ">=2.1"
-lxml = ">=4.9.3"
-lxml-stubs = ">=0.4.0"
-pylint = ">=2.15"
-ruff = ">=0.0.290"
-robotframework-robocop = ">=4.1.0"
-robotframework-tidy = ">=4.5.0"
+[tool.pyprojectx]
+pdm = "pdm==2.9.3"
+
+[tool.pyprojectx.aliases]
+install = "pdm install"
+run = "pdm run"
+outdated = "pdm update --outdated"
+test = "pdm run pytest"
 
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.1.0b2"]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
-[tool.poetry.plugins.pytest11]
+[tool.pdm.plugins.pytest11]
 robotframework = "pytest_robotframework._internal.plugin"
 
 [tool.black]

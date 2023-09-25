@@ -9,7 +9,7 @@ a pytest plugin that can run both python and robotframework tests while generati
 pytest should automatically find and activate the plugin once you install it.
 
 ```
-poetry add pytest-robotframework --group=dev
+pdm add pytest-robotframework --dev
 ```
 
 ## features
