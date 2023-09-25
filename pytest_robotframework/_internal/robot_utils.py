@@ -101,3 +101,9 @@ def describe_late_failures(item_or_session: Item | Session) -> str | None:
         del item_or_session.stash[robot_late_failures_key]
         return result
     return None
+
+
+def escape_robot_str(value: str) -> str:
+    r"""in the robot language, backslashes (`\`) get stripped as they are used as escape characters,
+    so they need to be duplicated when used in keywords called from python code"""
+    return value.replace("\\", "\\\\")

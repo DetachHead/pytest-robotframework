@@ -399,6 +399,11 @@ def test_suite_variables(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
 
 
+def test_suite_variables_with_slash(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+
+
 def test_variables_list(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
