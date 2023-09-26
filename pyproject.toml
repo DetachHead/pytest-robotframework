@@ -19,7 +19,7 @@ license = { text = "MIT" }
 lint = [
     'black>=23',
     'basedmypy>=2.1',
-    'pylint>=2.15',
+    "pylint>=3.0.0a7",
     'ruff>=0.0.290',
     "robotframework-robocop>=4.1.0",
     "robotframework-tidy>=4.5.0",
@@ -54,7 +54,6 @@ skip-magic-trailing-comma = true
 preview = true
 
 [tool.pylint.MASTER]
-ignore-patterns = '.*\.pyi'
 fail-on = "I"
 bad-names = ["foo", "bar", "baz", "retval"]
 load-plugins = [
