@@ -112,11 +112,13 @@ class _KeywordDecorator:
         tags: tuple[str, ...] | None = None,
         module: str | None = None,
         on_error: Literal["fail now", "fail later", "ignore"],
+        doc: str | None = None,
     ) -> None:
         self.name = name
         self.tags = tags or ()
         self.module = module
         self.on_error = on_error
+        self.doc = doc
 
     @overload
     def __call__(
@@ -150,10 +152,16 @@ class _KeywordDecorator:
                     result.Keyword(
                         kwname=keyword_name,
                         libname=self.module,
-                        doc=getshortdoc(  # type:ignore[no-untyped-call,no-any-expr]
-                            fn.__doc__
-                        )
-                        or "",
+                        doc=(
+                            (
+                                getshortdoc(  # type:ignore[no-untyped-call,no-any-expr]
+                                    fn.__doc__
+                                )
+                                or ""
+                            )
+                            if self.doc is None
+                            else self.doc
+                        ),
                         args=log_args,
                         tags=self.tags,
                     ),
@@ -306,12 +314,20 @@ def keyword(  # pylint:disable=missing-param-doc
 
 
 def as_keyword(
-    name: str, *, continue_on_failure=False  # pylint:disable=redefined-outer-name
+    name: str,
+    *,
+    doc="",
+    continue_on_failure=False,  # pylint:disable=redefined-outer-name
 ) -> AbstractContextManager[None]:
-    """runs the body as a robot keyword"""
+    """runs the body as a robot keyword
+
+    :param name: the name for the keyword
+    :param doc: the documentation to be displayed underneath the keyword in the robot log
+    :param continue_on_failure: whether to continue test execution if the body fails, then re-raise
+    the exception at the end of the test"""
 
     @_KeywordDecorator(
-        name=name, on_error="fail later" if continue_on_failure else "fail now"
+        name=name, on_error="fail later" if continue_on_failure else "fail now", doc=doc
     )
     @contextmanager
     def fn() -> Iterator[None]:
