@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 from contextlib import AbstractContextManager, contextmanager, nullcontext
+from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
 from typing import (
@@ -11,6 +12,7 @@ from typing import (
     Callable,
     DefaultDict,
     Dict,
+    Generic,
     Iterator,
     Literal,
     Type,
@@ -101,24 +103,44 @@ def _runner_for(  # type:ignore[no-any-decorated]
     return old_method(self, context, handler, positional, named)
 
 
+_KeywordResultValue = Literal["PASS", "FAIL"]
+
+_T_KeywordResult = TypeVar("_T_KeywordResult", bound=_KeywordResultValue)
+
+
+@dataclass
+class _KeywordResult(Generic[_T_KeywordResult]):
+    value: _T_KeywordResult | None = None
+
+
+OnFailure = Literal["raise now", "raise later", "ignore"]
+"""what to do when an exception is raised inside a keyword (ie. a failure occurs)
+
+- `"raise now"` - default behavior. fail the keyword and exit the test
+- `"raise later"` - marks the keyword as failed then continues executing the test, re-raises the
+exception at the end of the test. behaves like robot's `run keyword and continue on failure` keyword
+- `"ignore"` - marks the keyword as failed but does not effect the status of the test, then
+continues executing the test. behaves like robot's `run keyword and ignore error` keyword"""
+
 _P = ParamSpec("_P")
 
 
-class _KeywordDecorator:
+class _KeywordDecorator(Generic[_T_KeywordResult]):
     def __init__(
         self,
         *,
         name: str | None = None,
         tags: tuple[str, ...] | None = None,
         module: str | None = None,
-        on_error: Literal["fail now", "fail later", "ignore"],
+        on_failure: OnFailure,
         doc: str | None = None,
     ) -> None:
         self.name = name
         self.tags = tags or ()
         self.module = module
-        self.on_error = on_error
+        self.on_failure = on_failure
         self.doc = doc
+        self.result = _KeywordResult[_T_KeywordResult]()
 
     @overload
     def __call__(
@@ -179,15 +201,16 @@ class _KeywordDecorator:
             status_reporter: AbstractContextManager[None],
             error: BaseException | None = None,
         ):
+            self.result.value = cast(_T_KeywordResult, "FAIL" if error else "PASS")
             if error is None:
                 status_reporter.__exit__(None, None, None)
             else:
                 status_reporter.__exit__(type(error), error, error.__traceback__)
 
-        on_error = self.on_error
+        on_error = self.on_failure
 
         def fail_later(e: BaseException):
-            if on_error == "fail later":
+            if on_error == "raise later":
                 item = current_item()
                 if not item:
                     raise InternalError(
@@ -232,7 +255,7 @@ class _KeywordDecorator:
                 )
                 if exc_value:
                     fail_later(exc_value)
-                return suppress or on_error != "fail now"
+                return suppress or on_error != "raise now"
 
         @wraps(fn)
         def inner(*args: _P.args, **kwargs: _P.kwargs) -> T | None:
@@ -244,7 +267,7 @@ class _KeywordDecorator:
             # functions that raise Failed, which extends BaseException
             except BaseException as e:  # noqa: BLE001
                 exit_status_reporter(status_reporter, e)
-                if on_error == "fail now" or isinstance(
+                if on_error == "raise now" or isinstance(
                     e, (KeyboardInterrupt, SystemExit)
                 ):
                     raise
@@ -276,7 +299,7 @@ def keyword(
     name: str | None = ...,
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
-) -> _KeywordDecorator: ...
+) -> _KeywordDecorator[Literal["PASS"]]: ...
 
 
 @overload
@@ -308,9 +331,29 @@ def keyword(  # pylint:disable=missing-param-doc
     """
     if fn is None:
         return _KeywordDecorator(
-            name=name, tags=tags, module=module, on_error="fail now"
+            name=name, tags=tags, module=module, on_failure="raise now"
         )
     return keyword(name=name, tags=tags, module=module)(fn)
+
+
+@overload
+def as_keyword(
+    name: str,
+    *,
+    doc="",
+    tags: tuple[str, ...] | None = None,
+    on_failure: Literal["raise later", "ignore"],
+) -> AbstractContextManager[_KeywordResult[_KeywordResultValue]]: ...
+
+
+@overload
+def as_keyword(
+    name: str,
+    *,
+    doc="",
+    tags: tuple[str, ...] | None = None,
+    on_failure: Literal["raise now"] = ...,
+) -> AbstractContextManager[_KeywordResult[Literal["PASS"]]]: ...
 
 
 def as_keyword(
@@ -318,25 +361,23 @@ def as_keyword(
     *,
     doc="",
     tags: tuple[str, ...] | None = None,
-    continue_on_failure=False,  # pylint:disable=redefined-outer-name
-) -> AbstractContextManager[None]:
+    on_failure: OnFailure = "raise now",
+):
     """runs the body as a robot keyword
 
     :param name: the name for the keyword
     :param doc: the documentation to be displayed underneath the keyword in the robot log
     :param tags: tags for the keyword
-    :param continue_on_failure: whether to continue test execution if the body fails, then re-raise
-    the exception at the end of the test"""
-
-    @_KeywordDecorator(
-        name=name,
-        tags=tags,
-        doc=doc,
-        on_error="fail later" if continue_on_failure else "fail now",
+    :param on_failure: what to do if an exception occurs in the body. see documentation on
+    `OnFailure`"""
+    keyword_decorator = _KeywordDecorator[Literal["PASS", "FAIL"]](
+        name=name, tags=tags, doc=doc, on_failure=on_failure
     )
+
+    @keyword_decorator
     @contextmanager
-    def fn() -> Iterator[None]:
-        yield
+    def fn() -> Iterator[_KeywordResult[Literal["PASS", "FAIL"]]]:
+        yield keyword_decorator.result
 
     return fn()
 
@@ -373,7 +414,7 @@ def keywordify(
     )
 
 
-@_KeywordDecorator(on_error="fail later")
+@_KeywordDecorator(on_failure="raise later")
 @contextmanager
 def continue_on_failure() -> Iterator[None]:
     """continues test execution if the body fails, then re-raises the exception at the end of the
@@ -381,7 +422,7 @@ def continue_on_failure() -> Iterator[None]:
     yield
 
 
-@_KeywordDecorator(on_error="ignore")
+@_KeywordDecorator(on_failure="ignore")
 @contextmanager
 def ignore_failure() -> Iterator[None]:
     """continues test execution if the body fails, so the test will still pass. equivalent to
@@ -416,8 +457,10 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
                 item_or_session = current_item() or current_session()
                 if not item_or_session:
                     raise InternalError(
+                        # stack trace isn't showsn so we neewd to include the original error in the
+                        # message as well
                         f"an error occurred inside {cls.__name__} and failed to get the"
-                        " current pytest item/session"
+                        f" current pytest item/session: {e}"
                     ) from e
                 add_late_failure(item_or_session, RobotError(str(e)))
                 raise
