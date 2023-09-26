@@ -612,9 +612,19 @@ def test_late_failures_and_normal_failure(pytester_dir: PytesterDir):
     )
 
 
-def test_as_keyword_context_manager(pytester_dir: PytesterDir):
+def test_as_keyword_context_manager_passes(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath("//kw[@name='hi']/msg[.='1']")
+    assert xml.xpath("//kw[@name='Run Test']/msg[.='2']")
+
+
+def test_as_keyword_context_manager_fail_later(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//kw[@name='hi' and ./status[@status='FAIL']]/msg[.='assert 1 == 2']"
+    )
     assert xml.xpath("//kw[@name='Run Test']/msg[.='2']")
