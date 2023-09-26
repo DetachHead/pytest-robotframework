@@ -317,17 +317,22 @@ def as_keyword(
     name: str,
     *,
     doc="",
+    tags: tuple[str, ...] | None = None,
     continue_on_failure=False,  # pylint:disable=redefined-outer-name
 ) -> AbstractContextManager[None]:
     """runs the body as a robot keyword
 
     :param name: the name for the keyword
     :param doc: the documentation to be displayed underneath the keyword in the robot log
+    :param tags: tags for the keyword
     :param continue_on_failure: whether to continue test execution if the body fails, then re-raise
     the exception at the end of the test"""
 
     @_KeywordDecorator(
-        name=name, on_error="fail later" if continue_on_failure else "fail now", doc=doc
+        name=name,
+        tags=tags,
+        doc=doc,
+        on_error="fail later" if continue_on_failure else "fail now",
     )
     @contextmanager
     def fn() -> Iterator[None]:
