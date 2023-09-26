@@ -305,6 +305,21 @@ def keyword(  # pylint:disable=missing-param-doc
     return keyword(name=name, tags=tags, module=module)(fn)
 
 
+def as_keyword(
+    name: str, *, continue_on_failure=False  # pylint:disable=redefined-outer-name
+) -> AbstractContextManager[None]:
+    """runs the body as a robot keyword"""
+
+    @_KeywordDecorator(
+        name=name, on_error="fail later" if continue_on_failure else "fail now"
+    )
+    @contextmanager
+    def fn() -> Iterator[None]:
+        yield
+
+    return fn()
+
+
 def keywordify(
     obj: object,
     method_name: str,

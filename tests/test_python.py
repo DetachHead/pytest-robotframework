@@ -610,3 +610,11 @@ def test_late_failures_and_normal_failure(pytester_dir: PytesterDir):
         "//test[@name='test_foo']/status[contains(., 'FooError') and contains(.,"
         " 'division by zero')]"
     )
+
+
+def test_as_keyword_context_manager(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("//kw[@name='hi']/msg[.='1']")
+    assert xml.xpath("//kw[@name='Run Test']/msg[.='2']")
