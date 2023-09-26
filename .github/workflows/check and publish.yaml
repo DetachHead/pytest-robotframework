@@ -20,17 +20,16 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python_version }}
-      - uses: pdm-project/setup-pdm@v3
-      - run: pdm lock --check
-      - run: pdm install
-      - run: pdm run mypy -p pytest_robotframework
-      - run: pdm run mypy tests
-      - run: pdm run black --check --diff .
-      - run: pdm run ruff .
-      - run: pdm run pylint pytest_robotframework tests
-      - run: pdm run pytest
-      - run: pdm run robocop
-      - run: pdm run robotidy --color --check --diff .
+      - run: ./pw pdm lock --check
+      - run: ./pw install
+      - run: ./pw run mypy -p pytest_robotframework
+      - run: ./pw run mypy tests
+      - run: ./pw run black --check --diff .
+      - run: ./pw run ruff .
+      - run: ./pw run pylint pytest_robotframework tests
+      - run: ./pw test
+      - run: ./pw run robocop
+      - run: ./pw run robotidy --color --check --diff .
   publish:
     runs-on: 'ubuntu-latest'
     if: github.ref == 'refs/heads/master'
@@ -39,11 +38,10 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v2
-      - uses: pdm-project/setup-pdm@v3
-      - run: pdm publish
+      - run: ./pw pdm publish
       - name: get version number
         id: current-version
-        run: echo ::set-output name=CURRENT_VERSION::$(pdm show --version)
+        run: echo ::set-output name=CURRENT_VERSION::$(./pw pdm show --version)
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
             repo_token: ${{ secrets.GITHUB_TOKEN }}
