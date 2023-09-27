@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from robot.api import logger
 
@@ -14,7 +14,7 @@ def test_foo():
     with as_keyword("hi") as result:
         logger.info(1)  # type:ignore[no-untyped-call]
     logger.info(2)  # type:ignore[no-untyped-call]
+    # make sure result can't be used unless continue_on_failure is enabled
     if TYPE_CHECKING:
-        # make sure "FAIL" isn't a possible value when `on_failure` is "raise now"
-        assert_type(result.value, Literal["PASS", None])
-    assert result.value == "PASS"
+        assert_type(result.value, None)
+    assert result.value is None

@@ -620,7 +620,7 @@ def test_as_keyword_context_manager_passes(pytester_dir: PytesterDir):
     assert xml.xpath("//kw[@name='Run Test']/msg[.='2']")
 
 
-def test_as_keyword_context_manager_fail_later(pytester_dir: PytesterDir):
+def test_as_keyword_context_manager_continue_on_error(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
