@@ -282,3 +282,14 @@ def test_foo():
         logger.info("foo")  # doesn't run
     logger.info("bar")  # does run
 ```
+
+you can also check the result like so:
+
+```py
+from pytest_robotframework import continue_on_failure
+
+def test_foo():
+    with continue_on_failure() as result:
+        assert 1 == 2
+    assert result.value == "FAIL"
+```
