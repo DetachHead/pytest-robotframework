@@ -111,6 +111,11 @@ _T_KeywordResult = TypeVar("_T_KeywordResult", bound=_KeywordResultValue)
 @dataclass
 class _KeywordResult(Generic[_T_KeywordResult]):
     value: _T_KeywordResult | None = None
+    """this value is `None` while the keyword is running, because the result is set at the end of
+    the keyword.
+    
+    cannot be `"FAIL"` if `on_failure` is set to `"raise now"` (the default behavior) because the
+    test will exit before this value can be read"""
 
 
 OnFailure = Literal["raise now", "raise later", "ignore"]
@@ -363,13 +368,21 @@ def as_keyword(
     tags: tuple[str, ...] | None = None,
     on_failure: OnFailure = "raise now",
 ):
-    """runs the body as a robot keyword
+    """runs the body as a robot keyword and allows you to check whether it passed or failed if
+    `on_failure` is set to `"fail later"` or `"ignore"`
+
+    example:
+    -------
+    >>> with as_keyword("do thing", on_failure="raise later") as result:
+    ...     ...
+    ... assert result.value == "PASS"
 
     :param name: the name for the keyword
     :param doc: the documentation to be displayed underneath the keyword in the robot log
     :param tags: tags for the keyword
     :param on_failure: what to do if an exception occurs in the body. see documentation on
-    `OnFailure`"""
+    `OnFailure`
+    """
     keyword_decorator = _KeywordDecorator[Literal["PASS", "FAIL"]](
         name=name, tags=tags, doc=doc, on_failure=on_failure
     )
@@ -414,23 +427,21 @@ def keywordify(
     )
 
 
-@_KeywordDecorator(on_failure="raise later")
-@contextmanager
-def continue_on_failure() -> Iterator[None]:
+def continue_on_failure() -> (
+    AbstractContextManager[_KeywordResult[_KeywordResultValue]]
+):
     """continues test execution if the body fails, then re-raises the exception at the end of the
     test. equivalent to robot's `run_keyword_and_continue_on_failure` keyword"""
-    yield
+    return as_keyword(continue_on_failure.__name__, on_failure="raise later")
 
 
-@_KeywordDecorator(on_failure="ignore")
-@contextmanager
-def ignore_failure() -> Iterator[None]:
+def ignore_failure() -> AbstractContextManager[_KeywordResult[_KeywordResultValue]]:
     """continues test execution if the body fails, so the test will still pass. equivalent to
     robot's `run_keyword_and_ignore_error` keyword.
 
     this should only be used if you are not sure whether the body will fail. if you are expecting an
     error, you should use `pytest.raises` instead"""
-    yield
+    return as_keyword(ignore_failure.__name__, on_failure="ignore")
 
 
 _T_ListenerOrSuiteVisitor = TypeVar(
