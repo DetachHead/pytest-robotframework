@@ -142,8 +142,8 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
 
     @overload
     def __call__(
-        self, fn: Callable[_P, ContextManager[T]]
-    ) -> Callable[_P, ContextManager[T]]: ...
+        self, fn: Callable[_P, AbstractContextManager[T]]
+    ) -> Callable[_P, AbstractContextManager[T]]: ...
 
     @overload
     def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]: ...
@@ -296,7 +296,9 @@ def keyword(
 
 
 @overload
-def keyword(fn: Callable[_P, ContextManager[T]]) -> Callable[_P, ContextManager[T]]: ...
+def keyword(
+    fn: Callable[_P, AbstractContextManager[T]]
+) -> Callable[_P, AbstractContextManager[T]]: ...
 
 
 @overload
