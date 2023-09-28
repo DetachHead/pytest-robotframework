@@ -105,7 +105,9 @@ def _runner_for(  # type:ignore[no-any-decorated]
 
 _KeywordResultValue = Union[Literal["PASS"], BaseException, None]
 
-_T_KeywordResult = TypeVar("_T_KeywordResult", bound=_KeywordResultValue)
+_T_KeywordResult = TypeVar(
+    "_T_KeywordResult", covariant=True, bound=_KeywordResultValue
+)
 
 
 @dataclass
@@ -334,9 +336,9 @@ def as_keyword(
     name: str,
     *,
     doc="",
-    tags: tuple[str, ...] | None = None,
-    continue_on_failure: True,  # pylint:disable=redefined-outer-name
-) -> ContextManager[_KeywordResult[_KeywordResultValue]]: ...
+    tags: tuple[str, ...] | None = ...,
+    continue_on_failure: False = ...,  # pylint:disable=redefined-outer-name
+) -> ContextManager[_KeywordResult[Never]]: ...
 
 
 @overload
@@ -344,9 +346,9 @@ def as_keyword(
     name: str,
     *,
     doc="",
-    tags: tuple[str, ...] | None = None,
-    continue_on_failure: False = ...,  # pylint:disable=redefined-outer-name
-) -> ContextManager[_KeywordResult[Never]]: ...
+    tags: tuple[str, ...] | None = ...,
+    continue_on_failure: bool,  # pylint:disable=redefined-outer-name
+) -> ContextManager[_KeywordResult[_KeywordResultValue]]: ...
 
 
 def as_keyword(
