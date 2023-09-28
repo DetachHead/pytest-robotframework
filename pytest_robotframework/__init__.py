@@ -41,7 +41,7 @@ from pytest_robotframework._internal.robot_utils import (
     escape_robot_str,
     execution_context,
 )
-from pytest_robotframework._internal.utils import patch_method
+from pytest_robotframework._internal.utils import ContextManager, patch_method
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -142,8 +142,8 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
 
     @overload
     def __call__(
-        self, fn: Callable[_P, AbstractContextManager[T]]
-    ) -> Callable[_P, AbstractContextManager[T]]: ...
+        self, fn: Callable[_P, ContextManager[T]]
+    ) -> Callable[_P, ContextManager[T]]: ...
 
     @overload
     def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]: ...
@@ -218,24 +218,21 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
                     ) from e
                 add_late_failure(item, ContinuableFailure(e))
 
-        # https://github.com/python/mypy/issues/16097
-        class WrappedContextManager(AbstractContextManager):  # type:ignore[type-arg]
+        class WrappedContextManager(ContextManager[T]):
             """defers exiting the status reporter until after the wrapped context
             manager is finished"""
 
             def __init__(
                 self,
-                wrapped: AbstractContextManager,  # type:ignore[type-arg]
-                status_reporter: AbstractContextManager,  # type:ignore[type-arg]
+                wrapped: AbstractContextManager[T],
+                status_reporter: AbstractContextManager[None],
             ) -> None:
-                self.wrapped = wrapped  # type:ignore[no-any-expr]
-                self.status_reporter = status_reporter  # type:ignore[no-any-expr]
+                self.wrapped = wrapped
+                self.status_reporter = status_reporter
 
             @override
-            def __enter__(self) -> object:
-                return (
-                    self.wrapped.__enter__()  # type:ignore[no-any-expr,no-untyped-call]
-                )
+            def __enter__(self) -> T:
+                return self.wrapped.__enter__()
 
             @override
             def __exit__(
@@ -244,13 +241,10 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
                 exc_value: BaseException | None,
                 traceback: TracebackType | None,
                 /,
-            ) -> bool | None:
-                suppress = self.wrapped.__exit__(  # type:ignore[no-any-expr]
-                    exc_type, exc_value, traceback
-                )
+            ) -> bool:
+                suppress = self.wrapped.__exit__(exc_type, exc_value, traceback)
                 exit_status_reporter(
-                    self.status_reporter,  # type:ignore[no-any-expr]
-                    (None if suppress else exc_value),
+                    self.status_reporter, (None if suppress else exc_value)
                 )
                 if exc_value:
                     fail_later(exc_value)
@@ -302,9 +296,7 @@ def keyword(
 
 
 @overload
-def keyword(
-    fn: Callable[_P, AbstractContextManager[T]]
-) -> Callable[_P, AbstractContextManager[T]]: ...
+def keyword(fn: Callable[_P, ContextManager[T]]) -> Callable[_P, ContextManager[T]]: ...
 
 
 @overload
@@ -342,7 +334,7 @@ def as_keyword(
     doc="",
     tags: tuple[str, ...] | None = None,
     continue_on_failure: True,  # pylint:disable=redefined-outer-name
-) -> AbstractContextManager[_KeywordResult[_KeywordResultValue]]: ...
+) -> ContextManager[_KeywordResult[_KeywordResultValue]]: ...
 
 
 @overload
@@ -352,7 +344,7 @@ def as_keyword(
     doc="",
     tags: tuple[str, ...] | None = None,
     continue_on_failure: False = ...,  # pylint:disable=redefined-outer-name
-) -> AbstractContextManager[_KeywordResult[Never]]: ...
+) -> ContextManager[_KeywordResult[Never]]: ...
 
 
 def as_keyword(
@@ -390,7 +382,7 @@ def as_keyword(
     def fn() -> Iterator[_KeywordResult[_KeywordResultValue]]:
         yield keyword_decorator.result
 
-    return fn()
+    return cast(ContextManager[Never], fn())
 
 
 def keywordify(
@@ -425,9 +417,7 @@ def keywordify(
     )
 
 
-def continue_on_failure() -> (
-    AbstractContextManager[_KeywordResult[_KeywordResultValue]]
-):
+def continue_on_failure() -> ContextManager[_KeywordResult[_KeywordResultValue]]:
     """continues test execution if the body fails, then re-raises the exception at the end of the
     test. equivalent to robot's `run_keyword_and_continue_on_failure` keyword
 
