@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from abc import abstractmethod
 from contextlib import AbstractContextManager
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, cast
+from typing import TYPE_CHECKING, Callable, Generic, cast
 
 from basedtyping import T, T_co
 from typing_extensions import Concatenate, ParamSpec, override
 
 if TYPE_CHECKING:
+    from abc import abstractmethod
     from types import TracebackType
 
 P = ParamSpec("P")
@@ -53,19 +53,29 @@ def patch_method(  # type: ignore[no-any-explicit]
     return decorator
 
 
-class ContextManager(AbstractContextManager[T_co]):
-    """removes `None` from the return type of `AbstractContextManager.__exit__` to prevent code from
-    being incorrectly marked as unreachable by mypy and pyright. see these issues:
-    - https://github.com/python/mypy/issues/15158
-    - https://github.com/microsoft/pyright/issues/6034
-    """
+if TYPE_CHECKING:
 
-    @abstractmethod
-    @override
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
-        /,
-    ) -> bool: ...
+    class ContextManager(Generic[T_co], AbstractContextManager[T_co]):
+        """removes `None` from the return type of `AbstractContextManager.__exit__` to prevent code
+        from being incorrectly marked as unreachable by mypy and pyright. see these issues:
+        - https://github.com/python/mypy/issues/15158
+        - https://github.com/microsoft/pyright/issues/6034
+
+        also fixes the issue where `AbstractContextManager` can't be subscripted at runtime
+        """
+
+        @abstractmethod
+        @override
+        def __exit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_value: BaseException | None,
+            traceback: TracebackType | None,
+            /,
+        ) -> bool: ...
+
+else:
+    # python 3.8 doesn't support subscripting AbstractContextManager so we make a fake one using
+    # Generic that works at runtime
+    class ContextManager(Generic[T_co], AbstractContextManager):
+        pass
