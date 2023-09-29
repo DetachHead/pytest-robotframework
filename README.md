@@ -282,4 +282,4 @@ except SomeException:
     ... # ignore the exception, or re-raise it later
 ```
 
-the keyword will still show as failed in the log (as long as it's decorated with `pytest_robotframework.keyword`), but it won't effect the status of the test
+the keyword will still show as failed in the log (as long as it's decorated with `pytest_robotframework.keyword`), but it won't effect the status of the test unless the exception is re-raised
