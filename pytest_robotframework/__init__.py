@@ -175,7 +175,7 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
                         doc=(
                             (
                                 getshortdoc(  # type:ignore[no-untyped-call,no-any-expr]
-                                    fn.__doc__
+                                    inspect.getdoc(fn)
                                 )
                                 or ""
                             )
