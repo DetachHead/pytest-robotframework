@@ -347,6 +347,17 @@ def test_keyword_decorator_context_manager_that_doesnt_suppress(
     assert not xml.xpath("//msg[.='1']")
 
 
+def test_keyword_decorator_try_except(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//kw[@name='Run Test' and ./status[@status='PASS']]/kw[@name='bar' and"
+        " ./status[@status='FAIL']]/msg[.='FooError']"
+    )
+    assert xml.xpath("//kw[@name='Run Test']/msg[.='hi']")
+
+
 def test_keywordify_keyword_inside_context_manager(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)

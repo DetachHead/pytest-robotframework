@@ -269,27 +269,17 @@ keywordify(some_module, "some_function")
 keywordify(some_module.SomeClass, "some_method")
 ```
 
-### `run keyword and continue on failure` doesn't continue after the failure
+### `run_keyword_and_continue_on_failure` doesn't continue after the failure
 
-use the `continue_on_failure` context manager instead
+some robot keywords such as `run_keyword_and_continue_on_failure` don't work properly when called from python code.
 
-```py
-from pytest_robotframework import continue_on_failure
-
-def test_foo():
-    with continue_on_failure():
-        assert 1 == 2  # marks the test as failed but continues the test
-        logger.info("foo")  # doesn't run
-    logger.info("bar")  # does run
-```
-
-you can also check the result like so:
+use a `try`/`except` statement to handle expected failures instead:
 
 ```py
-from pytest_robotframework import continue_on_failure
-
-def test_foo():
-    with continue_on_failure() as result:
-        assert 1 == 2
-    assert result.value == "FAIL"
+try:
+    some_keyword_that_fails()
+except SomeException:
+    ... # ignore the exception, or re-raise it later
 ```
+
+the keyword will still show as failed in the log (as long as it's decorated with `pytest_robotframework.keyword`), but it won't effect the status of the test

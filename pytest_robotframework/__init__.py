@@ -335,17 +335,21 @@ def keyword(  # pylint:disable=missing-param-doc
 def as_keyword(
     name: str,
     *,
-    doc="",
+    doc: str = "",
     tags: tuple[str, ...] | None = ...,
-    continue_on_failure: False = ...,  # pylint:disable=redefined-outer-name
+    continue_on_failure: Literal[False] = ...,  # pylint:disable=redefined-outer-name
 ) -> ContextManager[_KeywordResult[Never]]: ...
 
 
 @overload
+@deprecated(
+    "`continue_on_failure` is deprecated. use a `try`/`except` to manually handle the"
+    " failure instead"
+)
 def as_keyword(
     name: str,
     *,
-    doc="",
+    doc: str = "",
     tags: tuple[str, ...] | None = ...,
     continue_on_failure: bool,  # pylint:disable=redefined-outer-name
 ) -> ContextManager[_KeywordResult[_KeywordResultValue]]: ...
@@ -358,14 +362,12 @@ def as_keyword(
     tags: tuple[str, ...] | None = None,
     continue_on_failure=False,  # pylint:disable=redefined-outer-name
 ):
-    """runs the body as a robot keyword. allows you to check whether it passed or failed if
-    `continue_on_failure` is `True`
+    """runs the body as a robot keyword.
 
     example:
     -------
-    >>> with as_keyword("do thing", on_failure="raise later") as result:
+    >>> with as_keyword("do thing"):
     ...     ...
-    ... assert result.value == "PASS" or isinstance(result.value, SomeException)
 
     :param name: the name for the keyword
     :param doc: the documentation to be displayed underneath the keyword in the robot log
@@ -421,6 +423,7 @@ def keywordify(
     )
 
 
+@deprecated("use a `try`/`except` statement to manually handle the exception instead")
 def continue_on_failure() -> ContextManager[_KeywordResult[_KeywordResultValue]]:
     """continues test execution if the body fails, then re-raises the exception at the end of the
     test. equivalent to robot's `run_keyword_and_continue_on_failure` keyword
