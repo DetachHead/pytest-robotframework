@@ -34,9 +34,7 @@ running_test_case_key = StashKey[running.TestCase]()
 
 def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
     try:
-        return next(
-            item for item in session.items if item.stash[running_test_case_key] == test
-        )
+        return next(item for item in session.items if item.stash[running_test_case_key] == test)
     except StopIteration:
         # the robot test was found but got filtered out by pytest
         return None
@@ -50,7 +48,8 @@ class _LateFailure(ABC):
 
     @staticmethod
     @abstractmethod
-    def description() -> str: ...
+    def description() -> str:
+        ...
 
 
 class ContinuableFailure(_LateFailure):

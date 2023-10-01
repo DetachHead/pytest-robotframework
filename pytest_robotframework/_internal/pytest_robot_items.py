@@ -17,10 +17,7 @@ from pytest_robotframework._internal.robot_classes import (
     original_setup_key,
     original_teardown_key,
 )
-from pytest_robotframework._internal.robot_utils import (
-    execution_context,
-    running_test_case_key,
-)
+from pytest_robotframework._internal.robot_utils import execution_context, running_test_case_key
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -52,12 +49,7 @@ class RobotItem(Item):
         **kwargs: object,
     ):
         super().__init__(
-            name=name,
-            parent=parent,
-            config=config,
-            session=session,
-            nodeid=nodeid,
-            **kwargs,
+            name=name, parent=parent, config=config, session=session, nodeid=nodeid, **kwargs
         )
         # ideally this would only be stored on a normal attribute but we want a consistent way
         # of accessing the robot test from both `RobotItem`s and regular `Item`s
@@ -93,9 +85,7 @@ class RobotItem(Item):
         test = self.stash[running_test_case_key]
         context = execution_context()
         with self._check_skipped():
-            BodyRunner(
-                context=context, templated=bool(test.template)
-            ).run(  # type:ignore[no-untyped-call]
+            BodyRunner(context=context, templated=bool(test.template)).run(  # type:ignore[no-untyped-call]
                 self.stash[original_body_key]
             )
 

@@ -72,7 +72,8 @@ if TYPE_CHECKING:
             exc_value: BaseException | None,
             traceback: TracebackType | None,
             /,
-        ) -> bool: ...
+        ) -> bool:
+            ...
 
 else:
     # python 3.8 doesn't support subscripting AbstractContextManager so we make a fake one using

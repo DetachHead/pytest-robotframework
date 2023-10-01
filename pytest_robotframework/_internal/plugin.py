@@ -30,10 +30,7 @@ from pytest_robotframework._internal.robot_classes import (
     PytestRuntestProtocolInjector,
     PythonParser,
 )
-from pytest_robotframework._internal.robot_utils import (
-    describe_late_failures,
-    escape_robot_str,
-)
+from pytest_robotframework._internal.robot_utils import describe_late_failures, escape_robot_str
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -120,9 +117,7 @@ def pytest_addhooks(pluginmanager: PluginManager):
 
 def pytest_addoption(parser: Parser):
     parser.addoption(
-        "--robotargs",
-        default="",
-        help="additional arguments to be passed to robotframework",
+        "--robotargs", default="", help="additional arguments to be passed to robotframework"
     )
 
 
@@ -167,9 +162,7 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
     if late_failures:
         result = TestReport.from_item_and_call(item, call)
         result.outcome = "failed"
-        result.longrepr = (
-            f"{result.longrepr}\n\n" if result.longrepr else ""
-        ) + late_failures
+        result.longrepr = (f"{result.longrepr}\n\n" if result.longrepr else "") + late_failures
         return result
     return None
 
@@ -197,8 +190,7 @@ def pytest_runtest_setup(item: Item):
     builtin = BuiltIn()
     for key, value in _suite_variables[item.path].items():
         builtin.set_suite_variable(
-            r"${" + key + "}",
-            escape_robot_str(value) if isinstance(value, str) else value,
+            r"${" + key + "}", escape_robot_str(value) if isinstance(value, str) else value
         )
     for resource in _resources:
         import_resource(resource)

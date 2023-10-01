@@ -17,19 +17,24 @@ if TYPE_CHECKING:
         real life files in `tests/fixtures/[test file path]/[test name]` instead"""
 
         @override
-        def makepyfile(self, *args: Never, **kwargs: Never) -> Never: ...
+        def makepyfile(self, *args: Never, **kwargs: Never) -> Never:
+            ...
 
         @override
-        def makefile(self, ext: str, *args: str, **kwargs: str) -> Never: ...
+        def makefile(self, ext: str, *args: str, **kwargs: str) -> Never:
+            ...
 
         @override
-        def makeini(self, source: str) -> Never: ...
+        def makeini(self, source: str) -> Never:
+            ...
 
         @override
-        def makepyprojecttoml(self, source: str) -> Never: ...
+        def makepyprojecttoml(self, source: str) -> Never:
+            ...
 
         @override
-        def maketxtfile(self, *args: Never, **kwargs: Never) -> Never: ...
+        def maketxtfile(self, *args: Never, **kwargs: Never) -> Never:
+            ...
 
 else:
     PytesterDir = Pytester
@@ -44,8 +49,7 @@ def assert_robot_total_stats(pytester: Pytester, *, passed=0, skipped=0, failed=
     statistics = next(child for child in root if child.tag == "statistics")
     total = next(child for child in statistics if child.tag == "total")
     result = cast(
-        Dict[str, str],
-        next(child for child in total if child.tag == "stat").attrib.__copy__(),
+        Dict[str, str], next(child for child in total if child.tag == "stat").attrib.__copy__()
     )
     assert result == {"pass": str(passed), "fail": str(failed), "skip": str(skipped)}
 
@@ -67,9 +71,7 @@ def run_and_assert_assert_pytest_result(
     exit_code: ExitCode | None = None,
 ):
     result = (
-        pytester.runpytest_subprocess
-        if subprocess
-        else pytester.runpytest  # type:ignore[no-any-expr]
+        pytester.runpytest_subprocess if subprocess else pytester.runpytest  # type:ignore[no-any-expr]
     )(*(pytest_args or []))
     result.assert_outcomes(
         passed=passed, skipped=skipped, failed=failed, errors=errors, xfailed=xfailed

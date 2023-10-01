@@ -30,9 +30,7 @@ def test_one_test_fails(pytester_dir: PytesterDir):
 def test_one_test_skipped(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, skipped=1)
     assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath(
-        "./suite//test[@name='Foo']/kw/msg[@level='SKIP']"
-    )
+    assert output_xml(pytester_dir).xpath("./suite//test[@name='Foo']/kw/msg[@level='SKIP']")
 
 
 def test_two_tests_one_fail_one_pass(pytester_dir: PytesterDir):
@@ -77,8 +75,7 @@ def test_setup_skipped(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and"
-        " .//msg[@level='SKIP']]"
+        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and" " .//msg[@level='SKIP']]"
     )
     # make sure the test didnt run when setup was skipped
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
@@ -249,8 +246,7 @@ def test_keyword_with_conflicting_name(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='Teardown' and"
-        " not(@type)]/kw[@name='Log']/msg[.='1']"
+        "//kw[@name='Run Test']/kw[@name='Teardown' and" " not(@type)]/kw[@name='Log']/msg[.='1']"
     )
     assert xml.xpath(
         "//kw[@type='TEARDOWN']/kw[@name='Actual Teardown']/kw[@name='Log']/msg[.='2']"
@@ -258,9 +254,7 @@ def test_keyword_with_conflicting_name(pytester_dir: PytesterDir):
 
 
 def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
-    run_and_assert_result(
-        pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
-    )
+    run_and_assert_result(pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR)
     assert_log_file_exists(pytester_dir)
 
 
@@ -268,15 +262,11 @@ def test_keyword_decorator(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     # make sure it doesn't get double keyworded
-    assert output_xml(pytester_dir).xpath(
-        "//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']"
-    )
+    assert output_xml(pytester_dir).xpath("//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']")
 
 
 def test_keyword_decorator_and_other_decorator(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     # make sure it doesn't get double keyworded
-    assert output_xml(pytester_dir).xpath(
-        "//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']"
-    )
+    assert output_xml(pytester_dir).xpath("//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']")

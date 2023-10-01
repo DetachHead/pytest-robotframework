@@ -4,4 +4,5 @@ from pytest import mark
 
 
 @mark.slow
-def test_tags(): ...
+def test_tags():
+    ...

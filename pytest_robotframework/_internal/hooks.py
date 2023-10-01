@@ -9,7 +9,5 @@ if TYPE_CHECKING:
 # ruff: noqa: ARG001, FBT001
 
 
-def pytest_robot_modify_args(
-    args: list[str], collect_only: bool, session: Session
-) -> None:
+def pytest_robot_modify_args(args: list[str], collect_only: bool, session: Session) -> None:
     """modify the arguments passed to robot in-place"""

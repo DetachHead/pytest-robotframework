@@ -83,13 +83,7 @@ def import_resource(path: Path | str):
 @patch_method(LibraryKeywordRunner)  # type:ignore[no-any-expr]
 def _runner_for(  # type:ignore[no-any-decorated]
     old_method: Callable[
-        [
-            LibraryKeywordRunner,
-            _ExecutionContext,
-            Function,
-            list[object],
-            dict[str, object],
-        ],
+        [LibraryKeywordRunner, _ExecutionContext, Function, list[object], dict[str, object]],
         Function,
     ],
     self: LibraryKeywordRunner,
@@ -105,9 +99,7 @@ def _runner_for(  # type:ignore[no-any-decorated]
 
 _KeywordResultValue = Union[Literal["PASS"], BaseException, None]
 
-_T_KeywordResult = TypeVar(
-    "_T_KeywordResult", covariant=True, bound=_KeywordResultValue
-)
+_T_KeywordResult = TypeVar("_T_KeywordResult", covariant=True, bound=_KeywordResultValue)
 
 
 @dataclass
@@ -145,10 +137,12 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
     @overload
     def __call__(
         self, fn: Callable[_P, AbstractContextManager[T]]
-    ) -> Callable[_P, AbstractContextManager[T]]: ...
+    ) -> Callable[_P, AbstractContextManager[T]]:
+        ...
 
     @overload
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]: ...
+    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
+        ...
 
     def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
         if isinstance(fn, _KeywordDecorator):
@@ -198,8 +192,7 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
             )
 
         def exit_status_reporter(
-            status_reporter: AbstractContextManager[None],
-            error: BaseException | None = None,
+            status_reporter: AbstractContextManager[None], error: BaseException | None = None
         ):
             if self.on_failure != "raise now":
                 self.result.value = cast(_T_KeywordResult, error or "PASS")
@@ -245,9 +238,7 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
                 /,
             ) -> bool:
                 suppress = self.wrapped.__exit__(exc_type, exc_value, traceback)
-                exit_status_reporter(
-                    self.status_reporter, (None if suppress else exc_value)
-                )
+                exit_status_reporter(self.status_reporter, (None if suppress else exc_value))
                 if exc_value:
                     fail_later(exc_value)
                 return suppress or on_error != "raise now"
@@ -262,9 +253,7 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
             # functions that raise Failed, which extends BaseException
             except BaseException as e:  # noqa: BLE001
                 exit_status_reporter(status_reporter, e)
-                if on_error == "raise now" or isinstance(
-                    e, (KeyboardInterrupt, SystemExit)
-                ):
+                if on_error == "raise now" or isinstance(e, (KeyboardInterrupt, SystemExit)):
                     raise
                 fail_later(e)
                 fn_result = None
@@ -290,21 +279,19 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
 
 @overload
 def keyword(
-    *,
-    name: str | None = ...,
-    tags: tuple[str, ...] | None = ...,
-    module: str | None = ...,
-) -> _KeywordDecorator[Never]: ...
+    *, name: str | None = ..., tags: tuple[str, ...] | None = ..., module: str | None = ...
+) -> _KeywordDecorator[Never]:
+    ...
 
 
 @overload
-def keyword(
-    fn: Callable[_P, AbstractContextManager[T]]
-) -> Callable[_P, AbstractContextManager[T]]: ...
+def keyword(fn: Callable[_P, AbstractContextManager[T]]) -> Callable[_P, AbstractContextManager[T]]:
+    ...
 
 
 @overload
-def keyword(fn: Callable[_P, T]) -> Callable[_P, T]: ...
+def keyword(fn: Callable[_P, T]) -> Callable[_P, T]:
+    ...
 
 
 def keyword(  # pylint:disable=missing-param-doc
@@ -325,9 +312,7 @@ def keyword(  # pylint:disable=missing-param-doc
     defaults to the function's actual module
     """
     if fn is None:
-        return _KeywordDecorator(
-            name=name, tags=tags, module=module, on_failure="raise now"
-        )
+        return _KeywordDecorator(name=name, tags=tags, module=module, on_failure="raise now")
     return keyword(name=name, tags=tags, module=module)(fn)
 
 
@@ -338,7 +323,8 @@ def as_keyword(
     doc: str = "",
     tags: tuple[str, ...] | None = ...,
     continue_on_failure: Literal[False] = ...,  # pylint:disable=redefined-outer-name
-) -> ContextManager[_KeywordResult[Never]]: ...
+) -> ContextManager[_KeywordResult[Never]]:
+    ...
 
 
 @overload
@@ -352,7 +338,8 @@ def as_keyword(
     doc: str = "",
     tags: tuple[str, ...] | None = ...,
     continue_on_failure: bool,  # pylint:disable=redefined-outer-name
-) -> ContextManager[_KeywordResult[_KeywordResultValue]]: ...
+) -> ContextManager[_KeywordResult[_KeywordResultValue]]:
+    ...
 
 
 def as_keyword(

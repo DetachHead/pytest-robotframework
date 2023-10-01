@@ -52,8 +52,7 @@ def test_suites(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "./suite/suite[@name='Suite1']/suite[@name='Test"
-        " Asdf']/test[@name='test_func1']"
+        "./suite/suite[@name='Suite1']/suite[@name='Test" " Asdf']/test[@name='test_func1']"
     )
 
 
@@ -162,9 +161,7 @@ def test_setup_fails(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, errors=1, exit_code=ExitCode.TESTS_FAILED)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        ".//test/kw[@name='Setup']/msg[@level='FAIL' and .='Exception: 2']"
-    )
+    assert xml.xpath(".//test/kw[@name='Setup']/msg[@level='FAIL' and .='Exception: 2']")
     assert not xml.xpath(".//test/kw[@name='Run Test']")
 
 
@@ -191,9 +188,7 @@ def test_teardown_fails(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(".//test/kw[@name='Run Test']")
-    assert xml.xpath(
-        ".//test/kw[@name='Teardown']/msg[@level='FAIL' and .='Exception: 2']"
-    )
+    assert xml.xpath(".//test/kw[@name='Teardown']/msg[@level='FAIL' and .='Exception: 2']")
 
 
 def test_error_moment(pytester_dir: PytesterDir):
@@ -243,9 +238,7 @@ def test_error_moment_and_second_test(pytester_dir: PytesterDir):
 
 
 def test_error_moment_exitonerror(pytester_dir: PytesterDir):
-    run_and_assert_result(
-        pytester_dir, failed=1, pytest_args=["--robotargs=--exitonerror"]
-    )
+    run_and_assert_result(pytester_dir, failed=1, pytest_args=["--robotargs=--exitonerror"])
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='ERROR' and .='foo']")
@@ -302,25 +295,20 @@ def test_test_case_docstring(pytester_dir: PytesterDir):
 def test_keyword_decorator_docstring(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath(
-        ".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']"
-    )
+    assert output_xml(pytester_dir).xpath(".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']")
 
 
 def test_keyword_decorator_docstring_on_next_line(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath(
-        ".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']"
-    )
+    assert output_xml(pytester_dir).xpath(".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']")
 
 
 def test_keyword_decorator_args(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        ".//kw[@name='Run Test']/kw[@name='foo' and ./arg[.='1'] and"
-        " ./arg[.='bar=True']]"
+        ".//kw[@name='Run Test']/kw[@name='foo' and ./arg[.='1'] and" " ./arg[.='bar=True']]"
     )
 
 
@@ -332,18 +320,14 @@ def test_keyword_decorator_custom_name_and_tags(pytester_dir: PytesterDir):
     )
 
 
-def test_keyword_decorator_context_manager_that_doesnt_suppress(
-    pytester_dir: PytesterDir,
-):
+def test_keyword_decorator_context_manager_that_doesnt_suppress(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='start']")
     assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='0']")
     assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='end']")
-    assert xml.xpath(
-        "//kw[@name='asdf' and ./status[@status='FAIL'] and ./msg[.='Exception']]"
-    )
+    assert xml.xpath("//kw[@name='asdf' and ./status[@status='FAIL'] and ./msg[.='Exception']]")
     assert not xml.xpath("//msg[.='1']")
 
 
@@ -363,8 +347,7 @@ def test_keywordify_keyword_inside_context_manager(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='raises' and ./arg[.=\"<class"
-        " 'ZeroDivisionError'>\"]]/kw[@name='asdf']"
+        "//kw[@name='raises' and ./arg[.=\"<class" " 'ZeroDivisionError'>\"]]/kw[@name='asdf']"
     )
 
 
@@ -402,15 +385,9 @@ def test_keyword_names(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     for index in range(2):
-        assert xml.xpath(
-            f".//test[@name='test_{index}']/kw[@name='Setup' and not(./arg)]"
-        )
-        assert xml.xpath(
-            f".//test[@name='test_{index}']/kw[@name='Run Test' and not(./arg)]"
-        )
-        assert xml.xpath(
-            f".//test[@name='test_{index}']/kw[@name='Teardown' and not(./arg)]"
-        )
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Setup' and not(./arg)]")
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Run Test' and not(./arg)]")
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Teardown' and not(./arg)]")
 
 
 def test_suite_variables(pytester_dir: PytesterDir):
@@ -500,8 +477,7 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
     assert (
         f"E   {UserError.__module__}.{UserError.__qualname__}: listener 'Listener'"
         " cannot be registered because robot has already started running. make sure"
-        " it's defined in a `conftest.py` file"
-        in result.outlines
+        " it's defined in a `conftest.py` file" in result.outlines
     )
 
 
@@ -516,9 +492,7 @@ def test_catch_errors_decorator_with_non_instance_method(pytester_dir: PytesterD
 
 
 def test_no_tests_found_when_tests_exist(pytester_dir: PytesterDir):
-    run_and_assert_result(
-        pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
-    )
+    run_and_assert_result(pytester_dir, pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR)
     assert_log_file_exists(pytester_dir)
 
 
@@ -542,8 +516,7 @@ def test_assertion_passes(pytester_dir: PytesterDir):
     )
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and"
-        " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and" " .='1 == 1']"
     )
 
 
@@ -562,12 +535,10 @@ def test_pytest_runtest_protocol_hook_multiple_tests(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and"
-        " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and" " .='1 == 1']"
     )
     assert xml.xpath(
-        "//kw[@name='assert' and ./arg['right == left']]/msg[@level='INFO' and"
-        " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['right == left']]/msg[@level='INFO' and" " .='1 == 1']"
     )
 
 

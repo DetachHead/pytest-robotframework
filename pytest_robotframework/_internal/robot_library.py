@@ -37,9 +37,7 @@ def _call_and_report_robot_edition(
     reports.append(report)
     if report.skipped:
         # empty string means xfail with no reason, None means it was not an xfail
-        xfail_reason = (
-            cast(str, report.wasxfail) if hasattr(report, "wasxfail") else None
-        )
+        xfail_reason = cast(str, report.wasxfail) if hasattr(report, "wasxfail") else None
         BuiltIn().skip(  # type:ignore[no-untyped-call]
             # TODO: is there a reliable way to get the reason when skipped by a skip/skipif marker?
             # https://github.com/DetachHead/pytest-robotframework/issues/51
@@ -72,8 +70,7 @@ def setup(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
     cringe_globals._current_item = item  # noqa: SLF001
     # mostly copied from the start of `_pytest.runner.runtestprotocol`:
     if (
-        hasattr(item, "_request")
-        and not item._request  # type: ignore[no-any-expr] # noqa: SLF001
+        hasattr(item, "_request") and not item._request  # type: ignore[no-any-expr] # noqa: SLF001
     ):
         # This only happens if the item is re-run, as is done by
         # pytest-rerunfailures.
@@ -102,7 +99,9 @@ def teardown(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
     item = arg.value
     # mostly copied from the end of `_pytest.runner.runtestprotocol`:
     _call_and_report_robot_edition(
-        item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
+        item,
+        "teardown",
+        nextitem=item.nextitem,  # type:ignore[no-any-expr]
     )
     cringe_globals._current_item = None  # noqa: SLF001
 
