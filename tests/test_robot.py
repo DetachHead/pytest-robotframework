@@ -75,7 +75,7 @@ def test_setup_skipped(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and" " .//msg[@level='SKIP']]"
+        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and .//msg[@level='SKIP']]"
     )
     # make sure the test didnt run when setup was skipped
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
@@ -246,7 +246,7 @@ def test_keyword_with_conflicting_name(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='Teardown' and" " not(@type)]/kw[@name='Log']/msg[.='1']"
+        "//kw[@name='Run Test']/kw[@name='Teardown' and not(@type)]/kw[@name='Log']/msg[.='1']"
     )
     assert xml.xpath(
         "//kw[@type='TEARDOWN']/kw[@name='Actual Teardown']/kw[@name='Log']/msg[.='2']"

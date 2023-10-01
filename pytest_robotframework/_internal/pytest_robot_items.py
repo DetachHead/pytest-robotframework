@@ -85,9 +85,9 @@ class RobotItem(Item):
         test = self.stash[running_test_case_key]
         context = execution_context()
         with self._check_skipped():
-            BodyRunner(context=context, templated=bool(test.template)).run(  # type:ignore[no-untyped-call]
-                self.stash[original_body_key]
-            )
+            BodyRunner(  # type:ignore[no-untyped-call]
+                context=context, templated=bool(test.template)
+            ).run(self.stash[original_body_key])
 
     @override
     def teardown(self):

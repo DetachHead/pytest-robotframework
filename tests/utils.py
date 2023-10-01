@@ -71,7 +71,8 @@ def run_and_assert_assert_pytest_result(
     exit_code: ExitCode | None = None,
 ):
     result = (
-        pytester.runpytest_subprocess if subprocess else pytester.runpytest  # type:ignore[no-any-expr]
+        # https://github.com/astral-sh/ruff/issues/7730
+        pytester.runpytest_subprocess if subprocess else pytester.runpytest  # type:ignore[no-any-expr]  # noqa: E501
     )(*(pytest_args or []))
     result.assert_outcomes(
         passed=passed, skipped=skipped, failed=failed, errors=errors, xfailed=xfailed

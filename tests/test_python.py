@@ -52,7 +52,7 @@ def test_suites(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "./suite/suite[@name='Suite1']/suite[@name='Test" " Asdf']/test[@name='test_func1']"
+        "./suite/suite[@name='Suite1']/suite[@name='Test Asdf']/test[@name='test_func1']"
     )
 
 
@@ -308,7 +308,7 @@ def test_keyword_decorator_args(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        ".//kw[@name='Run Test']/kw[@name='foo' and ./arg[.='1'] and" " ./arg[.='bar=True']]"
+        ".//kw[@name='Run Test']/kw[@name='foo' and ./arg[.='1'] and ./arg[.='bar=True']]"
     )
 
 
@@ -347,7 +347,7 @@ def test_keywordify_keyword_inside_context_manager(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='raises' and ./arg[.=\"<class" " 'ZeroDivisionError'>\"]]/kw[@name='asdf']"
+        "//kw[@name='raises' and ./arg[.=\"<class 'ZeroDivisionError'>\"]]/kw[@name='asdf']"
     )
 
 
@@ -516,7 +516,7 @@ def test_assertion_passes(pytester_dir: PytesterDir):
     )
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and" " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and .='1 == 1']"
     )
 
 
@@ -535,10 +535,10 @@ def test_pytest_runtest_protocol_hook_multiple_tests(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and" " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and .='1 == 1']"
     )
     assert xml.xpath(
-        "//kw[@name='assert' and ./arg['right == left']]/msg[@level='INFO' and" " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['right == left']]/msg[@level='INFO' and .='1 == 1']"
     )
 
 
