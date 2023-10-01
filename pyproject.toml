@@ -403,6 +403,7 @@ required-imports = ["from __future__ import annotations"]
 [tool.ruff.format]
 line-ending = 'lf'
 skip-magic-trailing-comma = true
+preview = true
 
 [tool.robotidy]
 configure = [
