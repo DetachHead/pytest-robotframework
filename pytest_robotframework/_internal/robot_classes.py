@@ -71,9 +71,7 @@ class PythonParser(Parser):
 
     @staticmethod
     def _create_suite(source: Path) -> running.TestSuite:
-        return running.TestSuite(
-            running.TestSuite.name_from_source(source), source=source
-        )
+        return running.TestSuite(running.TestSuite.name_from_source(source), source=source)
 
     @override
     def parse(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
@@ -85,9 +83,7 @@ class PythonParser(Parser):
             _create_running_keyword(
                 "KEYWORD",
                 robot_library.internal_error,  # type:ignore[no-any-expr]
-                Cloaked[str](
-                    "fake placeholder test appeared. this should never happen :(("
-                ),
+                Cloaked[str]("fake placeholder test appeared. this should never happen :(("),
             )
         ]
         suite.tests.append(test_case)
@@ -141,10 +137,7 @@ class PytestCollector(SuiteVisitor):
                         ":".join(
                             [
                                 marker.name,
-                                *(
-                                    str(arg)
-                                    for arg in cast(Tuple[object, ...], marker.args)
-                                ),
+                                *(str(arg) for arg in cast(Tuple[object, ...], marker.args)),
                             ]
                         )
                         for marker in item.iter_markers()
@@ -207,9 +200,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
     @override
     def start_suite(self, suite: running.TestSuite):
-        suite.resource.imports.library(
-            robot_library.__name__, alias=robot_library.__name__
-        )
+        suite.resource.imports.library(robot_library.__name__, alias=robot_library.__name__)
         for test in suite.tests:
             item = get_item_from_robot_test(self.session, test)
             if not item:
@@ -269,9 +260,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
     def _get_item(self, data: running.TestCase) -> Item:
         item = get_item_from_robot_test(self.session, data)
         if not item:
-            raise InternalError(
-                f"failed to find pytest item for robot test: {data.name}"
-            )
+            raise InternalError(f"failed to find pytest item for robot test: {data.name}")
         return item
 
     def _get_hookcaller(self) -> HookCaller:
@@ -287,10 +276,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         hook_caller._hookimpls[:] = []  # noqa: SLF001
         for hookimpl in hookimpls:
             hook_caller._add_hookimpl(hookimpl)  # noqa: SLF001
-        return cast(
-            object,
-            self._get_hookcaller()(item=item, nextitem=cast(Item, item.nextitem)),
-        )
+        return cast(object, self._get_hookcaller()(item=item, nextitem=cast(Item, item.nextitem)))
 
     @override
     def start_suite(
@@ -312,10 +298,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
             wrapper_generator = cast(
                 _HookWrapper,
                 hook.function(
-                    *(
-                        {"item": item, "nextitem": nextitem}[argname]
-                        for argname in hook.argnames
-                    )
+                    *({"item": item, "nextitem": nextitem}[argname] for argname in hook.argnames)
                 ),
             )
             self.hookwrappers[hook] = wrapper_generator
@@ -343,15 +326,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
                     HookImpl(
                         hook.plugin,
                         hook.plugin_name,
-                        lambda item, nextitem, *, hook=hook: enter_wrapper(
-                            hook, item, nextitem
-                        ),
-                        {
-                            **hook.opts,
-                            "hookwrapper": False,
-                            "tryfirst": True,
-                            "trylast": False,
-                        },
+                        lambda item, nextitem, *, hook=hook: enter_wrapper(hook, item, nextitem),
+                        {**hook.opts, "hookwrapper": False, "tryfirst": True, "trylast": False},
                     )
                 )
                 self.end_test_hooks.append(
@@ -359,12 +335,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                         hook.plugin,
                         hook.plugin_name,
                         lambda hook=hook: exit_wrapper(hook),
-                        {
-                            **hook.opts,
-                            "hookwrapper": False,
-                            "tryfirst": False,
-                            "trylast": True,
-                        },
+                        {**hook.opts, "hookwrapper": False, "tryfirst": False, "trylast": True},
                     )
                 )
             elif hook.opts["trylast"]:

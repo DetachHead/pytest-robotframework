@@ -31,9 +31,7 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
     if fixture_dir_for_current_test.exists():
         copytree(fixture_dir_for_current_test, pytester.path, dirs_exist_ok=True)
     else:
-        for file in (
-            test_file_fixture_dir / f"{test_name}.{ext}" for ext in ("py", "robot")
-        ):
+        for file in (test_file_fixture_dir / f"{test_name}.{ext}" for ext in ("py", "robot")):
             if file.exists():
                 copy(file, pytester.path)
                 break

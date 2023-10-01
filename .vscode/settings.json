@@ -35,9 +35,9 @@
     "warning": "Warning",
     "info": "Warning"
   },
-  "black-formatter.importStrategy": "fromEnvironment",
+  "ruff.enableExperimentalFormatter": true,
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "yaml.schemas": {
     "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json": ".github/workflows/*.yaml"
