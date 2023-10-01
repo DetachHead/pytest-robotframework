@@ -24,7 +24,7 @@ jobs:
       - run: ./pw install
       - run: ./pw run mypy -p pytest_robotframework
       - run: ./pw run mypy tests
-      - run: ./pw run black --check --diff .
+      - run: ./pw run ruff format --check .
       - run: ./pw run ruff .
       - run: ./pw run pylint pytest_robotframework tests
       - run: ./pw test
