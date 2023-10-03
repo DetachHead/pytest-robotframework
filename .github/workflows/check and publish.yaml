@@ -34,6 +34,11 @@ jobs:
     runs-on: 'ubuntu-latest'
     if: github.ref == 'refs/heads/master'
     needs: check
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      pull-requests: read
     steps:
       - uses: actions/checkout@v2
       - run: ./pw pdm publish
