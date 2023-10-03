@@ -347,6 +347,36 @@ def test_keyword_decorator_context_manager_that_doesnt_suppress(
     assert not xml.xpath("//msg[.='1']")
 
 
+def test_keyword_decorator_context_manager_that_raises_in_exit(
+    pytester_dir: PytesterDir,
+):
+    run_and_assert_result(pytester_dir, failed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='start']")
+    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='0']")
+    assert xml.xpath("//kw[@name='asdf']/msg[@level='FAIL' and .='asdf']")
+    assert not xml.xpath("//msg[.='1']")
+
+
+def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(
+    pytester_dir: PytesterDir,
+):
+    run_and_assert_result(
+        pytester_dir, pytest_args=["--robotargs", "--loglevel DEBUG:INFO"], failed=1
+    )
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='start']")
+    assert xml.xpath("//kw[@name='asdf']/msg[@level='FAIL' and .='asdf']")
+    assert xml.xpath(
+        "//kw[@name='asdf']/msg[@level='DEBUG' and contains(.,'Exception:"
+        " fdsa\n\nDuring handling of the above exception, another exception"
+        " occurred:') and contains(., 'Exception: asdf')]"
+    )
+    assert not xml.xpath("//msg[.='1']")
+
+
 def test_keyword_decorator_try_except(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)

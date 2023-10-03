@@ -244,10 +244,17 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
                 traceback: TracebackType | None,
                 /,
             ) -> bool:
-                suppress = self.wrapped.__exit__(exc_type, exc_value, traceback)
-                exit_status_reporter(
-                    self.status_reporter, (None if suppress else exc_value)
-                )
+                try:
+                    suppress = self.wrapped.__exit__(exc_type, exc_value, traceback)
+                except BaseException as e:
+                    e.__context__ = exc_value
+                    exc_value = e
+                    suppress = False
+                    raise
+                finally:
+                    exit_status_reporter(
+                        self.status_reporter, (None if suppress else exc_value)
+                    )
                 if exc_value:
                     fail_later(exc_value)
                 return suppress or on_error != "raise now"
