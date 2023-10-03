@@ -164,7 +164,6 @@ enable = [
     "unsupported-assignment-operation",
     "unsupported-binary-operation",
     "unsupported-delete-operation",
-    "used-before-assignment",
     "abstract-method",
     "anomalous-unicode-escape-in-string",
     "arguments-out-of-order",
