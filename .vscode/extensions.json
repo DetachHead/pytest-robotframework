@@ -7,7 +7,6 @@
     "charliermarsh.ruff",
     "shd101wyy.markdown-preview-enhanced",
     "mhutchie.git-graph",
-    "ninoseki.vscode-pylens",
     "tamasfe.even-better-toml",
     "redhat.vscode-yaml",
     "robocorp.robotframework-lsp"
