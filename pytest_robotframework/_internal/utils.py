@@ -4,7 +4,7 @@ from contextlib import AbstractContextManager
 from functools import wraps
 from typing import TYPE_CHECKING, Callable, Generic, cast
 
-from basedtyping import T, T_co
+from basedtyping import T, out_T
 from typing_extensions import Concatenate, ParamSpec, override
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ def patch_method(  # type: ignore[no-any-explicit]
 
 if TYPE_CHECKING:
 
-    class ContextManager(Generic[T_co], AbstractContextManager[T_co]):
+    class ContextManager(Generic[out_T], AbstractContextManager[out_T]):
         """removes `None` from the return type of `AbstractContextManager.__exit__` to prevent code
         from being incorrectly marked as unreachable by mypy and pyright. see these issues:
         - https://github.com/python/mypy/issues/15158
@@ -77,5 +77,5 @@ if TYPE_CHECKING:
 else:
     # python 3.8 doesn't support subscripting AbstractContextManager so we make a fake one using
     # Generic that works at runtime
-    class ContextManager(Generic[T_co], AbstractContextManager):
+    class ContextManager(Generic[out_T], AbstractContextManager):
         pass
