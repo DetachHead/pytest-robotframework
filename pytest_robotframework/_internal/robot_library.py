@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, cast
 
-from _pytest._code.code import ExceptionInfo, ExceptionRepr
+from _pytest._code.code import ExceptionInfo, ExceptionRepr, TerminalRepr
 from _pytest.runner import call_and_report, show_test_item
 from pytest import Item, StashKey, TestReport
 from robot.api.deco import keyword
@@ -61,6 +61,9 @@ def _call_and_report_robot_edition(
                 # normal failures
                 raise Exception(longrepr.reprcrash.message)
             raise InternalError(f"pytest exception reprcrash was `None`: {longrepr}")
+        if isinstance(longrepr, TerminalRepr):
+            # errors such as invalid fixture (FixtureLookupErrorRepr)
+            raise Exception(str(longrepr))
         if isinstance(longrepr, ExceptionInfo):
             raise InternalError(f"got unexpected exception type: {longrepr.value}")
         raise InternalError(f"Unknown exception type appeared: {longrepr}")
