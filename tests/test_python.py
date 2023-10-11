@@ -675,3 +675,11 @@ def test_as_keyword_context_manager_continue_on_error(pytester_dir: PytesterDir)
     xml = output_xml(pytester_dir)
     assert xml.xpath("//kw[@name='hi' and ./status[@status='FAIL']]/msg[.='FooError']")
     assert xml.xpath("//kw[@name='Run Test']/msg[.='2']")
+
+
+def test_invalid_fixture(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, errors=1, exit_code=ExitCode.TESTS_FAILED)
+    assert_log_file_exists(pytester_dir)
+    assert not output_xml(pytester_dir).xpath(
+        "//*[contains(., 'Unknown exception type appeared')]"
+    )
