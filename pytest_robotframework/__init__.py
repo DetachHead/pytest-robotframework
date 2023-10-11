@@ -22,7 +22,7 @@ from typing import (
     overload,
 )
 
-from basedtyping import Function, T
+from basedtyping import Function, P, T
 from robot import result, running
 from robot.api import SuiteVisitor, deco
 from robot.api.interfaces import ListenerV2, ListenerV3
@@ -30,7 +30,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc
-from typing_extensions import Never, ParamSpec, deprecated, override
+from typing_extensions import Never, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
@@ -122,9 +122,6 @@ class _KeywordResult(Generic[_T_KeywordResult]):
     the keyword raised an exception"""
 
 
-_P = ParamSpec("_P")
-
-
 class _KeywordDecorator(Generic[_T_KeywordResult]):
     def __init__(
         self,
@@ -144,13 +141,13 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
 
     @overload
     def __call__(
-        self, fn: Callable[_P, AbstractContextManager[T]]
-    ) -> Callable[_P, AbstractContextManager[T]]: ...
+        self, fn: Callable[P, AbstractContextManager[T]]
+    ) -> Callable[P, AbstractContextManager[T]]: ...
 
     @overload
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]: ...
+    def __call__(self, fn: Callable[P, T]) -> Callable[P, T]: ...
 
-    def __call__(self, fn: Callable[_P, T]) -> Callable[_P, T]:
+    def __call__(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
             return fn  # type:ignore[unreachable]
         # this doesn't really do anything in python land but we call the original robot keyword
@@ -158,7 +155,7 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
         deco.keyword(name=self.name, tags=self.tags)(fn)
 
         def create_status_reporter(
-            *args: _P.args, **kwargs: _P.kwargs
+            *args: P.args, **kwargs: P.kwargs
         ) -> AbstractContextManager[None]:
             if self.module is None:
                 self.module = fn.__module__
@@ -260,7 +257,7 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
                 return suppress or on_error != "raise now"
 
         @wraps(fn)
-        def inner(*args: _P.args, **kwargs: _P.kwargs) -> T | None:
+        def inner(*args: P.args, **kwargs: P.kwargs) -> T | None:
             status_reporter = create_status_reporter(*args, **kwargs)
             status_reporter.__enter__()
             try:
@@ -306,16 +303,16 @@ def keyword(
 
 @overload
 def keyword(
-    fn: Callable[_P, AbstractContextManager[T]]
-) -> Callable[_P, AbstractContextManager[T]]: ...
+    fn: Callable[P, AbstractContextManager[T]]
+) -> Callable[P, AbstractContextManager[T]]: ...
 
 
 @overload
-def keyword(fn: Callable[_P, T]) -> Callable[_P, T]: ...
+def keyword(fn: Callable[P, T]) -> Callable[P, T]: ...
 
 
 def keyword(  # pylint:disable=missing-param-doc
-    fn: Callable[_P, T] | None = None, *, name=None, tags=None, module=None
+    fn: Callable[P, T] | None = None, *, name=None, tags=None, module=None
 ):
     """marks a function as a keyword and makes it show in the robot log.
 
@@ -472,9 +469,9 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
     you don't need this if you registered your listener with the `@listener` decorator, as it
     applies this decorator as well"""
 
-    def wrapped(fn: Callable[_P, T]) -> Callable[_P, T]:
+    def wrapped(fn: Callable[P, T]) -> Callable[P, T]:
         @wraps(fn)
-        def inner(*args: _P.args, **kwargs: _P.kwargs) -> T:
+        def inner(*args: P.args, **kwargs: P.kwargs) -> T:
             try:
                 return fn(*args, **kwargs)
             except Exception as e:
