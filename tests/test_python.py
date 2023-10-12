@@ -617,60 +617,8 @@ def test_keyword_raises(pytester_dir: PytesterDir):
     )
 
 
-def test_continue_on_failure_context_manager(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, failed=1)
-    assert_log_file_exists(pytester_dir)
-    xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='continue_on_failure' and"
-        " ./status[@status='FAIL'] and ./msg[.='ZeroDivisionError: division by zero']]"
-    )
-    assert xml.xpath("//kw[@name='Run Test']/msg[.='1']")
-    assert xml.xpath(
-        "//test[@name='test_foo']/status[.='failures that occurred inside a"
-        " `continue_on_failure`:\n\n- division by zero\n\n']"
-    )
-
-
-def test_ignore_failure_context_manager(pytester_dir: PytesterDir):
+def test_as_keyword_context_manager_try_except(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
-    assert_log_file_exists(pytester_dir)
-    xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='Ignore Failure' and"
-        " ./status[@status='FAIL'] and ./msg[.='ZeroDivisionError: division by zero']]"
-    )
-    assert xml.xpath("//kw[@name='Run Test']/msg[.='1']")
-    assert not xml.xpath(
-        "//status[.='failures from"
-        " keywords with `continue_on_failure` enabled:\n\n- division by zero\n\n']"
-    )
-
-
-def test_late_failures_and_normal_failure(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, failed=1)
-    assert_log_file_exists(pytester_dir)
-    xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='continue_on_failure' and"
-        " ./status[@status='FAIL'] and ./msg[.='ZeroDivisionError: division by zero']]"
-    )
-    assert xml.xpath(
-        "//test[@name='test_foo']/status[contains(., 'FooError') and contains(.,"
-        " 'division by zero')]"
-    )
-
-
-def test_as_keyword_context_manager_passes(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, passed=1)
-    assert_log_file_exists(pytester_dir)
-    xml = output_xml(pytester_dir)
-    assert xml.xpath("//kw[@name='hi']/msg[.='1']")
-    assert xml.xpath("//kw[@name='Run Test']/msg[.='2']")
-
-
-def test_as_keyword_context_manager_continue_on_error(pytester_dir: PytesterDir):
-    run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath("//kw[@name='hi' and ./status[@status='FAIL']]/msg[.='FooError']")

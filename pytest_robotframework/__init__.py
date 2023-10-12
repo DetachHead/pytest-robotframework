@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import inspect
 from contextlib import AbstractContextManager, contextmanager, nullcontext
-from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
 from typing import (
@@ -12,9 +11,7 @@ from typing import (
     Callable,
     DefaultDict,
     Dict,
-    Generic,
     Iterator,
-    Literal,
     Type,
     TypeVar,
     Union,
@@ -30,14 +27,12 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc, printable_name
-from typing_extensions import Never, deprecated, override
+from typing_extensions import override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
 from pytest_robotframework._internal.robot_utils import (
-    ContinuableFailure,
-    RobotError,
-    add_late_failure,
+    add_robot_error,
     escape_robot_str,
     execution_context,
 )
@@ -104,41 +99,19 @@ def _runner_for(
     return old_method(self, context, handler, positional, named)
 
 
-_KeywordResultValue = Union[Literal["PASS"], BaseException, None]
-
-_T_KeywordResult = TypeVar(
-    "_T_KeywordResult", covariant=True, bound=_KeywordResultValue
-)
-
-
-@dataclass
-class _KeywordResult(Generic[_T_KeywordResult]):
-    value: _T_KeywordResult | None = None
-    """only used if `continue_on_failure` is enabled. possible types are:
-
-    - `None` - while the keyword is still running, or if `continue_on_failure` is disabled
-    - `Literal["PASS"]` - after the keyword has finished if `continue_on_failures` is enabled and
-    the keyword did not raise an exception
-    - `BaseException` - after the keyword has finished if `continue_on_failures` is enabled and
-    the keyword raised an exception"""
-
-
-class _KeywordDecorator(Generic[_T_KeywordResult]):
+class _KeywordDecorator:
     def __init__(
         self,
         *,
         name: str | None = None,
         tags: tuple[str, ...] | None = None,
         module: str | None = None,
-        on_failure: Literal["raise now", "raise later", "ignore"],
         doc: str | None = None,
     ) -> None:
         self.name = name
         self.tags = tags or ()
         self.module = module
-        self.on_failure = on_failure
         self.doc = doc
-        self.result = _KeywordResult[_T_KeywordResult]()
 
     @overload
     def __call__(
@@ -204,24 +177,10 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
             status_reporter: AbstractContextManager[None],
             error: BaseException | None = None,
         ):
-            if self.on_failure != "raise now":
-                self.result.value = cast(_T_KeywordResult, error or "PASS")
             if error is None:
                 status_reporter.__exit__(None, None, None)
             else:
                 status_reporter.__exit__(type(error), error, error.__traceback__)
-
-        on_error = self.on_failure
-
-        def fail_later(e: BaseException):
-            if on_error == "raise later":
-                item = current_item()
-                if not item:
-                    raise InternalError(
-                        "failed to find current test to save continuable failure for"
-                        f" keyword: {fn.__name__}"
-                    ) from e
-                add_late_failure(item, ContinuableFailure(e))
 
         class WrappedContextManager(ContextManager[T]):
             """defers exiting the status reporter until after the wrapped context
@@ -258,26 +217,19 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
                     exit_status_reporter(
                         self.status_reporter, (None if suppress else exc_value)
                     )
-                if exc_value:
-                    fail_later(exc_value)
-                return suppress or on_error != "raise now"
+                return suppress or False
 
         @wraps(fn)
-        def inner(*args: P.args, **kwargs: P.kwargs) -> T | None:
+        def inner(*args: P.args, **kwargs: P.kwargs) -> T:
             status_reporter = create_status_reporter(*args, **kwargs)
             status_reporter.__enter__()
             try:
                 fn_result = fn(*args, **kwargs)
             # ideally we would only be catching Exception here, but we keywordify some pytest
             # functions that raise Failed, which extends BaseException
-            except BaseException as e:  # noqa: BLE001
+            except BaseException as e:
                 exit_status_reporter(status_reporter, e)
-                if on_error == "raise now" or isinstance(
-                    e, (KeyboardInterrupt, SystemExit)
-                ):
-                    raise
-                fail_later(e)
-                fn_result = None
+                raise
             else:
                 if isinstance(fn_result, AbstractContextManager):
                     # 🚀 independently verified for safety by the overloads
@@ -290,12 +242,7 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
         inner._keyword_original_function = (  # type:ignore[attr-defined] # noqa: SLF001
             fn
         )
-        # the inner function will return None if the error is ignored or deferred which is not
-        # typesafe, but we are not exposing `on_error` as part of the public api, and our usages do
-        # not look at the reuturn value.
-        # TODO: add a way to get the error from those context managers
-        # https://github.com/DetachHead/pytest-robotframework/issues/88
-        return inner  # type:ignore[return-value]
+        return inner
 
 
 @overload
@@ -304,7 +251,7 @@ def keyword(
     name: str | None = ...,
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
-) -> _KeywordDecorator[Never]: ...
+) -> _KeywordDecorator: ...
 
 
 @overload
@@ -335,43 +282,13 @@ def keyword(  # pylint:disable=missing-param-doc
     defaults to the function's actual module
     """
     if fn is None:
-        return _KeywordDecorator(
-            name=name, tags=tags, module=module, on_failure="raise now"
-        )
+        return _KeywordDecorator(name=name, tags=tags, module=module)
     return keyword(name=name, tags=tags, module=module)(fn)
 
 
-@overload
 def as_keyword(
-    name: str,
-    *,
-    doc: str = "",
-    tags: tuple[str, ...] | None = ...,
-    continue_on_failure: Literal[False] = ...,  # pylint:disable=redefined-outer-name
-) -> ContextManager[_KeywordResult[Never]]: ...
-
-
-@overload
-@deprecated(
-    "`continue_on_failure` is deprecated. use a `try`/`except` to manually handle the"
-    " failure instead"
-)
-def as_keyword(
-    name: str,
-    *,
-    doc: str = "",
-    tags: tuple[str, ...] | None = ...,
-    continue_on_failure: bool,  # pylint:disable=redefined-outer-name
-) -> ContextManager[_KeywordResult[_KeywordResultValue]]: ...
-
-
-def as_keyword(
-    name: str,
-    *,
-    doc="",
-    tags: tuple[str, ...] | None = None,
-    continue_on_failure=False,  # pylint:disable=redefined-outer-name
-):
+    name: str, *, doc="", tags: tuple[str, ...] | None = None
+) -> ContextManager[None]:
     """runs the body as a robot keyword.
 
     example:
@@ -382,23 +299,16 @@ def as_keyword(
     :param name: the name for the keyword
     :param doc: the documentation to be displayed underneath the keyword in the robot log
     :param tags: tags for the keyword
-    :param continue_on_failure: marks the keyword as failed then continues executing the test,
-    re-raises the exception at the end of the test. behaves like robot's `run keyword and continue
     on failure` keyword
     """
-    keyword_decorator = _KeywordDecorator[_KeywordResultValue](
-        name=name,
-        tags=tags,
-        doc=doc,
-        on_failure="raise later" if continue_on_failure else "raise now",
-    )
+    keyword_decorator = _KeywordDecorator(name=name, tags=tags, doc=doc)
 
     @keyword_decorator
     @contextmanager
-    def fn() -> Iterator[_KeywordResult[_KeywordResultValue]]:
-        yield keyword_decorator.result
+    def fn() -> Iterator[None]:
+        yield
 
-    return cast(ContextManager[Never], fn())
+    return cast(ContextManager[None], fn())
 
 
 def keywordify(
@@ -433,33 +343,6 @@ def keywordify(
     )
 
 
-@deprecated("use a `try`/`except` statement to manually handle the exception instead")
-def continue_on_failure() -> ContextManager[_KeywordResult[_KeywordResultValue]]:
-    """continues test execution if the body fails, then re-raises the exception at the end of the
-    test. equivalent to robot's `run_keyword_and_continue_on_failure` keyword
-
-    you can check whether the keyword passed or failed like so:
-
-    example:
-    -------
-    >>> with continue_on_failure() as result:
-    ...     ...
-    ... assert result.value == "PASS" or isinstance(result.value, SomeException)
-    """
-    return as_keyword(continue_on_failure.__name__, continue_on_failure=True)
-
-
-@deprecated("use a `try`/`except` statement or `functools.suppress` instead")
-@_KeywordDecorator(on_failure="ignore")
-@contextmanager
-def ignore_failure() -> Iterator[None]:
-    """continues test execution if the body fails, so the test will still pass. equivalent to
-    robot's `run_keyword_and_ignore_error` keyword.
-    this should only be used if you are not sure whether the body will fail. if you are expecting an
-    error, you should use `pytest.raises` instead"""
-    yield
-
-
 _T_ListenerOrSuiteVisitor = TypeVar(
     "_T_ListenerOrSuiteVisitor", bound=Type[Union[Listener, SuiteVisitor]]
 )
@@ -489,7 +372,7 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
                         f"an error occurred inside {cls.__name__} and failed to get the"
                         f" current pytest item/session: {e}"
                     ) from e
-                add_late_failure(item_or_session, RobotError(str(e)))
+                add_robot_error(item_or_session, str(e))
                 raise
 
         return inner

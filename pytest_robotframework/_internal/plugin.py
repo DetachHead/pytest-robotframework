@@ -31,8 +31,8 @@ from pytest_robotframework._internal.robot_classes import (
     PythonParser,
 )
 from pytest_robotframework._internal.robot_utils import (
-    describe_late_failures,
     escape_robot_str,
+    report_robot_errors,
 )
 
 if TYPE_CHECKING:
@@ -109,7 +109,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             )
     finally:
         _listeners.too_late = False
-    robot_errors = describe_late_failures(session)
+    robot_errors = report_robot_errors(session)
     if robot_errors:
         raise Exception(robot_errors)
 
@@ -163,7 +163,7 @@ def pytest_assertion_pass(orig: str, expl: str):
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:
-    late_failures = describe_late_failures(item)
+    late_failures = report_robot_errors(item)
     if late_failures:
         result = TestReport.from_item_and_call(item, call)
         result.outcome = "failed"
