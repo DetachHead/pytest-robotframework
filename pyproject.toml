@@ -303,6 +303,10 @@ ignore_missing_py_typed = true
 module = ['pytest_robotframework.*', 'tests.*']
 default_return = true
 
+# i don't use pyright, this is only to prevent vscode from suggesting imports that won't work in 3.8
+[tool.pyright]
+pythonVersion = "3.8"
+
 [tool.ruff]
 extend-select = [
     "I",
