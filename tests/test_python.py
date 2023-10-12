@@ -303,7 +303,7 @@ def test_keyword_decorator_docstring(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        ".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']"
+        ".//kw[@name='Run Test']/kw[@name='Foo']/doc[.='hie']"
     )
 
 
@@ -311,7 +311,7 @@ def test_keyword_decorator_docstring_on_next_line(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        ".//kw[@name='Run Test']/kw[@name='foo']/doc[.='hie']"
+        ".//kw[@name='Run Test']/kw[@name='Foo']/doc[.='hie']"
     )
 
 
@@ -319,7 +319,7 @@ def test_keyword_decorator_args(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        ".//kw[@name='Run Test']/kw[@name='foo' and ./arg[.='1'] and"
+        ".//kw[@name='Run Test']/kw[@name='Foo' and ./arg[.='1'] and"
         " ./arg[.='bar=True']]"
     )
 
@@ -338,11 +338,11 @@ def test_keyword_decorator_context_manager_that_doesnt_suppress(
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='start']")
-    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='0']")
-    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='end']")
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='start']")
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='0']")
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='end']")
     assert xml.xpath(
-        "//kw[@name='asdf' and ./status[@status='FAIL'] and ./msg[.='Exception']]"
+        "//kw[@name='Asdf' and ./status[@status='FAIL'] and ./msg[.='Exception']]"
     )
     assert not xml.xpath("//msg[.='1']")
 
@@ -353,9 +353,9 @@ def test_keyword_decorator_context_manager_that_raises_in_exit(
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='start']")
-    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='0']")
-    assert xml.xpath("//kw[@name='asdf']/msg[@level='FAIL' and .='asdf']")
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='start']")
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='0']")
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='FAIL' and .='asdf']")
     assert not xml.xpath("//msg[.='1']")
 
 
@@ -367,10 +367,10 @@ def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(
     )
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath("//kw[@name='asdf']/msg[@level='INFO' and .='start']")
-    assert xml.xpath("//kw[@name='asdf']/msg[@level='FAIL' and .='asdf']")
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='start']")
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='FAIL' and .='asdf']")
     assert xml.xpath(
-        "//kw[@name='asdf']/msg[@level='DEBUG' and contains(.,'Exception:"
+        "//kw[@name='Asdf']/msg[@level='DEBUG' and contains(.,'Exception:"
         " fdsa\n\nDuring handling of the above exception, another exception"
         " occurred:') and contains(., 'Exception: asdf')]"
     )
@@ -382,7 +382,7 @@ def test_keyword_decorator_try_except(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='Run Test' and ./status[@status='PASS']]/kw[@name='bar' and"
+        "//kw[@name='Run Test' and ./status[@status='PASS']]/kw[@name='Bar' and"
         " ./status[@status='FAIL']]/msg[.='FooError']"
     )
     assert xml.xpath("//kw[@name='Run Test']/msg[.='hi']")
@@ -393,22 +393,22 @@ def test_keywordify_keyword_inside_context_manager(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='raises' and ./arg[.=\"<class"
-        " 'ZeroDivisionError'>\"]]/kw[@name='asdf']"
+        "//kw[@name='Raises' and ./arg[.=\"<class"
+        " 'ZeroDivisionError'>\"]]/kw[@name='Asdf']"
     )
 
 
 def test_keywordify_function(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
-    assert output_xml(pytester_dir).xpath("//kw[@name='fail' and ./arg[.='asdf']]")
+    assert output_xml(pytester_dir).xpath("//kw[@name='Fail' and ./arg[.='asdf']]")
 
 
 def test_keywordify_context_manager(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[@name='raises' and ./arg[.=\"<class 'ZeroDivisionError'>\"] and"
+        "//kw[@name='Raises' and ./arg[.=\"<class 'ZeroDivisionError'>\"] and"
         " ./status[@status='PASS']]"
     )
 
@@ -605,7 +605,7 @@ def test_keyword_and_pytest_raises(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[@name='raises']/kw[@name='bar']/status[@status='FAIL']"
+        "//kw[@name='Raises']/kw[@name='Bar']/status[@status='FAIL']"
     )
 
 
@@ -613,7 +613,7 @@ def test_keyword_raises(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, failed=1)
     assert_log_file_exists(pytester_dir)
     assert output_xml(pytester_dir).xpath(
-        "//kw[@name='bar' and ./status[@status='FAIL'] and ./msg[.='FooError']]"
+        "//kw[@name='Bar' and ./status[@status='FAIL'] and ./msg[.='FooError']]"
     )
 
 
@@ -637,7 +637,7 @@ def test_ignore_failure_context_manager(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='ignore_failure' and"
+        "//kw[@name='Run Test']/kw[@name='Ignore Failure' and"
         " ./status[@status='FAIL'] and ./msg[.='ZeroDivisionError: division by zero']]"
     )
     assert xml.xpath("//kw[@name='Run Test']/msg[.='1']")

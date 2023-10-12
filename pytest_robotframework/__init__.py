@@ -29,7 +29,7 @@ from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
-from robot.utils import getshortdoc
+from robot.utils import getshortdoc, printable_name
 from typing_extensions import Never, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
@@ -150,9 +150,15 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
     def __call__(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
             return fn  # type:ignore[unreachable]
+        keyword_name = self.name or cast(
+            str,
+            printable_name(  # type:ignore[no-untyped-call]
+                fn.__name__, code_style=True
+            ),
+        )
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
-        deco.keyword(name=self.name, tags=self.tags)(fn)
+        deco.keyword(name=keyword_name, tags=self.tags)(fn)
 
         def create_status_reporter(
             *args: P.args, **kwargs: P.kwargs
@@ -164,7 +170,6 @@ class _KeywordDecorator(Generic[_T_KeywordResult]):
                 *(f"{key}={value}" for key, value in kwargs.items()),
             )
             context = execution_context()
-            keyword_name = self.name or fn.__name__
             return (
                 StatusReporter(
                     running.Keyword(name=keyword_name, args=log_args),
