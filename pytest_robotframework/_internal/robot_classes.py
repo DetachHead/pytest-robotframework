@@ -22,8 +22,7 @@ from pytest_robotframework._internal import robot_library
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot_utils import (
     Cloaked,
-    RobotError,
-    add_late_failure,
+    add_robot_error,
     get_item_from_robot_test,
     running_test_case_key,
 )
@@ -448,7 +447,7 @@ class ErrorDetector(ListenerV3):
                 "a robot error occurred and ErrorDetector failed to figure out what"
                 f" test it came from: {message.message}"
             )
-        add_late_failure(
+        add_robot_error(
             get_item_from_robot_test(self.session, self.current_test) or self.session,
-            RobotError(message.message),
+            message.message,
         )
