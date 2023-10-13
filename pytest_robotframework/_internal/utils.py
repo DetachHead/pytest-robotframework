@@ -14,12 +14,9 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 
 
-def patch_method(  # type: ignore[no-any-explicit]
-    cls: type[object],
-    method_name: str | None = None,
-    # https://github.com/python/mypy/issues/15073
-    # ) -> Callable[[Callable[Concatenate[Callable[P, T], P], T]], Callable[P, T]]:
-) -> Callable[[Callable[..., T]], Callable[..., T]]:
+def patch_method(
+    cls: type[object], method_name: str | None = None
+) -> Callable[[Callable[Concatenate[Callable[P, T], P], T]], Callable[P, T]]:
     """replaces a method of a class with the decorated one
 
     example:

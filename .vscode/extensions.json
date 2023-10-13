@@ -4,6 +4,7 @@
     "ms-python.vscode-pylance",
     "ms-python.pylint",
     "ms-python.black-formatter",
+    "ms-python.mypy-type-checker",
     "charliermarsh.ruff",
     "shd101wyy.markdown-preview-enhanced",
     "mhutchie.git-graph",

@@ -10,12 +10,8 @@
   "git.useEditorAsCommitInput": false,
   "diffEditor.ignoreTrimWhitespace": false,
   "terminal.integrated.persistentSessionReviveProcess": "never",
-  "python.linting.mypyArgs": [
-    "--show-column-numbers",
-    "--python-version",
-    "3.8"
-  ],
-  "python.linting.mypyEnabled": true,
+  "mypy-type-checker.args": ["--ide", "--python-version", "3.8"],
+  "mypy-type-checker.importStrategy": "fromEnvironment",
   "files.autoSave": "onFocusChange",
   "search.useIgnoreFiles": true,
   "git.useCommitInputAsStashMessage": true,
