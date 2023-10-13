@@ -80,8 +80,9 @@ def import_resource(path: Path | str):
         _resources.append(Path(path))
 
 
-@patch_method(LibraryKeywordRunner)  # type:ignore[no-any-expr]
-def _runner_for(  # type:ignore[no-any-decorated]
+# https://github.com/DetachHead/pytest-robotframework/issues/36
+@patch_method(LibraryKeywordRunner)  # type:ignore[arg-type,no-any-decorated,misc]
+def _runner_for(
     old_method: Callable[
         [
             LibraryKeywordRunner,
@@ -495,10 +496,7 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
 
     for name, method in inspect.getmembers(
         cls,
-        # https://github.com/python/mypy/issues/16025
-        predicate=lambda attr: inspect.isfunction(  # type:ignore[arg-type,no-any-expr]
-            attr
-        )
+        predicate=lambda attr: inspect.isfunction(attr)
         # the wrapper breaks static methods idk why, but we shouldn't need to wrap them anyway
         # because robot listeners/suite visitors don't call any static/class methods
         and not isinstance(
@@ -511,7 +509,7 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
         # want to duplicate errors
         and not attr.__name__.startswith("_"),
     ):
-        setattr(cls, name, wrapped(method))  # type:ignore[arg-type,no-any-expr]
+        setattr(cls, name, wrapped(method))  # type:ignore[no-any-expr]
     return cls
 
 

@@ -86,10 +86,7 @@ def add_late_failure(item_or_session: Item | Session, failure: _LateFailure):
 def describe_late_failures(item_or_session: Item | Session) -> str | None:
     late_failures = item_or_session.stash.get(robot_late_failures_key, None)
     if late_failures:
-        failure_groups = groupby(
-            late_failures,
-            lambda failure: failure.description(),  # type:ignore[no-any-expr]
-        )
+        failure_groups = groupby(late_failures, lambda failure: failure.description())
         result = ""
         for description, failures in failure_groups:
             messages = [failure.message for failure in failures]
