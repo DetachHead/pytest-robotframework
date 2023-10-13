@@ -246,6 +246,7 @@ enable = [
     "mixed-line-endings",
     "non-ascii-module-import",
     "non-ascii-name",
+    "superfluous-parens",
     "unexpected-line-ending-format",
     "use-implicit-booleaness-not-comparison",
     "chained-comparison",
