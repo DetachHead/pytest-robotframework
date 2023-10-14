@@ -282,12 +282,19 @@ class PytestRuntestProtocolHooks(ListenerV3):
 
     def _call_hooks(self, item: Item, hookimpls: list[HookImpl]) -> object:
         hook_caller = self._get_hookcaller(item)
-        # can't use the public get_hookimpls method because it returns a copy and we need to mutate
-        # the original
-        hook_caller._hookimpls[:] = []  # noqa: SLF001
-        for hookimpl in hookimpls:
-            hook_caller._add_hookimpl(hookimpl)  # noqa: SLF001
-        return cast(object, hook_caller(item=item, nextitem=cast(Item, item.nextitem)))
+        original_hookimpls = hook_caller.get_hookimpls()
+        try:
+            # can't use the public get_hookimpls method because it returns a copy and we need to
+            # mutate the original
+            hook_caller._hookimpls[:] = []  # noqa: SLF001
+            for hookimpl in hookimpls:
+                hook_caller._add_hookimpl(hookimpl)  # noqa: SLF001
+            hook_result = cast(
+                object, hook_caller(item=item, nextitem=cast(Item, item.nextitem))
+            )
+        finally:
+            hook_caller._hookimpls[:] = original_hookimpls  # noqa: SLF001
+        return hook_result
 
     @override
     def start_test(
