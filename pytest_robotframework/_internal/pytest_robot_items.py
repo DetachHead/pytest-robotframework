@@ -104,5 +104,6 @@ class RobotItem(Item):
         self._run_keyword(self.stash[original_teardown_key])
 
     @override
-    def reportinfo(self) -> (PathLike[str] | str, int | None, str):
+    # https://github.com/microsoft/pyright/issues/6157
+    def reportinfo(self) -> (PathLike[str] | str, int | None, str):  # pyright:ignore
         return (self.path, self.stash[running_test_case_key].lineno, self.name)
