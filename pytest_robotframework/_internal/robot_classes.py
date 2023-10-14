@@ -330,8 +330,6 @@ class PytestRuntestProtocolHooks(ListenerV3):
                 next(self.hookwrappers[hook])
             except StopIteration as e:
                 return cast(object, e.value)
-            finally:
-                self.hookwrappers[hook]
             raise InternalError(
                 f"pytest_runtest_protocol hookwrapper {hook} didn't raise StopIteration"
             )
