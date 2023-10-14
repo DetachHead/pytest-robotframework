@@ -577,7 +577,7 @@ def test_assertion_passes(pytester_dir: PytesterDir):
     )
 
 
-def test_pytest_runtest_protocol_hook_multiple_tests(pytester_dir: PytesterDir):
+def test_assertion_pass_hook_multiple_tests(pytester_dir: PytesterDir):
     run_and_assert_result(
         pytester_dir,
         pytest_args=[
@@ -683,3 +683,13 @@ def test_invalid_fixture(pytester_dir: PytesterDir):
     assert not output_xml(pytester_dir).xpath(
         "//*[contains(., 'Unknown exception type appeared')]"
     )
+
+
+def test_pytest_runtest_protocol_session_hook(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+
+
+def test_pytest_runtest_protocol_item_hook(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
