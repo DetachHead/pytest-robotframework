@@ -274,34 +274,30 @@ class PytestRuntestProtocolHooks(ListenerV3):
             )
         return item
 
-    def _get_hookcaller(self) -> HookCaller:
+    @staticmethod
+    def _get_hookcaller(item: Item) -> HookCaller:
         return cast(
-            HookCaller,
-            self.session.ihook.pytest_runtest_protocol,  # type:ignore[no-any-expr]
+            HookCaller, item.ihook.pytest_runtest_protocol  # type:ignore[no-any-expr]
         )
 
     def _call_hooks(self, item: Item, hookimpls: list[HookImpl]) -> object:
-        hook_caller = self._get_hookcaller()
+        hook_caller = self._get_hookcaller(item)
         # can't use the public get_hookimpls method because it returns a copy and we need to mutate
         # the original
         hook_caller._hookimpls[:] = []  # noqa: SLF001
         for hookimpl in hookimpls:
             hook_caller._add_hookimpl(hookimpl)  # noqa: SLF001
-        return cast(
-            object,
-            self._get_hookcaller()(item=item, nextitem=cast(Item, item.nextitem)),
-        )
+        return cast(object, hook_caller(item=item, nextitem=cast(Item, item.nextitem)))
 
     @override
-    def start_suite(
+    def start_test(
         self,
-        data: running.TestSuite,
-        result: result.TestSuite,  # pylint:disable=redefined-outer-name
+        data: running.TestCase,
+        result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
-        if data.parent:
-            # only need to do this once, so we only do it for the top level suite
-            return
-        hook_caller = self._get_hookcaller()
+        # setup hooks for the test:
+        item = self._get_item(data)
+        hook_caller = self._get_hookcaller(item)
 
         # remove the runner plugin because `PytestRuntestProtocolInjector` re-implements it
         with suppress(ValueError):  # already been removed
@@ -372,13 +368,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
             else:
                 self.start_test_hooks.append(hook)
 
-    @override
-    def start_test(
-        self,
-        data: running.TestCase,
-        result: result.TestCase,  # pylint:disable=redefined-outer-name
-    ):
-        item = self._get_item(data)
+        # call start test hooks and start hookwrappers:
         if self._call_hooks(item, self.start_test_hooks) is not None:
             # stop on non-None result
             self.stop_running_hooks = True
@@ -393,6 +383,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
         result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
         item = self._get_item(data)
+
+        # call end test hooks and finish hookwrappers:
         item.ihook.pytest_runtest_logfinish(  # type:ignore[no-any-expr]
             nodeid=item.nodeid, location=item.location
         )
@@ -400,6 +392,12 @@ class PytestRuntestProtocolHooks(ListenerV3):
             self.stop_running_hooks = False  # for next time
         else:
             self._call_hooks(item, self.end_test_hooks)
+
+        # remove all the hooks since they need to be re-evaluated for each item, since items can
+        # have different hooks depending on what conftest files are nearby:
+        self.start_test_hooks.clear()
+        self.end_test_hooks.clear()
+        self.hookwrappers.clear()
 
 
 @catch_errors
