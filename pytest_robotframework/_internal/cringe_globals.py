@@ -2,6 +2,7 @@
 should only be used as a last resort
 
 this is safe for now since robot doesn't support running multiple tests at the same time"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
