@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Tuple, cast
 
 from _pytest import runner
 from pluggy import HookCaller, HookImpl
+from pluggy._hooks import _SubsetHookCaller
 from pytest import Function, Item, Session, StashKey
 from robot import model, result, running
 from robot.api import SuiteVisitor
@@ -307,8 +308,14 @@ class PytestRuntestProtocolHooks(ListenerV3):
         hook_caller = self._get_hookcaller(item)
 
         # remove the runner plugin because `PytestRuntestProtocolInjector` re-implements it
+        original_hook_caller = (
+            # need to bypass the _SubsetHookCaller proxy otherwise it won't actually remove the plugin
+            hook_caller._orig  # noqa: SLF001
+            if isinstance(hook_caller, _SubsetHookCaller)
+            else hook_caller
+        )
         with suppress(ValueError):  # already been removed
-            hook_caller._remove_plugin(runner)  # noqa: SLF001
+            original_hook_caller._remove_plugin(runner)  # noqa: SLF001
 
         def enter_wrapper(hook: HookImpl, item: Item, nextitem: Item) -> object:
             """calls the first half of a hookwrapper"""
