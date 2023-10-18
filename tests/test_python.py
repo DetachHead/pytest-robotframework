@@ -693,3 +693,8 @@ def test_pytest_runtest_protocol_session_hook(pytester_dir: PytesterDir):
 def test_pytest_runtest_protocol_item_hook(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
+
+
+def test_pytest_runtest_protocol_hook_in_different_suite(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, pytest_args=["-m", "asdf"], passed=1)
+    assert_log_file_exists(pytester_dir)
