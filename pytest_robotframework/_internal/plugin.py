@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, cast
+from typing import TYPE_CHECKING, Dict, Generator, cast
 
 import pytest
 from deepmerge import always_merger
+from pluggy import Result
 from pytest import TestReport, hookimpl
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
@@ -22,6 +23,9 @@ from pytest_robotframework import (
 )
 from pytest_robotframework._internal import cringe_globals, hooks
 from pytest_robotframework._internal.errors import InternalError
+from pytest_robotframework._internal.pytest_exception_getter import (
+    save_exception_to_item,
+)
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
 from pytest_robotframework._internal.robot_classes import (
     ErrorDetector,
@@ -40,6 +44,8 @@ if TYPE_CHECKING:
 
     from pluggy import PluginManager
     from pytest import CallInfo, Collector, Item, Parser, Session
+
+HookImplResult = Generator[None, Result[object], None]
 
 
 def _collect_slash_run(session: Session, *, collect_only: bool):
@@ -188,20 +194,34 @@ def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
     return None
 
 
-def pytest_runtest_setup(item: Item):
-    if isinstance(item, RobotItem):
+@hookimpl(hookwrapper=True)  # type:ignore[no-any-expr]
+def pytest_runtest_setup(item: Item) -> HookImplResult:
+    if not isinstance(item, RobotItem):
         # `set_variables` and `import_resource` is only supported in python files.
         # when running robot files, suite variables should be set using the `*** Variables ***`
         # section and resources should be imported with `Resource` in the `*** Settings***` section
-        return
-    builtin = BuiltIn()
-    for key, value in _suite_variables[item.path].items():
-        builtin.set_suite_variable(
-            r"${" + key + "}",
-            escape_robot_str(value) if isinstance(value, str) else value,
-        )
-    for resource in _resources:
-        import_resource(resource)
+        builtin = BuiltIn()
+        for key, value in _suite_variables[item.path].items():
+            builtin.set_suite_variable(
+                r"${" + key + "}",
+                escape_robot_str(value) if isinstance(value, str) else value,
+            )
+        for resource in _resources:
+            import_resource(resource)
+    result = yield
+    save_exception_to_item(item, result)
+
+
+@hookimpl(hookwrapper=True)  # type:ignore[no-any-expr]
+def pytest_runtest_call(item: Item) -> HookImplResult:
+    result = yield
+    save_exception_to_item(item, result)
+
+
+@hookimpl(hookwrapper=True)  # type:ignore[no-any-expr]
+def pytest_runtest_teardown(item: Item) -> HookImplResult:
+    result = yield
+    save_exception_to_item(item, result)
 
 
 def pytest_runtestloop(session: Session) -> object:
