@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, cast
 
-from _pytest._code.code import ExceptionInfo, ExceptionRepr, TerminalRepr
 from _pytest.runner import call_and_report, show_test_item
 from pytest import Item, StashKey, TestReport
 from robot.api.deco import keyword
@@ -13,6 +12,7 @@ from robot.libraries.BuiltIn import BuiltIn
 
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.errors import InternalError
+from pytest_robotframework._internal.pytest_exception_getter import exception_key
 
 if TYPE_CHECKING:
     from pytest_robotframework._internal.robot_utils import Cloaked
@@ -49,24 +49,16 @@ def _call_and_report_robot_edition(
         )
     elif report.failed:
         # make robot show the exception:
-        # TODO: whats up with longrepr why is it such a pain in the ass to use?
-        #  is there an easier way to just get the exception/error message?
-        #  https://github.com/DetachHead/pytest-robotframework/issues/35
+        exception = item.stash.get(exception_key, None)
+        if exception:
+            raise exception
         longrepr = report.longrepr
         if isinstance(longrepr, str):
-            # xfail strict
+            # xfail strict and errors caught in our pytest_runtest_makereport hook
             raise Exception(longrepr)
-        if isinstance(longrepr, ExceptionRepr):
-            if longrepr.reprcrash:
-                # normal failures
-                raise Exception(longrepr.reprcrash.message)
-            raise InternalError(f"pytest exception reprcrash was `None`: {longrepr}")
-        if isinstance(longrepr, TerminalRepr):
-            # errors such as invalid fixture (FixtureLookupErrorRepr)
-            raise Exception(str(longrepr))
-        if isinstance(longrepr, ExceptionInfo):
-            raise InternalError(f"got unexpected exception type: {longrepr.value}")
-        raise InternalError(f"Unknown exception type appeared: {longrepr}")
+        raise InternalError(
+            f"failed to get exception from failed test ({item=}, {when=}): {longrepr}"
+        )
 
 
 @keyword  # type:ignore[no-any-expr,misc]

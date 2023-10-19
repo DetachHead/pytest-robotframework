@@ -162,9 +162,7 @@ def test_setup_fails(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, errors=1, exit_code=ExitCode.TESTS_FAILED)
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
-    assert xml.xpath(
-        ".//test/kw[@name='Setup']/msg[@level='FAIL' and .='Exception: 2']"
-    )
+    assert xml.xpath(".//test/kw[@name='Setup']/msg[@level='FAIL' and .='2']")
     assert not xml.xpath(".//test/kw[@name='Run Test']")
 
 
@@ -191,9 +189,7 @@ def test_teardown_fails(pytester_dir: PytesterDir):
     assert_log_file_exists(pytester_dir)
     xml = output_xml(pytester_dir)
     assert xml.xpath(".//test/kw[@name='Run Test']")
-    assert xml.xpath(
-        ".//test/kw[@name='Teardown']/msg[@level='FAIL' and .='Exception: 2']"
-    )
+    assert xml.xpath(".//test/kw[@name='Teardown']/msg[@level='FAIL' and .='2']")
 
 
 def test_error_moment(pytester_dir: PytesterDir):
@@ -646,3 +642,15 @@ def test_pytest_runtest_protocol_item_hook(pytester_dir: PytesterDir):
 def test_pytest_runtest_protocol_hook_in_different_suite(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, pytest_args=["-m", "asdf"], passed=1)
     assert_log_file_exists(pytester_dir)
+
+
+def test_traceback(pytester_dir: PytesterDir):
+    run_and_assert_result(
+        pytester_dir, pytest_args=["--robotargs", "--loglevel DEBUG:INFO"], failed=1
+    )
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath(
+        "//msg[@level='DEBUG' and contains(., 'in test_foo') and contains(., 'in"
+        " asdf')]"
+    )
