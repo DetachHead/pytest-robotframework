@@ -301,9 +301,8 @@ def as_keyword(
     :param tags: tags for the keyword
     on failure` keyword
     """
-    keyword_decorator = _KeywordDecorator(name=name, tags=tags, doc=doc)
 
-    @keyword_decorator
+    @_KeywordDecorator(name=name, tags=tags, doc=doc, module="")
     @contextmanager
     def fn() -> Iterator[None]:
         yield
