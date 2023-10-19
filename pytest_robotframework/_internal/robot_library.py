@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, cast
 
+from _pytest._code.code import TerminalRepr
 from _pytest.runner import call_and_report, show_test_item
 from pytest import Item, StashKey, TestReport
 from robot.api.deco import keyword
@@ -56,6 +57,9 @@ def _call_and_report_robot_edition(
         if isinstance(longrepr, str):
             # xfail strict and errors caught in our pytest_runtest_makereport hook
             raise Exception(longrepr)
+        if isinstance(longrepr, TerminalRepr):
+            # errors such as invalid fixture (FixtureLookupErrorRepr)
+            raise Exception(str(longrepr))
         raise InternalError(
             f"failed to get exception from failed test ({item=}, {when=}): {longrepr}"
         )
