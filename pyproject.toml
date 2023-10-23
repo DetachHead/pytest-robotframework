@@ -304,55 +304,12 @@ default_return = true
 pythonVersion = "3.8"
 
 [tool.ruff]
-extend-select = [
-    "I",
-    "UP",
-    "PYI",
-    "PL",
-    "B",
-    "PGH",
-    "T10",
-    "G",
-    "A",
-    "ERA",
-    "ARG",
-    "SIM",
-    "RET",
-    "N",
-    "RUF",
-    "S",
-    "ISC",
-    "TRY",
-    "D",
-    "PT",
-    "YTT",
-    "ASYNC",
-    "BLE",
-    "FBT",
-    "C4",
-    "DTZ",
-    "T10",
-    "FA",
-    "INP",
-    "PIE",
-    "G",
-    "T20",
-    "RSE",
-    "RET",
-    "SLF",
-    "TID",
-    "TCH",
-    "PTH",
-    "TD",
-    "PD",
-    "FLY",
-    "NPY",
-    "AIR",
-    "PERF",
-    "FURB",
-    "LOG",
-]
+extend-select = ["ALL"]
 ignore = [
+    "ANN",     # flake8-annotations (covered by mypy)
+    "COM",     # flake8-annotations (covered by black)
+    "EM",      # flake8-errmsg
+    "FIX",     # flake8-fixme
     "PLR0913", # Too many arguments to function call
     "PLR0912", # Too many branches
     "PLR0915", # Too many statements
@@ -389,6 +346,8 @@ ignore = [
     "PGH003",  # Use specific rule codes when ignoring type issues (covered by mypy)
     "S101",    # Use of assert detected (pytest uses assert statements)
     "E701",    # Multiple statements on one line (sometimes conflicts with black)
+    "CPY001",  # missing-copyright-notice
+    "C901",    # max-complexity
 ]
 target-version = "py38"
 respect-gitignore = true

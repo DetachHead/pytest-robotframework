@@ -308,7 +308,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
 
         # remove the runner plugin because `PytestRuntestProtocolInjector` re-implements it
         original_hook_caller = (
-            # need to bypass the _SubsetHookCaller proxy otherwise it won't actually remove the plugin
+            # need to bypass the _SubsetHookCaller proxy otherwise it won't actually remove the
+            # plugin
             hook_caller._orig  # noqa: SLF001
             if isinstance(hook_caller, _SubsetHookCaller)
             else hook_caller
