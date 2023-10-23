@@ -26,9 +26,6 @@ lint = [
 ]
 test = ["lxml>=4.9.3", "lxml-stubs>=0.4.0"]
 
-[tool.pdm.plugins.pytest11]
-robotframework = "pytest_robotframework._internal.plugin"
-
 # maybe these should be pyprojectx scripts instead once https://github.com/pyprojectx/pyprojectx/issues/26 is fixed
 [tool.pdm.scripts]
 _mypy_package = { cmd = "pdm run mypy -p pytest_robotframework" }
