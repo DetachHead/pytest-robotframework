@@ -307,7 +307,7 @@ pythonVersion = "3.8"
 extend-select = ["ALL"]
 ignore = [
     "ANN",     # flake8-annotations (covered by mypy)
-    "COM",     # flake8-annotations (covered by black)
+    "COM",     # flake8-commas (covered by black)
     "EM",      # flake8-errmsg
     "FIX",     # flake8-fixme
     "PLR0913", # Too many arguments to function call
