@@ -296,4 +296,4 @@ if you use the [robotframework-lsp](https://github.com/robocorp/robotframework-l
 
 ### pycharm
 
-not currently supported, sowwy
+pycharm currently does not support pytest plugins for non-python files. see [this issue](https://youtrack.jetbrains.com/issue/PY-63110/use-pytest-collect-only-to-collect-pytest-tests)
