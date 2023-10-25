@@ -283,3 +283,17 @@ except SomeException:
 ```
 
 the keyword will still show as failed in the log (as long as it's decorated with `pytest_robotframework.keyword`), but it won't effect the status of the test unless the exception is re-raised
+
+## IDE integration
+
+### vscode
+
+vscode's builtin python plugin should discover both your python and robot tests by default, and show run buttons next to them:
+
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/411233d0-a0d6-4fca-9701-0503b534bd46)
+
+if you use the [robotframework-lsp](https://github.com/robocorp/robotframework-lsp) extension, you'll see duplicated tests on `.robot` files because now both extensions are able to discover them. until https://github.com/robocorp/robotframework-lsp/issues/976 is merged, you'll need to install [this build](https://github.com/DetachHead/robotframework-lsp/releases/tag/asdf) which includes a new `robot.testView.enabled` setting. set that to `false` to remove the duplicated tests.
+
+### pycharm
+
+not currently supported, sowwy
