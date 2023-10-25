@@ -44,6 +44,7 @@
   "robot.codeFormatter": "robotidy",
   "robot.codeLens.interactiveConsole.enable": false,
   "robot.codeLens.enable": false,
+  "robot.testView.enabled": false,
   "explorer.compactFolders": false,
   "search.exclude": {
     "pw": true
