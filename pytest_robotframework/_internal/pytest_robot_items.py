@@ -106,4 +106,5 @@ class RobotItem(Item):
     @override
     # https://github.com/microsoft/pyright/issues/6157
     def reportinfo(self) -> (PathLike[str] | str, int | None, str):  # pyright:ignore
-        return (self.path, self.stash[running_test_case_key].lineno, self.name)
+        line_number = self.stash[running_test_case_key].lineno
+        return (self.path, None if line_number is None else line_number - 1, self.name)

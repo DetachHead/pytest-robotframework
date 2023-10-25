@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pytest import ExitCode
+from pytest import ExitCode, Item
 
 from tests.utils import (
     PytesterDir,
@@ -280,3 +280,22 @@ def test_keyword_decorator_and_other_decorator(pytester_dir: PytesterDir):
     assert output_xml(pytester_dir).xpath(
         "//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']"
     )
+
+
+def test_line_number(pytester_dir: PytesterDir):
+    items: list[Item] | None = None
+
+    class ItemGetter:
+        @staticmethod
+        def pytest_collection_finish(session: Session):
+            nonlocal items
+            items = session.items
+
+    pytester_dir.runpytest(
+        "--collectonly",
+        "--strict-markers",
+        plugins=[ItemGetter()],  # type:ignore[no-any-expr]
+    )
+    assert items
+    assert items[0].reportinfo()[1] == 1
+    assert items[1].reportinfo()[1] == 4
