@@ -292,7 +292,9 @@ vscode's builtin python plugin should discover both your python and robot tests 
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/411233d0-a0d6-4fca-9701-0503b534bd46)
 
-if you use the [robotframework-lsp](https://github.com/robocorp/robotframework-lsp) extension, you'll see duplicated tests on `.robot` files because now both extensions are able to discover them. until https://github.com/robocorp/robotframework-lsp/issues/976 is merged, you'll need to install [this build](https://github.com/DetachHead/robotframework-lsp/releases/tag/asdf) which includes a new `robot.testView.enabled` setting. set that to `false` to remove the duplicated tests.
+if you use the [robotframework-lsp](https://github.com/robocorp/robotframework-lsp) extension, you'll see duplicated tests on `.robot` files because you have two extensions that can discover them. to fix this, set `robot.testView.enabled` to `false` in robotframework-lsp's settings.
+
+(note: at the time of writing, this option is not yet in the latest version of the extension, so for now you'll need to install [this build](https://github.com/DetachHead/robotframework-lsp/releases/tag/asdf))
 
 ### pycharm
 
