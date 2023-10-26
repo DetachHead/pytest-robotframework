@@ -11,7 +11,9 @@ from typing import (
     Callable,
     DefaultDict,
     Dict,
+    Iterable,
     Iterator,
+    Mapping,
     Type,
     TypeVar,
     Union,
@@ -287,7 +289,12 @@ def keyword(  # pylint:disable=missing-param-doc
 
 
 def as_keyword(
-    name: str, *, doc="", tags: tuple[str, ...] | None = None
+    name: str,
+    *,
+    doc="",
+    tags: tuple[str, ...] | None = None,
+    args: Iterable[str] | None = None,
+    kwargs: Mapping[str, str] | None = None,
 ) -> ContextManager[None]:
     """runs the body as a robot keyword.
 
@@ -299,15 +306,16 @@ def as_keyword(
     :param name: the name for the keyword
     :param doc: the documentation to be displayed underneath the keyword in the robot log
     :param tags: tags for the keyword
-    on failure` keyword
+    :param args: positional arguments to be displayed on the keyword in the robot log
+    :param kwargs: keyword arguments to be displayed on the keyword in the robot log
     """
 
     @_KeywordDecorator(name=name, tags=tags, doc=doc, module="")
     @contextmanager
-    def fn() -> Iterator[None]:
+    def fn(*_args: str, **_kwargs: str) -> Iterator[None]:
         yield
 
-    return cast(ContextManager[None], fn())
+    return cast(ContextManager[None], fn(*(args or []), **(kwargs or {})))
 
 
 def keywordify(
