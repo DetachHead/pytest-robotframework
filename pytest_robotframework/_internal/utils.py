@@ -4,14 +4,13 @@ from contextlib import AbstractContextManager
 from functools import wraps
 from typing import TYPE_CHECKING, Callable, Generic, Type, Union, cast
 
-from basedtyping import T, out_T
-from typing_extensions import Concatenate, ParamSpec, override
+from basedtyping import P, T, out_T
 
 if TYPE_CHECKING:
     from abc import abstractmethod
     from types import TracebackType
 
-P = ParamSpec("P")
+    from typing_extensions import Concatenate, override
 
 
 ClassOrInstance = Union[T, Type[T]]

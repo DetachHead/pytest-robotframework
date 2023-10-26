@@ -5,14 +5,11 @@ from functools import wraps
 from typing import TYPE_CHECKING, Callable
 
 from robot.api import logger
-from typing_extensions import ParamSpec
 
 from pytest_robotframework import keyword
 
 if TYPE_CHECKING:
-    from basedtyping import T
-
-P = ParamSpec("P")
+    from basedtyping import P, T
 
 
 def decorator(fn: Callable[P, T]) -> Callable[P, T]:
