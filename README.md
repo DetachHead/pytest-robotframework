@@ -36,7 +36,7 @@ to allow for gradual adoption, the plugin also runs regular robot tests as well:
 
 ```robot
 *** Settings ***
-test setup  setup
+test setup  foo
 
 *** Test Cases ***
 bar
@@ -44,7 +44,7 @@ bar
     no operation
 
 *** Keywords ***
-setup
+foo
     log  ran setup
 ```
 
