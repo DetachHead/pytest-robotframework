@@ -3,9 +3,8 @@
 
 [metadata]
 groups = ["default", "lint", "test"]
-cross_platform = true
-static_urls = false
-lock_version = "4.3"
+strategy = ["cross_platform"]
+lock_version = "4.4"
 content_hash = "sha256:eec8da08ed841fd2f8866b695c9abc709498ce097900c8402c7a5dd3ef45ae4a"
 
 [[package]]
