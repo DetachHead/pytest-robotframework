@@ -1,16 +1,14 @@
 # pytest-robotframework
 
-a pytest plugin that can run both python and robotframework tests while generating robot reports for them
+a pytest plugin to run tests written in python with robotframework tests while generating robot reports for them
 
 ![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/9caabc2e-450e-4db6-bb63-e149a38d49a2)
 
 ## install
+[![Stable Version](https://img.shields.io/pypi/v/pytest-robotframework?color=blue)](https://pypi.org/project/pytest-robotframework/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/pytest-robotframework.svg)](https://anaconda.org/conda-forge/pytest-robotframework)
 
 pytest should automatically find and activate the plugin once you install it.
-
-```
-pdm add pytest-robotframework --dev
-```
 
 ## features
 
@@ -27,8 +25,8 @@ from pytest_robotframework import keyword
 def foo():
     ...
 
-@mark.slow  # gets converted to robot tags
-def test_foo(cache: Cache):
+@mark.slow  # markers get converted to robot tags
+def test_foo():
     foo()
 ```
 
