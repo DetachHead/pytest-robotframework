@@ -621,6 +621,16 @@ def test_as_keyword_context_manager_try_except(pytester_dir: PytesterDir):
     assert xml.xpath("//kw[@name='Run Test']/msg[.='2']")
 
 
+def test_as_keyword_args_and_kwargs(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+    xml = output_xml(pytester_dir)
+    assert xml.xpath("//kw[@name='asdf']/arg[.='a']")
+    assert xml.xpath("//kw[@name='asdf']/arg[.='b']")
+    assert xml.xpath("//kw[@name='asdf']/arg[.='c=d']")
+    assert xml.xpath("//kw[@name='asdf']/arg[.='e=f']")
+
+
 def test_invalid_fixture(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, errors=1, exit_code=ExitCode.TESTS_FAILED)
     assert_log_file_exists(pytester_dir)
