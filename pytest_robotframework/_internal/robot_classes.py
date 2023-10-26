@@ -15,7 +15,7 @@ from robot import model, result, running
 from robot.api import SuiteVisitor
 from robot.api.interfaces import ListenerV3, Parser, TestDefaults
 from robot.running.model import Body
-from typing_extensions import ParamSpec, override
+from typing_extensions import override
 
 from pytest_robotframework import catch_errors
 from pytest_robotframework._internal import robot_library
@@ -30,14 +30,14 @@ from pytest_robotframework._internal.robot_utils import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-_P = ParamSpec("_P")
+    from basedtyping import P
 
 
 def _create_running_keyword(
     keyword_type: Literal["SETUP", "KEYWORD", "TEARDOWN"],
-    fn: Callable[_P, None],
-    *args: _P.args,
-    **kwargs: _P.kwargs,
+    fn: Callable[P, None],
+    *args: P.args,
+    **kwargs: P.kwargs,
 ) -> running.Keyword:
     """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
     if kwargs:
