@@ -14,7 +14,7 @@ from robot.output import LOGGER
 from robot.run import RobotFramework
 
 from pytest_robotframework import (
-    _listeners,
+    _registry,
     _resources,
     _suite_variables,
     import_resource,
@@ -54,7 +54,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     collection and running, it's more efficient to just have `pytest_runtestloop` handle the
     collection as well if possible.
     """
-    if _listeners.too_late:
+    if _registry.too_late:
         raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()  # type:ignore[no-untyped-call]
     robot_arg_list: list[str] = []
@@ -99,11 +99,12 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 "listener": [  # type:ignore[no-any-expr]
                     PytestRuntestProtocolHooks(session),
                     ErrorDetector(session),
-                    *_listeners.instances,
+                    *_registry.instances["listeners"],
                 ],
+                "prerebotmodifier": _registry.instances["pre_rebot_modifiers"],
             },
         )
-    _listeners.too_late = True
+    _registry.too_late = True
     # needed for log_file listener methods to prevent logger from deactivating after the test is
     # over
     try:
@@ -114,7 +115,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 **robot_args,
             )
     finally:
-        _listeners.too_late = False
+        _registry.too_late = False
     robot_errors = report_robot_errors(session)
     if robot_errors:
         raise Exception(robot_errors)

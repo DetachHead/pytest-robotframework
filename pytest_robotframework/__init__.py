@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+from collections import defaultdict
 from contextlib import AbstractContextManager, contextmanager, nullcontext
 from functools import wraps
 from pathlib import Path
@@ -15,6 +16,7 @@ from typing import (
     Iterator,
     Mapping,
     Type,
+    TypedDict,
     TypeVar,
     Union,
     cast,
@@ -362,8 +364,8 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
     this decorator will remember any errors that occurred inside listeners and suite visitors, then
     raise them after robot has finished running.
 
-    you don't need this if you registered your listener with the `@listener` decorator, as it
-    applies this decorator as well"""
+    you don't need this if you are using the `@listener` or `@pre_rebot_modifier` decorator, as
+    those decorators use `catch_errors` as well"""
 
     def wrapped(fn: Callable[P, T]) -> Callable[P, T]:
         @wraps(fn)
@@ -403,13 +405,25 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
     return cls
 
 
-class _ListenerRegistry:
+class _RobotClassRegistry:
     def __init__(self):
-        self.instances: list[Listener] = []
+        class Types(TypedDict):
+            listeners: list[Listener]
+            pre_rebot_modifiers: list[SuiteVisitor]
+
+        # https://github.com/KotlinIsland/basedmypy/issues/554
+        self.instances: Types = defaultdict(list)  # type:ignore[assignment]
         self.too_late = False
 
+    def check_too_late(self, cls: type[Listener | SuiteVisitor]):
+        if self.too_late:
+            raise UserError(
+                f"{cls.__name__!r} cannot be registered because robot has already"
+                " started running. make sure it's defined in a `conftest.py` file"
+            )
 
-_listeners = _ListenerRegistry()
+
+_registry = _RobotClassRegistry()
 
 _T_Listener = TypeVar("_T_Listener", bound=Type[Listener])
 
@@ -420,10 +434,20 @@ def listener(cls: _T_Listener) -> _T_Listener:
 
     the listener must be defined in a `conftest.py` file so it gets registered before robot starts
     running."""
-    if _listeners.too_late:
-        raise UserError(
-            f"listener {cls.__name__!r} cannot be registered because robot has already"
-            " started running. make sure it's defined in a `conftest.py` file"
-        )
-    _listeners.instances.append(catch_errors(cls)())
+    _registry.check_too_late(cls)
+    _registry.instances["listeners"].append(catch_errors(cls)())
+    return cls
+
+
+_T_SuiteVisitor = TypeVar("_T_SuiteVisitor", bound=Type[SuiteVisitor])
+
+
+def pre_rebot_modifier(cls: _T_SuiteVisitor) -> _T_SuiteVisitor:
+    """registers a suite visitor as a pre-rebot modifier. classes using this decorator are always
+    enabled and do not need to be registered with the `--prerebotmodifier` robot option.
+
+    the pre-rebot modifier must be defined in a `conftest.py` file so it gets registered before
+    robot starts running."""
+    _registry.check_too_late(cls)
+    _registry.instances["pre_rebot_modifiers"].append(catch_errors(cls)())
     return cls

@@ -5,6 +5,7 @@ a pytest plugin to run tests written in python with robotframework tests while g
 ![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/9caabc2e-450e-4db6-bb63-e149a38d49a2)
 
 ## install
+
 [![Stable Version](https://img.shields.io/pypi/v/pytest-robotframework?color=blue)](https://pypi.org/project/pytest-robotframework/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pytest-robotframework.svg)](https://anaconda.org/conda-forge/pytest-robotframework)
 
@@ -122,7 +123,9 @@ def test_eval(test_input: int, expected: int):
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/4361295b-5e44-4c9d-b2f3-839e3901b1eb)
 
-### listeners
+### listeners and suite visitors
+
+#### listeners
 
 you can define listeners in your `conftest.py` and decorate them with `@listener` to register them as global listeners:
 
@@ -139,6 +142,37 @@ class Listener(ListenerV3):
     def start_test(self, data: model.TestCase result: result.TestCase):
         ...
 ```
+
+#### pre-rebot modifiers
+
+just like listeners, you can define [pre-rebot modifiers](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#programmatic-modification-of-results)
+using the `pre_rebot_modifier` decorator:
+
+```py
+# conftest.py
+from pytest_robotframework import pre_rebot_modifier
+from robot import model
+from robot.api import SuiteVisitor
+from robot.utils.misc import printable_name
+from typing_extensions import override
+
+
+@pre_rebot_modifier
+class PytestNameChanger(SuiteVisitor):
+    """makes pytest test names look like robot test names (eg. `test_do_thing` -> `Do Thing`)"""
+
+    @override
+    def start_test(self, test: model.TestCase):
+        pytest_prefix = "test_"
+        if test.name.startswith(pytest_prefix):
+            test.name = printable_name(
+                test.name.removeprefix(pytest_prefix), code_style=True
+            )
+```
+
+#### pre-run modifiers
+
+there is currently no decorator for pre-run modifiers, since they may interfere with the pytest plugin. if you know what you're doing and would like to use a pre-run modifier anyway, you can always [define it in the robot arguments](#specifying-robot-options-directlty).
 
 ### robot suite variables
 
@@ -171,6 +205,7 @@ since this is a pytest plugin, you should avoid using robot options that have py
 | `robot --skip tag_name`                       | `pytest -m "not tag_name"`                                                                                                                                                        |
 | `robot --test "test name" path/to/test.robot` | `pytest path/to/test.robot::"Test Name"`                                                                                                                                          |
 | `robot --listener Foo`                        | [`@listener` decorator](#listeners)                                                                                                                                               |
+| `robot --prerebotmodifier Foo`                | [`@pre_rebot_modifier` decorator](#pre-rebot-modifiers)                                                                                                                           |
 | `robot --dryrun`                              | `pytest --collect-only` (not exactly the same. you should use [a type checker](https://github.com/kotlinisland/basedmypy) on your python tests as a replacement for robot dryrun) |
 | `robot --exitonfailure`                       | `pytest --maxfail=1`                                                                                                                                                              |
 | `robot --rerunfailed`                         | `pytest --lf`                                                                                                                                                                     |
