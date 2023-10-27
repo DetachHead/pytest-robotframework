@@ -99,9 +99,9 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 "listener": [  # type:ignore[no-any-expr]
                     PytestRuntestProtocolHooks(session),
                     ErrorDetector(session),
-                    *_registry.instances["listeners"],
+                    *_registry.listeners,
                 ],
-                "prerebotmodifier": _registry.instances["pre_rebot_modifiers"],
+                "prerebotmodifier": _registry.pre_rebot_modifiers,
             },
         )
     _registry.too_late = True
