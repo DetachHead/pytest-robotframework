@@ -147,15 +147,6 @@ or if your listener takes arguments in its constructor, you can call it on the i
 
 ```py
 # conftest.py
-
-class Listener(ListenerV3):
-    def __init__(self, value: str):
-        ...
-
-    @override
-    def start_test(self, data: model.TestCase result: result.TestCase):
-        ...
-
 def pytest_sessionstart():
     listener(Listener("foo"))
 ```
@@ -191,14 +182,8 @@ or on an instance:
 
 ```py
 # conftest.py
-
-class PytestNameChanger(ListenerV3):
-    """add a prefix to all test names"""
-    def __init__(self, prefix: str):
-        ...
-
 def pytest_sessionstart():
-    listener(Listener("foo"))
+    listener(PytestNameChanger())
 ```
 
 #### pre-run modifiers
