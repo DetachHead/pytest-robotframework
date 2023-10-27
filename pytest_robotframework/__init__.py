@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import inspect
-from collections import defaultdict
 from contextlib import AbstractContextManager, contextmanager, nullcontext
 from functools import wraps
 from pathlib import Path
@@ -16,7 +15,6 @@ from typing import (
     Iterator,
     Mapping,
     Type,
-    TypedDict,
     TypeVar,
     Union,
     cast,
@@ -407,12 +405,8 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
 
 class _RobotClassRegistry:
     def __init__(self):
-        class Types(TypedDict):
-            listeners: list[Listener]
-            pre_rebot_modifiers: list[SuiteVisitor]
-
-        # https://github.com/KotlinIsland/basedmypy/issues/554
-        self.instances: Types = defaultdict(list)  # type:ignore[assignment]
+        self.listeners: list[Listener] = []
+        self.pre_rebot_modifiers: list[SuiteVisitor] = []
         self.too_late = False
 
     def check_too_late(self, cls: type[Listener | SuiteVisitor]):
@@ -435,7 +429,7 @@ def listener(cls: _T_Listener) -> _T_Listener:
     the listener must be defined in a `conftest.py` file so it gets registered before robot starts
     running."""
     _registry.check_too_late(cls)
-    _registry.instances["listeners"].append(catch_errors(cls)())
+    _registry.listeners.append(catch_errors(cls)())
     return cls
 
 
@@ -449,5 +443,5 @@ def pre_rebot_modifier(cls: _T_SuiteVisitor) -> _T_SuiteVisitor:
     the pre-rebot modifier must be defined in a `conftest.py` file so it gets registered before
     robot starts running."""
     _registry.check_too_late(cls)
-    _registry.instances["pre_rebot_modifiers"].append(catch_errors(cls)())
+    _registry.pre_rebot_modifiers.append(catch_errors(cls)())
     return cls
