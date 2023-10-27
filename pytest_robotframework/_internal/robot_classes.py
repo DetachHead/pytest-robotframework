@@ -249,7 +249,6 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 _HookWrapper = Generator[None, object, object]
 
 
-@catch_errors
 class PytestRuntestProtocolHooks(ListenerV3):
     """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from
     `pytest_runtest_protocol`. since all the other parts of `_pytest.runner.runtestprotocol` are
@@ -412,7 +411,6 @@ class PytestRuntestProtocolHooks(ListenerV3):
         self.hookwrappers.clear()
 
 
-@catch_errors
 class ErrorDetector(ListenerV3):
     """since errors logged by robot don't raise an exception and therefore won't cause the pytest
     test to fail (or even the robot test unless `--exitonerror` is enabled), we need to listen for

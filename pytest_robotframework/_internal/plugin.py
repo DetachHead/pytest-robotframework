@@ -20,6 +20,7 @@ from pytest_robotframework import (
     import_resource,
     keyword,
     keywordify,
+    listener,
 )
 from pytest_robotframework._internal import cringe_globals, hooks
 from pytest_robotframework._internal.errors import InternalError
@@ -90,17 +91,15 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             "exitonerror": True,
         }
     else:
+        listener(PytestRuntestProtocolHooks(session))
+        listener(ErrorDetector(session))
         robot_args = always_merger.merge(  # type:ignore[no-untyped-call]
             robot_args,
             {  # type:ignore[no-any-expr]
                 "prerunmodifier": [  # type:ignore[no-any-expr]
                     PytestRuntestProtocolInjector(session)
                 ],
-                "listener": [  # type:ignore[no-any-expr]
-                    PytestRuntestProtocolHooks(session),
-                    ErrorDetector(session),
-                    *_registry.listeners,
-                ],
+                "listener": _registry.listeners,
                 "prerebotmodifier": _registry.pre_rebot_modifiers,
             },
         )

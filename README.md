@@ -143,13 +143,30 @@ class Listener(ListenerV3):
         ...
 ```
 
-#### pre-rebot modifiers
-
-just like listeners, you can define [pre-rebot modifiers](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#programmatic-modification-of-results)
-using the `pre_rebot_modifier` decorator:
+or if your listener takes arguments in its constructor, you can call it on the instance instead:
 
 ```py
 # conftest.py
+
+class Listener(ListenerV3):
+    def __init__(self, value: str):
+        ...
+
+    @override
+    def start_test(self, data: model.TestCase result: result.TestCase):
+        ...
+
+def pytest_sessionstart():
+    listener(Listener("foo"))
+```
+
+#### pre-rebot modifiers
+
+just like listeners, you can define [pre-rebot modifiers](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#programmatic-modification-of-results) using the `pre_rebot_modifier` decorator:
+
+```py
+# conftest.py
+
 from pytest_robotframework import pre_rebot_modifier
 from robot import model
 from robot.api import SuiteVisitor
@@ -168,6 +185,20 @@ class PytestNameChanger(SuiteVisitor):
             test.name = printable_name(
                 test.name.removeprefix(pytest_prefix), code_style=True
             )
+```
+
+or on an instance:
+
+```py
+# conftest.py
+
+class PytestNameChanger(ListenerV3):
+    """add a prefix to all test names"""
+    def __init__(self, prefix: str):
+        ...
+
+def pytest_sessionstart():
+    listener(Listener("foo"))
 ```
 
 #### pre-run modifiers
