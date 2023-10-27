@@ -38,7 +38,11 @@ from pytest_robotframework._internal.robot_utils import (
     escape_robot_str,
     execution_context,
 )
-from pytest_robotframework._internal.utils import ContextManager, patch_method
+from pytest_robotframework._internal.utils import (
+    ClassOrInstance,
+    ContextManager,
+    patch_method,
+)
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -409,39 +413,51 @@ class _RobotClassRegistry:
         self.pre_rebot_modifiers: list[SuiteVisitor] = []
         self.too_late = False
 
-    def check_too_late(self, cls: type[Listener | SuiteVisitor]):
+    def check_too_late(self, obj: ClassOrInstance[Listener | SuiteVisitor]):
         if self.too_late:
             raise UserError(
-                f"{cls.__name__!r} cannot be registered because robot has already"
+                f"{obj} cannot be registered because robot has already"
                 " started running. make sure it's defined in a `conftest.py` file"
             )
 
 
 _registry = _RobotClassRegistry()
 
-_T_Listener = TypeVar("_T_Listener", bound=Type[Listener])
+_T_Listener = TypeVar("_T_Listener", bound=ClassOrInstance[Listener])
 
 
-def listener(cls: _T_Listener) -> _T_Listener:
-    """registers a class as a global robot listener. listeners using this decorator are always
-    enabled and do not need to be registered with the `--listener` robot option.
+def listener(obj: _T_Listener) -> _T_Listener:
+    """registers a class or instance as a global robot listener. listeners using this decorator are
+    always enabled and do not need to be registered with the `--listener` robot option.
 
-    the listener must be defined in a `conftest.py` file so it gets registered before robot starts
-    running."""
-    _registry.check_too_late(cls)
-    _registry.listeners.append(catch_errors(cls)())
-    return cls
+    must be called before robot starts running (eg. in a `pytest_sessionstart` hook). if using as a
+    decorator, the listener must be defined in your `conftest.py` (or in a module imported by it) so
+    it gets registered before robot starts running."""
+    _registry.check_too_late(obj)
+    _registry.listeners.append(
+        obj
+        if isinstance(obj, (ListenerV2, ListenerV3))
+        # https://github.com/python/mypy/issues/16335
+        else catch_errors(obj)()  # type:ignore[type-var,operator]
+    )
+    return obj
 
 
-_T_SuiteVisitor = TypeVar("_T_SuiteVisitor", bound=Type[SuiteVisitor])
+_T_SuiteVisitor = TypeVar("_T_SuiteVisitor", bound=ClassOrInstance[SuiteVisitor])
 
 
-def pre_rebot_modifier(cls: _T_SuiteVisitor) -> _T_SuiteVisitor:
+def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
     """registers a suite visitor as a pre-rebot modifier. classes using this decorator are always
     enabled and do not need to be registered with the `--prerebotmodifier` robot option.
 
-    the pre-rebot modifier must be defined in a `conftest.py` file so it gets registered before
-    robot starts running."""
-    _registry.check_too_late(cls)
-    _registry.pre_rebot_modifiers.append(catch_errors(cls)())
-    return cls
+    must be called before robot starts running (eg. in a `pytest_sessionstart` hook). if using as a
+    decorator, the class must be defined in your `conftest.py` (or in a module imported by it) so
+    it gets registered before robot starts running."""
+    _registry.check_too_late(obj)
+    _registry.pre_rebot_modifiers.append(
+        obj
+        if isinstance(obj, SuiteVisitor)
+        # https://github.com/python/mypy/issues/16335
+        else catch_errors(obj)()  # type:ignore[type-var,operator]
+    )
+    return obj
