@@ -301,6 +301,7 @@ default_return = true
 pythonVersion = "3.8"
 
 [tool.ruff]
+unsafe-fixes = true
 extend-select = ["ALL"]
 ignore = [
     "ANN",     # flake8-annotations (covered by mypy)
