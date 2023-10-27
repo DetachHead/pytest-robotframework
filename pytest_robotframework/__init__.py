@@ -368,6 +368,10 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
 
     you don't need this if you are using the `@listener` or `@pre_rebot_modifier` decorator, as
     those decorators use `catch_errors` as well"""
+    # prevent classes from being wrapped twice
+    marker = "_catch_errors"
+    if hasattr(cls, marker):
+        return cls
 
     def wrapped(fn: Callable[P, T]) -> Callable[P, T]:
         @wraps(fn)
@@ -404,6 +408,7 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
         and not attr.__name__.startswith("_"),
     ):
         setattr(cls, name, wrapped(method))  # type:ignore[no-any-expr]
+    setattr(cls, marker, True)
     return cls
 
 
