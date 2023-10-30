@@ -287,7 +287,11 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                 return suppress or False
 
         fn_result = fn(*args, **kwargs)
-        assert isinstance(fn_result, AbstractContextManager)
+        if not isinstance(fn_result, AbstractContextManager):
+            raise TypeError(
+                "keyword decorator expected a context manager but instead got"
+                f" {fn_result!r}"
+            )
         # 🚀 independently verified for safety by the overloads
         return WrappedContextManager(  # type:ignore[return-value]
             fn_result, status_reporter

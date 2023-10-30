@@ -342,7 +342,6 @@ ignore = [
     "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
     "TD002",   # Missing author in TODO
     "PGH003",  # Use specific rule codes when ignoring type issues (covered by mypy)
-    "S101",    # Use of assert detected (pytest uses assert statements)
     "E701",    # Multiple statements on one line (sometimes conflicts with black)
     "CPY001",  # missing-copyright-notice
     "C901",    # max-complexity
@@ -360,7 +359,9 @@ fixture-parentheses = false
 
 [tool.ruff.per-file-ignores]
 "*.pyi" = ["A001", "A002", "N"] # we don't control names in 3rd party modules
-
+"tests/**/*.py" = [
+    "S101", # Use of assert detected (pytest uses assert statements)
+]
 [tool.ruff.isort]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
