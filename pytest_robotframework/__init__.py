@@ -29,7 +29,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc, printable_name
-from typing_extensions import override
+from typing_extensions import Literal, Never, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
@@ -119,15 +119,26 @@ class _KeywordDecorator:
         self.module = module
         self.doc = doc
 
-    @overload
-    def __call__(
-        self, fn: Callable[P, AbstractContextManager[T]]
-    ) -> Callable[P, AbstractContextManager[T]]: ...
+    @staticmethod
+    def inner(
+        fn: Callable[P, T],
+        status_reporter: AbstractContextManager[None],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> T:
+        error: BaseException | None = None
+        with status_reporter:
+            try:
+                result_ = fn(*args, **kwargs)
+            except BaseException as e:
+                error = e
+                raise
+        if error:
+            raise error
+        return result_
 
-    @overload
-    def __call__(self, fn: Callable[P, T]) -> Callable[P, T]: ...
-
-    def __call__(self, fn: Callable[P, T]) -> Callable[P, T]:
+    def call(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
             return fn  # type:ignore[unreachable]
         keyword_name = self.name or cast(
@@ -140,9 +151,8 @@ class _KeywordDecorator:
         # decorator for completeness
         deco.keyword(name=keyword_name, tags=self.tags)(fn)
 
-        def create_status_reporter(
-            *args: P.args, **kwargs: P.kwargs
-        ) -> AbstractContextManager[None]:
+        @wraps(fn)
+        def inner(*args: P.args, **kwargs: P.kwargs) -> T:
             if self.module is None:
                 self.module = fn.__module__
             log_args = (
@@ -150,7 +160,7 @@ class _KeywordDecorator:
                 *(f"{key}={value}" for key, value in kwargs.items()),
             )
             context = execution_context()
-            return (
+            context_manager = (
                 StatusReporter(
                     running.Keyword(name=keyword_name, args=log_args),
                     result.Keyword(
@@ -178,16 +188,62 @@ class _KeywordDecorator:
                 if context
                 else nullcontext()
             )
+            return self.inner(fn, context_manager, *args, **kwargs)
 
-        def exit_status_reporter(
-            status_reporter: AbstractContextManager[None],
-            error: BaseException | None = None,
-        ):
-            if error is None:
-                status_reporter.__exit__(None, None, None)
-            else:
-                status_reporter.__exit__(type(error), error, error.__traceback__)
+        inner._keyword_original_function = (  # type:ignore[attr-defined] # noqa: SLF001
+            fn
+        )
+        return inner
 
+
+class _FunctionKeywordDecorator(_KeywordDecorator):
+    """decorator for a keyword that does not return a context manager. does not allow functions that
+    return context managers. if you want to decorate a context manager, pass the
+    `wrap_context_manager` argument to the `keyword` decorator"""
+
+    @deprecated(
+        "you must explicitly pass `wrap_context_manager` when using `keyword` with a"
+        " context manager"
+    )
+    @overload
+    def __call__(self, fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
+
+    @overload
+    def __call__(self, fn: Callable[P, T]) -> Callable[P, T]: ...
+
+    def __call__(self, fn: Callable[P, T]) -> Callable[P, T]:
+        return self.call(fn)
+
+
+_T_ContextManager = TypeVar("_T_ContextManager", bound="AbstractContextManager[object]")
+
+
+class _NonWrappedContextManagerKeywordDecorator(_KeywordDecorator):
+    """decorator for a function that returns a context manager. only wraps the function as a keyword
+    but not the body of the context manager it returns. to do that, pass `wrap_context_manager=True`
+    """
+
+    def __call__(
+        self, fn: Callable[P, _T_ContextManager]
+    ) -> Callable[P, _T_ContextManager]:
+        return self.call(fn)
+
+
+class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
+    """decorator for a function that returns a context manager. only wraps the body of the context
+    manager it returns
+    """
+
+    @classmethod
+    @override
+    def inner(
+        cls,
+        fn: Callable[P, T],
+        status_reporter: AbstractContextManager[None],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> T:
         class WrappedContextManager(ContextManager[T]):
             """defers exiting the status reporter until after the wrapped context
             manager is finished"""
@@ -202,6 +258,7 @@ class _KeywordDecorator:
 
             @override
             def __enter__(self) -> T:
+                self.status_reporter.__enter__()
                 return self.wrapped.__enter__()
 
             @override
@@ -220,35 +277,26 @@ class _KeywordDecorator:
                     suppress = False
                     raise
                 finally:
-                    exit_status_reporter(
-                        self.status_reporter, (None if suppress else exc_value)
-                    )
+                    error = None if suppress else exc_value
+                    if error is None:
+                        self.status_reporter.__exit__(None, None, None)
+                    else:
+                        self.status_reporter.__exit__(
+                            type(error), error, error.__traceback__
+                        )
                 return suppress or False
 
-        @wraps(fn)
-        def inner(*args: P.args, **kwargs: P.kwargs) -> T:
-            status_reporter = create_status_reporter(*args, **kwargs)
-            status_reporter.__enter__()
-            try:
-                fn_result = fn(*args, **kwargs)
-            # ideally we would only be catching Exception here, but we keywordify some pytest
-            # functions that raise Failed, which extends BaseException
-            except BaseException as e:
-                exit_status_reporter(status_reporter, e)
-                raise
-            else:
-                if isinstance(fn_result, AbstractContextManager):
-                    # 🚀 independently verified for safety by the overloads
-                    return WrappedContextManager(  # type:ignore[return-value]
-                        fn_result, status_reporter
-                    )
-                exit_status_reporter(status_reporter)
-            return fn_result
-
-        inner._keyword_original_function = (  # type:ignore[attr-defined] # noqa: SLF001
-            fn
+        fn_result = fn(*args, **kwargs)
+        assert isinstance(fn_result, AbstractContextManager)
+        # 🚀 independently verified for safety by the overloads
+        return WrappedContextManager(  # type:ignore[return-value]
+            fn_result, status_reporter
         )
-        return inner
+
+    def __call__(
+        self, fn: Callable[P, AbstractContextManager[T]]
+    ) -> Callable[P, AbstractContextManager[T]]:
+        return self.call(fn)
 
 
 @overload
@@ -257,13 +305,41 @@ def keyword(
     name: str | None = ...,
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
-) -> _KeywordDecorator: ...
+    wrap_context_manager: Literal[True],
+) -> _WrappedContextManagerKeywordDecorator: ...
 
 
 @overload
 def keyword(
-    fn: Callable[P, AbstractContextManager[T]]
-) -> Callable[P, AbstractContextManager[T]]: ...
+    *,
+    name: str | None = ...,
+    tags: tuple[str, ...] | None = ...,
+    module: str | None = ...,
+    wrap_context_manager: Literal[False],
+) -> _NonWrappedContextManagerKeywordDecorator: ...
+
+
+@overload
+def keyword(
+    *,
+    name: str | None = ...,
+    tags: tuple[str, ...] | None = ...,
+    module: str | None = ...,
+    wrap_context_manager: None = ...,
+) -> _FunctionKeywordDecorator: ...
+
+
+# prevent functions that return Never from matching the context manager overload
+@overload
+def keyword(fn: Callable[P, Never]) -> Callable[P, Never]: ...
+
+
+@deprecated(
+    "you must explicitly pass `wrap_context_manager` when using `keyword` with a"
+    " context manager"
+)
+@overload
+def keyword(fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
 
 
 @overload
@@ -271,7 +347,12 @@ def keyword(fn: Callable[P, T]) -> Callable[P, T]: ...
 
 
 def keyword(  # pylint:disable=missing-param-doc
-    fn: Callable[P, T] | None = None, *, name=None, tags=None, module=None
+    fn: Callable[P, T] | None = None,
+    *,
+    name=None,
+    tags=None,
+    module=None,
+    wrap_context_manager=None,
 ):
     """marks a function as a keyword and makes it show in the robot log.
 
@@ -286,10 +367,25 @@ def keyword(  # pylint:disable=missing-param-doc
     :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
     :param module: customize the module that appears top the left of the keyword name in the log.
     defaults to the function's actual module
+    :param wrap_context_manager: if the decorated function returns a context manager, whether or not
+    to wrap the context manager instead of the function. you probably always want this to be `True`,
+    unless you don't always intend to use the returned context manager.
     """
     if fn is None:
-        return _KeywordDecorator(name=name, tags=tags, module=module)
-    return keyword(name=name, tags=tags, module=module)(fn)
+        if wrap_context_manager is None:
+            return _FunctionKeywordDecorator(name=name, tags=tags, module=module)
+        if wrap_context_manager:
+            return _WrappedContextManagerKeywordDecorator(
+                name=name, tags=tags, module=module
+            )
+        return _NonWrappedContextManagerKeywordDecorator(
+            name=name, tags=tags, module=module
+        )
+    return keyword(  # type:ignore[return-value,type-var]
+        name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager
+    )(
+        fn  # type:ignore[arg-type]
+    )
 
 
 def as_keyword(
@@ -314,7 +410,7 @@ def as_keyword(
     :param kwargs: keyword arguments to be displayed on the keyword in the robot log
     """
 
-    @_KeywordDecorator(name=name, tags=tags, doc=doc, module="")
+    @_WrappedContextManagerKeywordDecorator(name=name, tags=tags, doc=doc, module="")
     @contextmanager
     def fn(*_args: str, **_kwargs: str) -> Iterator[None]:
         yield
@@ -329,6 +425,7 @@ def keywordify(
     name: str | None = None,
     tags: tuple[str, ...] | None = None,
     module: str | None = None,
+    wrap_context_manager: bool = False,
 ):
     """patches a function to make it show as a keyword in the robot log.
 
@@ -344,11 +441,19 @@ def keywordify(
     :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
     :param module: customize the module that appears top the left of the keyword name in the log.
     defaults to the function's actual module
+    :param wrap_context_manager: if the decorated function returns a context manager, whether or not
+    to wrap the context manager instead of the function. you probably always want this to be `True`,
+    unless you don't always intend to use the returned context manager
     """
     setattr(
         obj,
         method_name,
-        keyword(name=name, tags=tags, module=module)(
+        keyword(  # type:ignore[call-overload]
+            name=name,
+            tags=tags,
+            module=module,
+            wrap_context_manager=wrap_context_manager,
+        )(
             getattr(obj, method_name)  # type:ignore[no-any-expr]
         ),
     )
