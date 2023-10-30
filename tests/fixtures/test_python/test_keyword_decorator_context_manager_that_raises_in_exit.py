@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 
-@keyword
+@keyword(wrap_context_manager=True)
 @contextmanager
 def asdf() -> Iterator[None]:
     logger.info("start")  # type:ignore[no-untyped-call]

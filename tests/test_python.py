@@ -373,6 +373,13 @@ def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(
     assert not xml.xpath("//msg[.='1']")
 
 
+def test_keyword_decorator_returns_context_manager_that_isnt_used(
+    pytester_dir: PytesterDir,
+):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
+
+
 def test_keyword_decorator_try_except(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, passed=1)
     assert_log_file_exists(pytester_dir)
