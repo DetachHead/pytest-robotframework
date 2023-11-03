@@ -104,9 +104,10 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             },
         )
     _registry.too_late = True
-    # needed for log_file listener methods to prevent logger from deactivating after the test is
-    # over
+
     try:
+        # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
+        # the test is over
         with LOGGER:
             robot.main(  # type:ignore[no-untyped-call]
                 [session.path],  # type:ignore[no-any-expr]

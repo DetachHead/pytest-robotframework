@@ -5,7 +5,7 @@
 groups = ["default", "lint", "test"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:eec8da08ed841fd2f8866b695c9abc709498ce097900c8402c7a5dd3ef45ae4a"
+content_hash = "sha256:c85483947f818cdbf0a72d0848ed027404d508086d5122f39c9967c6efab6bda"
 
 [[package]]
 name = "astroid"
@@ -374,6 +374,19 @@ files = [
 ]
 
 [[package]]
+name = "nodeenv"
+version = "1.8.0"
+requires_python = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*"
+summary = "Node.js virtual environment builder"
+dependencies = [
+    "setuptools",
+]
+files = [
+    {file = "nodeenv-1.8.0-py2.py3-none-any.whl", hash = "sha256:df865724bb3c3adc86b3876fa209771517b0cfe596beff01a92700e0e8be4cec"},
+    {file = "nodeenv-1.8.0.tar.gz", hash = "sha256:d51e0c37e64fbf47d017feac3145cdbb58836d7eee8c6f6d3b6880c5456227d2"},
+]
+
+[[package]]
 name = "packaging"
 version = "23.2"
 requires_python = ">=3.7"
@@ -444,6 +457,19 @@ dependencies = [
 files = [
     {file = "pylint-3.0.2-py3-none-any.whl", hash = "sha256:60ed5f3a9ff8b61839ff0348b3624ceeb9e6c2a92c514d81c9cc273da3b6bcda"},
     {file = "pylint-3.0.2.tar.gz", hash = "sha256:0d4c286ef6d2f66c8bfb527a7f8a629009e42c99707dec821a03e1b51a4c1496"},
+]
+
+[[package]]
+name = "pyright"
+version = "1.1.334"
+requires_python = ">=3.7"
+summary = "Command line wrapper for pyright"
+dependencies = [
+    "nodeenv>=1.6.0",
+]
+files = [
+    {file = "pyright-1.1.334-py3-none-any.whl", hash = "sha256:dcb13e8358e021189672c4d6ebcad192ab061e4c7225036973ec493183c6da68"},
+    {file = "pyright-1.1.334.tar.gz", hash = "sha256:3adaf10f1f4209575dc022f9c897f7ef024639b7ea5b3cbe49302147e6949cd4"},
 ]
 
 [[package]]
@@ -586,6 +612,16 @@ files = [
     {file = "ruff-0.1.3-py3-none-win_amd64.whl", hash = "sha256:7a18df6638cec4a5bd75350639b2bb2a2366e01222825562c7346674bdceb7ea"},
     {file = "ruff-0.1.3-py3-none-win_arm64.whl", hash = "sha256:12fd53696c83a194a2db7f9a46337ce06445fb9aa7d25ea6f293cf75b21aca9f"},
     {file = "ruff-0.1.3.tar.gz", hash = "sha256:3ba6145369a151401d5db79f0a47d50e470384d0d89d0d6f7fab0b589ad07c34"},
+]
+
+[[package]]
+name = "setuptools"
+version = "68.2.2"
+requires_python = ">=3.8"
+summary = "Easily download, build, install, upgrade, and uninstall Python packages"
+files = [
+    {file = "setuptools-68.2.2-py3-none-any.whl", hash = "sha256:b454a35605876da60632df1a60f736524eb73cc47bbc9f3f1ef1b644de74fd2a"},
+    {file = "setuptools-68.2.2.tar.gz", hash = "sha256:4ac1475276d2f1c48684874089fefcd83bd7162ddaafb81fac866ba0db282a87"},
 ]
 
 [[package]]
