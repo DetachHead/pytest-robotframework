@@ -82,8 +82,10 @@ def import_resource(path: Path | str):
 
 
 # https://github.com/DetachHead/pytest-robotframework/issues/36
-@patch_method(LibraryKeywordRunner)  # type:ignore[arg-type,no-any-decorated,misc]
-def _runner_for(
+@patch_method(  # type:ignore[arg-type,no-any-decorated,misc]
+    LibraryKeywordRunner, "_runner_for"
+)
+def _(
     old_method: Callable[
         [
             LibraryKeywordRunner,
@@ -395,7 +397,7 @@ def keyword(  # pylint:disable=missing-param-doc
 def as_keyword(
     name: str,
     *,
-    doc="",
+    doc: str = "",
     tags: tuple[str, ...] | None = None,
     args: Iterable[str] | None = None,
     kwargs: Mapping[str, str] | None = None,

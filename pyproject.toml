@@ -15,23 +15,6 @@ requires-python = ">=3.8,<4.0"
 readme = "README.md"
 license = { text = "MIT" }
 
-[tool.pdm.dev-dependencies]
-lint = [
-    "black>=23",
-    "basedmypy>=2.1",
-    "pylint>=3.0.0a7",
-    "ruff>=0.0.290",
-    "robotframework-robocop>=4.1.0",
-    "robotframework-tidy>=4.5.0",
-]
-test = ["lxml>=4.9.3", "lxml-stubs>=0.4.0"]
-
-# maybe these should be pyprojectx scripts instead once https://github.com/pyprojectx/pyprojectx/issues/26 is fixed
-[tool.pdm.scripts]
-_mypy_package = { cmd = "pdm run mypy -p pytest_robotframework" }
-_mypy_tests = { cmd = "pdm run mypy -p tests" }
-mypy_all = { composite = ["_mypy_package", "_mypy_tests"] }
-
 [project.urls]
 repository = "https://github.com/detachhead/pytest-robotframework"
 
@@ -47,6 +30,23 @@ run = "pdm run"
 outdated = "pdm update --outdated"
 test = "pdm run pytest"
 
+[tool.pdm.dev-dependencies]
+lint = [
+    "black>=23",
+    "basedmypy>=2.1",
+    "pylint>=3.0.0a7",
+    "ruff>=0.0.290",
+    "robotframework-robocop>=4.1.0",
+    "robotframework-tidy>=4.5.0",
+    "pyright>=1.1.334",
+]
+test = ["lxml>=4.9.3", "lxml-stubs>=0.4.0"]
+
+# maybe these should be pyprojectx scripts instead once https://github.com/pyprojectx/pyprojectx/issues/26 is fixed
+[tool.pdm.scripts]
+_mypy_package = { cmd = "pdm run mypy -p pytest_robotframework" }
+_mypy_tests = { cmd = "pdm run mypy -p tests" }
+mypy_all = { composite = ["_mypy_package", "_mypy_tests"] }
 
 [build-system]
 requires = ["pdm-backend"]
@@ -211,7 +211,6 @@ enable = [
     "redundant-u-string-prefix",
     "redundant-unittest-assert",
     "redundant-yields-doc",
-    "reimported",
     "self-cls-assignment",
     "shallow-copy-environ",
     "signature-differs",
@@ -255,7 +254,6 @@ enable = [
     "empty-comment",
     "no-classmethod-decorator",
     "no-staticmethod-decorator",
-    "redefined-variable-type",
     "simplifiable-condition",
     "simplify-boolean-expression",
     "stop-iteration-return",
@@ -296,9 +294,33 @@ ignore_missing_py_typed = true
 module = ['pytest_robotframework.*', 'tests.*']
 default_return = true
 
-# i don't use pyright, this is only to prevent vscode from suggesting imports that won't work in 3.8
 [tool.pyright]
 pythonVersion = "3.8"
+pythonPlatform = "All"
+
+# We don't use pyright for type checking because we use basedmypy:
+reportGeneralTypeIssues = false
+reportInvalidTypeVarUse = false
+reportMissingImports = false
+reportUnboundVariable = false
+reportOptionalOperand = false
+reportOptionalMemberAccess = false
+reportPrivateImportUsage = false
+
+# but some of its lint tier rules are still useful:
+reportUnusedExpression = true
+reportUnusedClass = true
+reportUnusedFunction = true
+reportUnusedVariable = true          # usually covered by ruff https://github.com/astral-sh/ruff/issues/8441
+reportUnusedCoroutine = true
+enableExperimentalFeatures = true
+reportTypeCommentUsage = true
+reportInconsistentConstructor = true
+reportSelfClsParameterName = true
+reportInvalidStubStatement = true
+reportIncompleteStub = true
+reportUnsupportedDunderAll = true
+reportDuplicateImport = true
 
 [tool.ruff]
 unsafe-fixes = true
