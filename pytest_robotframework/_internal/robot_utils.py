@@ -22,7 +22,7 @@ class Cloaked(Generic[T]):
 
 def execution_context() -> _ExecutionContext | None:
     # need to import it every time because it changes
-    from robot.running import EXECUTION_CONTEXTS
+    from robot.running import EXECUTION_CONTEXTS  # noqa: PLC0415
 
     return cast(Union[_ExecutionContext, None], EXECUTION_CONTEXTS.current)
 
