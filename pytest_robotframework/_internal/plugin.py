@@ -65,6 +65,8 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     robot_args = cast(
         Dict[str, object],
         always_merger.merge(  # type:ignore[no-untyped-call]
+            # https://github.com/psf/black/issues/4036
+            # fmt:off
             robot.parse_arguments(  # type:ignore[no-untyped-call]
                 [  # type:ignore[no-any-expr]
                     *robot_arg_list,
@@ -72,6 +74,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                     session.path,
                 ]
             )[0],
+            # fmt:on
             {  # type:ignore[no-any-expr]
                 "extension": "py:robot",
                 "runemptysuite": True,
@@ -79,7 +82,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 "prerunmodifier": [  # type:ignore[no-any-expr]
                     PytestCollector(session, collect_only=collect_only)
                 ],
-            },
+            }
         ),
     )
     if collect_only:

@@ -307,7 +307,6 @@ reportPrivateImportUsage = false
 reportUnusedExpression = true
 reportUnusedClass = true
 reportUnusedFunction = true
-reportUnusedVariable = true          # usually covered by ruff https://github.com/astral-sh/ruff/issues/8441
 reportUnusedCoroutine = true
 enableExperimentalFeatures = true
 reportTypeCommentUsage = true
