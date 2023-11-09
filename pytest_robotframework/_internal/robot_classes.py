@@ -138,15 +138,13 @@ class PytestCollector(SuiteVisitor):
                     name=item.name,
                     doc=cast(Function, item.function).__doc__ or "",
                     tags=[
-                        ":".join(
-                            [
-                                marker.name,
-                                *(
-                                    str(arg)
-                                    for arg in cast(Tuple[object, ...], marker.args)
-                                ),
-                            ]
-                        )
+                        ":".join([
+                            marker.name,
+                            *(
+                                str(arg)
+                                for arg in cast(Tuple[object, ...], marker.args)
+                            ),
+                        ])
                         for marker in item.iter_markers()
                     ],
                 )
