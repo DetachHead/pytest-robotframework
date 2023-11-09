@@ -1,0 +1,18 @@
+from __future__ import annotations
+
+from pytest_robotframework._internal.robot_utils import merge_robot_options
+
+
+def test_merge_robot_options():
+    assert merge_robot_options({"a": "b", "c": "d"}, {"c": "e"}) == {"a": "b", "c": "e"}
+
+
+def test_merge_robot_options_list():
+    assert merge_robot_options({"a": ["b"], "c": "d"}, {"a": ["e"]}) == {
+        "a": ["b", "e"],
+        "c": "d",
+    }
+
+
+def test_merge_robot_options_other_side():
+    assert merge_robot_options({"c": "e"}, {"a": "b", "c": "d"}) == {"a": "b", "c": "d"}

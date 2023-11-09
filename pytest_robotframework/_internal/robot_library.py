@@ -17,7 +17,7 @@ from pytest_robotframework import keyword
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_exception_getter import exception_key
-from pytest_robotframework._internal.utils import init_stash
+from pytest_robotframework._internal.pytest_utils import init_stash
 
 if TYPE_CHECKING:
     from pytest_robotframework._internal.robot_utils import Cloaked
