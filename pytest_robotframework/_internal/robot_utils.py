@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Final, Generic, List, Union, cast
+from typing import Dict, Final, Generic, List, Union, cast
 
 from basedtyping import T
 from pytest import Item, Session, StashKey
@@ -17,6 +17,9 @@ ModelTestCase = model.TestCase[model.Keyword]
 
 ModelTestSuite = model.TestSuite[model.Keyword, ModelTestCase]
 """robot `model.TestSuite` with the default generic values"""
+
+
+RobotArgs = Dict[str, object]
 
 
 class Cloaked(Generic[T]):
@@ -80,6 +83,25 @@ def escape_robot_str(value: str) -> str:
     r"""in the robot language, backslashes (`\`) get stripped as they are used as escape characters,
     so they need to be duplicated when used in keywords called from python code"""
     return value.replace("\\", "\\\\")
+
+
+def merge_robot_options(obj1: RobotArgs, obj2: RobotArgs) -> RobotArgs:
+    """this assumes there are no nested dicts (as far as i can tell no robot args be like that)"""
+    result: RobotArgs = {}
+    for key, value in obj1.items():
+        if isinstance(value, list):
+            new_value = cast(
+                List[object], [*value, *cast(Dict[str, List[object]], obj2[key])]
+            )
+        elif key in obj2:
+            new_value = obj2[key]
+        else:
+            new_value = value
+        result[key] = new_value
+    for key, value in obj2.items():
+        if key not in obj1:
+            result[key] = value
+    return result
 
 
 robot_6: Final = VERSION.startswith("6.")

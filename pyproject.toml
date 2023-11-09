@@ -132,7 +132,6 @@ enable = [
     "logging-unsupported-format",
     "method-hidden",
     "misplaced-format-function",
-    "missing-kwoa",
     "modified-iterating-dict",
     "modified-iterating-set",
     "non-iterator-returned",
@@ -254,7 +253,8 @@ score = "no"
 max-line-length = 200
 
 [tool.pytest.ini_options]
-addopts = ['-p no:robotframework', '--ignore=tests/fixtures']
+addopts = ['-n', '2', '--ignore=tests/fixtures']
+# addopts = ['-p', 'no:robotframework', '--ignore=tests/fixtures']
 xfail_strict = true
 enable_assertion_pass_hook = true
 

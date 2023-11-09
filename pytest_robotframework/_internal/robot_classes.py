@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Optional, Tuple,
 from _pytest import runner
 from pluggy import HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
-from pytest import Function, Item, Session, StashKey
+from pytest import Function, Item, Session, StashKey, version_tuple as pytest_version
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
 from robot.model import SuiteVisitor
@@ -33,6 +33,8 @@ if TYPE_CHECKING:
 
     from basedtyping import P
     from robot.running.builder.settings import TestDefaults
+
+    from pytest_robotframework._internal.xdist_utils import JobInfo
 
 
 def _create_running_keyword(
@@ -78,7 +80,10 @@ class PythonParser(Parser):
         suite = self._create_suite(source)
         # this fake test is required to prevent the suite from being deleted before the
         # prerunmodifiers are called
-        test_case = running.TestCase(name="fake test you shoud NEVER see this!!!!!!!")
+        test_case = running.TestCase(
+            name="fake test you shoud NEVER see this!!!!!!!",
+            tags=("_pytest_robotframework_fake_test"),
+        )
         test_case.body = [
             _create_running_keyword(
                 "KEYWORD",
@@ -118,10 +123,13 @@ class PytestCollector(SuiteVisitor):
     added later by `PytestRuntestProtocolInjector`)
     """
 
-    def __init__(self, session: Session, *, collect_only: bool):
+    def __init__(
+        self, session: Session, *, collect_only: bool, item: Item | None = None
+    ):
         super().__init__()
         self.session = session
         self.collect_only = collect_only
+        self.item = item
         self.collection_error: Exception | None = None
 
     @override
@@ -129,42 +137,67 @@ class PytestCollector(SuiteVisitor):
         # https://github.com/robotframework/robotframework/issues/4940
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
-        # only do this once, on the top level suite
-        if not suite.parent:
+        if not suite.parent:  # only do this once, on the top level suite
             self.session.stash[collected_robot_suite_key] = suite
-            try:
-                _ = self.session.perform_collect()
-            except Exception as e:  # noqa: BLE001
-                # if collection fails we still need to clean up the suite (ie. delete all the fake
-                # tests), so we defer the error to `end_suite` for the top level suite
-                self.collection_error = e
-            # create robot test cases for python tests:
-            for item in self.session.items:
-                if (
-                    # don't include RobotItems as .robot files are parsed by robot's default parser
-                    not isinstance(item, Function)
-                ):
-                    continue
-                test_case = running.TestCase(
-                    name=item.name,
-                    doc=cast(
-                        Function,
-                        item.function,  # pyright:ignore[reportUnknownMemberType]
-                    ).__doc__
-                    or "",
-                    tags=[
-                        ":".join([
-                            marker.name,
-                            *(
-                                str(arg)
-                                for arg in cast(Tuple[object, ...], marker.args)
-                            ),
-                        ])
-                        for marker in item.iter_markers()
-                    ],
-                )
-                test_case.body = Body()
-                item.stash[running_test_case_key] = test_case
+            # on pytest <8, if collection has already happened, collecting again will result in an
+            # empty list so we can only collect once. on pytest >8, the items atrtribute is always
+            # present. although that makes it safer to double-collect on pytest 8, it will remake
+            # all the collected items meaning anything added to their stash will be lost so we
+            # should still avoid double-collecting
+            if (
+                not self.item
+                or not hasattr(self.session, "items")
+                or (pytest_version >= (8, 0, 0) and not self.session.items)
+            ):
+                try:
+                    _ = self.session.perform_collect()
+                except Exception as e:  # noqa: BLE001
+                    # if collection fails we still need to clean up the suite (ie. delete all the
+                    # fake tests), so we defer the error to `end_suite` for the top level suite
+                    self.collection_error = e
+        items = [self.item] if self.item else self.session.items
+        # remove the fake placeholder test (there should only ever be 1 fake test):
+        fake_tests = [
+            test
+            for test in suite.tests
+            if "_pytest_robotframework_fake_test" in test.tags
+        ]
+        if fake_tests:
+            # there should never be more than 1 fake test per suite
+            (test,) = fake_tests
+            suite.tests.remove(test)
+        # create robot test cases for python tests:
+        for item in items:
+            if (
+                # don't include RobotItems as .robot files are parsed by robot's default parser
+                not isinstance(item, Function)
+                # only include items that are part of this current suite
+                or item.path != suite.source
+            ):
+                continue
+            test_case = running.TestCase(
+                name=item.name,
+                doc=cast(
+                    Function, item.function  # pyright:ignore[reportUnknownMemberType]
+                ).__doc__
+                or "",
+                tags=[
+                    ":".join([
+                        marker.name,
+                        *(str(arg) for arg in cast(Tuple[object, ...], marker.args)),
+                    ])
+                    for marker in item.iter_markers()
+                ],
+                # https://github.com/robotframework/robotframework/issues/4940
+                parent=suite.parent,  # pyright:ignore[reportArgumentType]
+            )
+            test_case.body = Body()
+            item.stash[running_test_case_key] = test_case
+            module = cast(ModuleType, item.module)
+            if module.__doc__ and not suite.doc:
+                suite.doc = module.__doc__
+            if item.path == suite.source:
+                _ = suite.tests.append(test_case)
         if self.collect_only:
             suite.tests.clear()
         else:
@@ -173,15 +206,6 @@ class PytestCollector(SuiteVisitor):
             for test in suite.tests[:]:
                 if not get_item_from_robot_test(self.session, test):
                     suite.tests.remove(test)
-
-            # add any .py tests that were collected by pytest
-            for item in self.session.items:
-                if isinstance(item, Function):
-                    module = cast(ModuleType, item.module)
-                    if module.__doc__ and not suite.doc:
-                        suite.doc = module.__doc__
-                    if item.path == suite.source:
-                        _ = suite.tests.append(item.stash[running_test_case_key])
         # https://github.com/robotframework/robotframework/issues/4940
         super().visit_suite(suite)  # pyright:ignore[reportUnknownMemberType]
 
@@ -216,9 +240,10 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     called either. calling those hooks is handled by the `PytestRuntestProtocolHooks` listener
     """
 
-    def __init__(self, session: Session):
+    def __init__(self, *, session: Session, item_context: JobInfo | None = None):
         super().__init__()
         self.session = session
+        self.item_context = item_context
 
     @override
     def start_suite(self, suite: ModelTestSuite):
@@ -229,19 +254,22 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
         )
         item: Item | None = None
         for test in suite.tests:
-            previous_item: Item | None = item
-            item = get_item_from_robot_test(self.session, test)
-            # need to set nextitem on all the items, because for some reason the attribute exists on
-            # the class but is never used
-            if previous_item and not cast(Optional[Item], previous_item.nextitem):
-                previous_item.nextitem = (  # pyright:ignore[reportAttributeAccessIssue]
-                    item
-                )
-            if not item:
-                raise InternalError(
-                    "this should NEVER happen, `PytestCollector` failed to filter out"
-                    f" {test.name}"
-                )
+            if self.item_context:
+                item = self.item_context.item
+            else:
+                previous_item: Item | None = item
+                item = get_item_from_robot_test(self.session, test)
+                # need to set nextitem on all the items, because for some reason the attribute
+                # exists on the class but is never used
+                if previous_item and not cast(Optional[Item], previous_item.nextitem):
+                    previous_item.nextitem = (  # pyright:ignore[reportAttributeAccessIssue]
+                        item
+                    )
+                if not item:
+                    raise InternalError(
+                        "this should NEVER happen, `PytestCollector` failed to filter out"
+                        f" {test.name}"
+                    )
             cloaked_item = Cloaked(item)
             item.stash[original_setup_key] = test.setup
             test.setup = _create_running_keyword(
@@ -274,9 +302,10 @@ class PytestRuntestProtocolHooks(ListenerV3):
     also handles the execution of all other `pytest_runtest_protocol` hooks.
     """
 
-    def __init__(self, session: Session):
+    def __init__(self, *, session: Session, item: Item | None):
         super().__init__()
         self.session = session
+        self.item = item
         self.stop_running_hooks = False
         self.hookwrappers: dict[HookImpl, _HookWrapper] = {}
         """hookwrappers that are in the middle of running"""
@@ -284,6 +313,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
         self.end_test_hooks: list[HookImpl] = []
 
     def _get_item(self, data: running.TestCase) -> Item:
+        if self.item:
+            return self.item
         item = get_item_from_robot_test(self.session, data)
         if not item:
             raise InternalError(
@@ -444,9 +475,10 @@ class ErrorDetector(ListenerV3):
     errors and save them to the item to be used in the plugin's `pytest_runtest_makereport` hook
     """
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, *, session: Session, item: Item | None = None) -> None:
         super().__init__()
         self.session = session
+        self.item = item
         self.current_test: running.TestCase | None = None
 
     @override
@@ -455,7 +487,8 @@ class ErrorDetector(ListenerV3):
         data: running.TestCase,
         result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
-        self.current_test = data
+        if not self.item:
+            self.current_test = data
 
     @override
     def end_test(
@@ -463,18 +496,23 @@ class ErrorDetector(ListenerV3):
         data: running.TestCase,
         result: result.TestCase,  # pylint:disable=redefined-outer-name
     ):
-        self.current_test = None
+        if not self.item:
+            self.current_test = None
 
     @override
     def log_message(self, message: model.Message):
         if message.level != "ERROR":
             return
-        if not self.current_test:
+        if self.item:
+            item_or_session = self.item
+        elif not self.current_test:
             raise InternalError(
                 "a robot error occurred and ErrorDetector failed to figure out what"
                 f" test it came from: {message.message}"
             )
-        add_robot_error(
-            get_item_from_robot_test(self.session, self.current_test) or self.session,
-            message.message,
-        )
+        else:
+            item_or_session = (
+                get_item_from_robot_test(self.session, self.current_test)
+                or self.session
+            )
+        add_robot_error(item_or_session, message.message)
