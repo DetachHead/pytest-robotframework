@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Iterator, cast
 
 from pytest import Config, File, Item, MarkDecorator, Session, mark, skip
 from robot.errors import ExecutionFailed
@@ -11,6 +11,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
 from typing_extensions import override
 
+from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot_classes import (
     collected_robot_suite_key,
     original_body_key,
@@ -18,12 +19,14 @@ from pytest_robotframework._internal.robot_classes import (
     original_teardown_key,
 )
 from pytest_robotframework._internal.robot_utils import (
+    ModelTestCase,
     execution_context,
+    robot_6,
     running_test_case_key,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Iterable
     from os import PathLike
 
     from robot import model, running
@@ -32,7 +35,10 @@ if TYPE_CHECKING:
 class RobotFile(File):
     @override
     def collect(self) -> Iterable[Item]:
-        for test in self.session.stash[collected_robot_suite_key].all_tests:
+        for test in cast(
+            Iterator[ModelTestCase],
+            self.session.stash[collected_robot_suite_key].all_tests,
+        ):
             if self.path == test.source:
                 yield RobotItem.from_parent(  # type:ignore[no-untyped-call,no-any-expr]
                     self, name=test.name, robot_test=test
@@ -103,12 +109,30 @@ class RobotItem(Item):
     def runtest(self):
         test = self.stash[running_test_case_key]
         context = execution_context()
-        with self._check_skipped():
-            BodyRunner(
-                context=context, templated=bool(test.template)
-            ).run(  # type:ignore[no-untyped-call]
-                self.stash[original_body_key]
-            )
+        if not context:
+            raise InternalError("failed to runtest because no execution context")
+        check_skipped = self._check_skipped()
+        if robot_6:
+            with check_skipped:
+                # mypy is only run when robot 7 is installed
+                BodyRunner(  # type:ignore[call-arg]
+                    context=context, templated=bool(test.template)
+                ).run(  # type:ignore[no-untyped-call]
+                    self.stash[original_body_key]
+                )
+        else:
+            wrapped_body = test.body
+            # body uses robot's setter decorator which doesn't work with mypy
+            test.body = self.stash[original_body_key]  # type:ignore[index]
+            try:
+                with check_skipped:
+                    BodyRunner(
+                        context=context, templated=bool(test.template)
+                    ).run(  # type:ignore[no-untyped-call]
+                        data=test, result=context.test
+                    )
+            finally:
+                test.body = wrapped_body
 
     @override
     def teardown(self):

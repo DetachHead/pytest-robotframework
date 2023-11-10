@@ -23,6 +23,6 @@ def asdf() -> Iterator[None]:
 
 def test_foo():
     with asdf():
-        logger.info(0)  # type:ignore[no-untyped-call]
+        logger.info("0")  # type:ignore[no-untyped-call]
         raise Exception
-    logger.info(1)  # type:ignore[unreachable]
+    logger.info("1")  # type:ignore[unreachable]
