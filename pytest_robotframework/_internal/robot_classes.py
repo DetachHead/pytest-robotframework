@@ -22,6 +22,7 @@ from pytest_robotframework._internal import robot_library
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot_utils import (
     Cloaked,
+    ModelTestSuite,
     add_robot_error,
     get_item_from_robot_test,
     running_test_case_key,
@@ -45,15 +46,11 @@ def _create_running_keyword(
             f"kwargs not supported: {kwargs}"  # type:ignore[helpful-string]
         )
     return running.Keyword(
-        name=f"{fn.__module__}.{fn.__name__}",
-        # robot says this can only be a str but keywords can take any object when called from
-        # python
-        args=args,  # type:ignore[arg-type]
-        type=keyword_type,
+        name=f"{fn.__module__}.{fn.__name__}", args=args, type=keyword_type
     )
 
 
-collected_robot_suite_key = StashKey[model.TestSuite]()
+collected_robot_suite_key = StashKey[ModelTestSuite]()
 
 
 class PythonParser(Parser):
@@ -100,6 +97,14 @@ class PythonParser(Parser):
         return self._create_suite(source.parent)
 
 
+class _NotRunningTestSuiteError(InternalError):
+    def __init__(self) -> None:
+        super().__init__(
+            "SuiteVisitor should have had a `running.TestSuite` but had a"
+            " `model.TestSuite` instead"
+        )
+
+
 @catch_errors
 class PytestCollector(SuiteVisitor):
     """
@@ -120,8 +125,12 @@ class PytestCollector(SuiteVisitor):
         self.collection_error: Exception | None = None
 
     @override
-    def visit_suite(self, suite: running.TestSuite):
-        if not suite.parent:  # only do this once, on the top level suite
+    def visit_suite(self, suite: ModelTestSuite):
+        # https://github.com/robotframework/robotframework/issues/4940
+        if not isinstance(suite, running.TestSuite):
+            raise _NotRunningTestSuiteError
+        # only do this once, on the top level suite
+        if not suite.parent:
             self.session.stash[collected_robot_suite_key] = suite
             try:
                 self.session.perform_collect()
@@ -157,8 +166,7 @@ class PytestCollector(SuiteVisitor):
         else:
             # remove any .robot tests that were filtered out by pytest (and the fake test
             # from `PythonParser`):
-            # messed up types, fixed in robot 7
-            for test in suite.tests[:]:  # type:ignore[var-annotated]
+            for test in suite.tests[:]:
                 if not get_item_from_robot_test(self.session, test):
                     suite.tests.remove(test)
 
@@ -169,14 +177,11 @@ class PytestCollector(SuiteVisitor):
                     if module.__doc__ and not suite.doc:
                         suite.doc = module.__doc__
                     if item.path == suite.source:
-                        suite.tests.append(
-                            # messed up types, fixed in robot 7
-                            item.stash[running_test_case_key]  # type:ignore[index]
-                        )
+                        suite.tests.append(item.stash[running_test_case_key])
         super().visit_suite(suite)
 
     @override
-    def end_suite(self, suite: running.TestSuite):
+    def end_suite(self, suite: ModelTestSuite):
         """Remove suites that are empty after removing tests."""
         suite.suites = [s for s in suite.suites if s.test_count > 0]
         if not suite.parent and self.collection_error:
@@ -210,12 +215,13 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
         self.session = session
 
     @override
-    def start_suite(self, suite: running.TestSuite):
+    def start_suite(self, suite: ModelTestSuite):
+        if not isinstance(suite, running.TestSuite):
+            raise _NotRunningTestSuiteError
         suite.resource.imports.library(
             robot_library.__name__, alias=robot_library.__name__
         )
-        # fixed in robot 7
-        for test in suite.tests:  # type:ignore[var-annotated]
+        for test in suite.tests:
             item = get_item_from_robot_test(self.session, test)
             if not item:
                 raise InternalError(

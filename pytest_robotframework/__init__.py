@@ -43,6 +43,7 @@ from pytest_robotframework._internal.robot_utils import (
     add_robot_error,
     escape_robot_str,
     execution_context,
+    robot_6,
 )
 from pytest_robotframework._internal.utils import (
     ClassOrInstance,
@@ -87,27 +88,61 @@ def import_resource(path: Path | str):
         _resources.append(Path(path))
 
 
-@patch_method(LibraryKeywordRunner, "_runner_for")
-def _(  # noqa: PLR0917
-    old_method: Callable[
-        [
-            LibraryKeywordRunner,
-            _ExecutionContext,
+_kw_attribute = "_keyword_original_function"
+
+if robot_6:
+
+    @patch_method(LibraryKeywordRunner, "_runner_for")
+    def _(  # noqa: PLR0917
+        old_method: Callable[
+            [
+                LibraryKeywordRunner,
+                _ExecutionContext,
+                Function,
+                list[object],
+                dict[str, object],
+            ],
             Function,
-            list[object],
-            dict[str, object],
         ],
-        Function,
-    ],
-    self: LibraryKeywordRunner,
-    context: _ExecutionContext,
-    handler: Function,
-    positional: list[object],
-    named: dict[str, object],
-) -> Function:
-    """use the original function instead of the `@keyword` wrapped one"""
-    handler = cast(Function, getattr(handler, "_keyword_original_function", handler))
-    return old_method(self, context, handler, positional, named)
+        self: LibraryKeywordRunner,
+        context: _ExecutionContext,
+        handler: Function,
+        positional: list[object],
+        named: dict[str, object],
+    ) -> Function:
+        """use the original function instead of the `@keyword` wrapped one"""
+        handler = cast(Function, getattr(handler, _kw_attribute, handler))
+        return old_method(self, context, handler, positional, named)
+
+else:
+    from robot.running.librarykeyword import StaticKeyword, StaticKeywordCreator
+
+    class _StaticKeyword(StaticKeyword):  # pylint:disable=abstract-method
+        """prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
+        two status reporters when called from `.robot` tests"""
+
+        @override
+        @property
+        def method(self) -> Function:
+            method = cast(Function, super().method)
+            return cast(Function, getattr(method, _kw_attribute, method))
+
+        @override
+        def copy(self, **attributes: object) -> _StaticKeyword:
+            return _StaticKeyword(  # type:ignore[no-untyped-call]
+                self.method_name,
+                self.owner,
+                self.name,
+                self.args,
+                self._doc,
+                self.tags,
+                self._resolve_args_until,
+                self.parent,
+                self.error,
+            ).config(**attributes)
+
+    # patch StaticKeywordCreator to use our one instead
+    StaticKeywordCreator.keyword_class = _StaticKeyword
 
 
 class _KeywordDecorator:
@@ -166,40 +201,69 @@ class _KeywordDecorator:
                 *(f"{key}={value!s}" for key, value in kwargs.items()),
             )
             context = execution_context()
+            data = running.Keyword(name=keyword_name, args=log_args)
+            doc: str = (
+                (
+                    getshortdoc(  # type:ignore[no-untyped-call,no-any-expr]
+                        inspect.getdoc(fn)
+                    )
+                    or ""
+                )
+                if self.doc is None
+                else self.doc
+            )
+            # we suppress the error in the status reporter because we raise it ourselves
+            # afterwards, so that context managers like `pytest.raises` can see the actual
+            # exception instead of `robot.errors.HandlerExecutionFailed`
+            suppress = True
             context_manager: ContextManager[object] = (
-                # needed to work around mypy/pyright bug, see ContextManager documentation
-                StatusReporter(  # type:ignore[assignment]
-                    running.Keyword(name=keyword_name, args=log_args),
-                    result.Keyword(
-                        kwname=keyword_name,
-                        libname=self.module,
-                        doc=(
-                            (
-                                getshortdoc(  # type:ignore[no-untyped-call,no-any-expr]
-                                    inspect.getdoc(fn)
-                                )
-                                or ""
+                (
+                    # needed to work around mypy/pyright bug, see ContextManager documentation
+                    StatusReporter(  # type:ignore[assignment]
+                        data=data,
+                        result=(
+                            # mypy is only run when robot 7 is installed
+                            result.Keyword(  # type:ignore[call-arg]
+                                kwname=keyword_name,
+                                libname=self.module,
+                                # https://github.com/KotlinIsland/basedmypy/issues/608
+                                doc=doc,  # type:ignore[no-any-expr]
+                                args=log_args,
+                                tags=self.tags,
                             )
-                            if self.doc is None
-                            else self.doc
                         ),
-                        args=log_args,
-                        tags=self.tags,
-                    ),
-                    context=context,
-                    # we suppress the error in the status reporter because we raise it ourselves
-                    # afterwards, so that context managers like `pytest.raises` can see the actual
-                    # exception instead of `robot.errors.HandlerExecutionFailed`
-                    suppress=True,
+                        context=context,
+                        suppress=suppress,
+                    )
+                    if robot_6
+                    else (
+                        StatusReporter(
+                            data=data,
+                            result=result.Keyword(
+                                name=keyword_name,
+                                owner=self.module,
+                                # see issue link above
+                                doc=doc,  # type:ignore[no-any-expr]
+                                args=log_args,
+                                tags=self.tags,
+                            ),
+                            context=context,
+                            suppress=suppress,
+                            implementation=cast(
+                                LibraryKeywordRunner,
+                                context.get_runner(  # type:ignore[no-untyped-call]
+                                    keyword_name
+                                ),
+                            ).keyword.bind(data),
+                        )
+                    )
                 )
                 if context
                 else nullcontext()
             )
             return self.inner(fn, context_manager, *args, **kwargs)
 
-        inner._keyword_original_function = (  # type:ignore[attr-defined] # noqa: SLF001
-            fn
-        )
+        setattr(inner, _kw_attribute, fn)
         return inner
 
 

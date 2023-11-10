@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "pytest<9,>=7",
-    "robotframework<7.0.0,>=6.1.1",
+    "robotframework<8.0.0,>=6.1",
     "deepmerge<2.0.0,>=1.1.0",
     "basedtyping<0.2,>=0.1.0",
 ]
@@ -48,6 +48,11 @@ docs = ["pdoc>=14.1.0"]
 _mypy_package = { cmd = "pdm run mypy -p pytest_robotframework" }
 _mypy_tests = { cmd = "pdm run mypy -p tests" }
 mypy_all = { composite = ["_mypy_package", "_mypy_tests"] }
+
+# TODO: remove these when robot 7 and pytest 8 are released https://github.com/pdm-project/pdm/issues/2552
+_update_prerelease = { cmd = "pdm update --pre pytest robotframework" }
+_update = { cmd = "pdm update" }
+update = { composite = ["_update", "_update_prerelease"] }
 
 [build-system]
 requires = ["pdm-backend"]
