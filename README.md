@@ -14,6 +14,14 @@ in python and allows you to run robotframework tests using pytest
 
 pytest should automatically find and activate the plugin once you install it.
 
+# compatibility
+
+| dependency     | version range | comments                                                                                                                                                                                                   |
+| :------------- | :------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| python         | `>=3.8,<4.0`  | all versions of python will be supported until their end-of-life as described [here](https://devguide.python.org/versions/)                                                                                |
+| robotframework | `>=6.1,<8.0`  | i will try to support at least the two most recent major versions. robot 6.0 is not supported as the parser API that the plugin relies on to support tests written in python was introduced in version 6.1 |
+| pytest         | `>=7.0,<9.0`  | may work on other versions, but things may break since this plugin relies on some internal pytest modules                                                                                                  |
+
 <h1 hidden>API documentation</h1>
 
 <b hidden><a href="https://detachhead.github.io/pytest-robotframework/pytest_robotframework.html#api">click here</a></b>
