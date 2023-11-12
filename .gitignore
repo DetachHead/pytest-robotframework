@@ -1,6 +1,7 @@
 **/__pycache__
 /.venv/
 /dist/
+/docs/
 *.log
 .pyprojectx
 .pdm-python
