@@ -477,12 +477,12 @@ _T_ListenerOrSuiteVisitor = TypeVar(
 
 def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
     """errors that occur inside suite visitors and listeners do not cause the test run to fail. even
-    `--exitonerror` doesn't catch every exception (see https://github.com/robotframework/robotframework/issues/4853).
+    `--exitonerror` doesn't catch every exception (see <https://github.com/robotframework/robotframework/issues/4853>).
 
     this decorator will remember any errors that occurred inside listeners and suite visitors, then
     raise them after robot has finished running.
 
-    you don't need this if you are using the `@listener` or `@pre_rebot_modifier` decorator, as
+    you don't need this if you are using the `listener` or `pre_rebot_modifier` decorator, as
     those decorators use `catch_errors` as well"""
     # prevent classes from being wrapped twice
     marker = "_catch_errors"
