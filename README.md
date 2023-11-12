@@ -1,19 +1,26 @@
-# pytest-robotframework
+<!-- hidden attributes used on elements we only want to hide on the docs site, since they're ignored by github's markdown viewer -->
 
-a pytest plugin to run tests written in python with robotframework tests while generating robot reports for them
+<h1 hidden>pytest-robotframework</h1>
+
+`pytest-robotframework` is a pytest plugin that generates robotframework reports for tests written
+in python and allows you to run robotframework tests using pytest
 
 ![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/9caabc2e-450e-4db6-bb63-e149a38d49a2)
 
-## install
+# install
 
 [![Stable Version](https://img.shields.io/pypi/v/pytest-robotframework?color=blue)](https://pypi.org/project/pytest-robotframework/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/pytest-robotframework.svg)](https://anaconda.org/conda-forge/pytest-robotframework)
 
 pytest should automatically find and activate the plugin once you install it.
 
-## features
+<h1 hidden>API documentation</h1>
 
-### write robot tests in python
+<b hidden><a href="https://detachhead.github.io/pytest-robotframework#api-documentation">click here</a></b>
+
+# features
+
+## write robot tests in python
 
 ```py
 # you can use both robot and pytest features
@@ -31,7 +38,7 @@ def test_foo():
     foo()
 ```
 
-### run `.robot` tests
+## run `.robot` tests
 
 to allow for gradual adoption, the plugin also runs regular robot tests as well:
 
@@ -74,7 +81,7 @@ def test_bar():
     ...
 ```
 
-### setup/teardown and other hooks
+## setup/teardown and other hooks
 
 to define a function that runs for each test at setup or teardown, create a `conftest.py` with a `pytest_runtest_setup` and/or `pytest_runtest_teardown` function:
 
@@ -97,7 +104,7 @@ these hooks appear in the log the same way that the a `.robot` file's `Setup` an
 for more information, see [writing hook functions](https://docs.pytest.org/en/7.1.x/how-to/writing_hook_functions.html). pretty much every pytest hook should work with this plugin
 but i haven't tested them all. please raise an issue if you find one that's broken.
 
-### tags/markers
+## tags/markers
 
 pytest markers are converted to tags in the robot log:
 
@@ -123,9 +130,9 @@ def test_eval(test_input: int, expected: int):
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/4361295b-5e44-4c9d-b2f3-839e3901b1eb)
 
-### listeners and suite visitors
+## listeners and suite visitors
 
-#### listeners
+### listeners
 
 you can define listeners in your `conftest.py` and decorate them with `@listener` to register them as global listeners:
 
@@ -151,7 +158,7 @@ def pytest_sessionstart():
     listener(Listener("foo"))
 ```
 
-#### pre-rebot modifiers
+### pre-rebot modifiers
 
 just like listeners, you can define [pre-rebot modifiers](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#programmatic-modification-of-results) using the `pre_rebot_modifier` decorator:
 
@@ -186,11 +193,11 @@ def pytest_sessionstart():
     listener(PytestNameChanger())
 ```
 
-#### pre-run modifiers
+### pre-run modifiers
 
 there is currently no decorator for pre-run modifiers, since they may interfere with the pytest plugin. if you know what you're doing and would like to use a pre-run modifier anyway, you can always [define it in the robot arguments](#specifying-robot-options-directlty).
 
-### robot suite variables
+## robot suite variables
 
 to set suite-level robot variables, call the `set_variables` function at the top of the test suite:
 
@@ -211,7 +218,7 @@ def test_variables():
 
 `set_variables` is equivalent to the `*** Variables ***` section in a `.robot` file. all variables are prefixed with `$`. `@` and `&` are not required since `$` variables can store lists and dicts anyway
 
-## config
+# config
 
 since this is a pytest plugin, you should avoid using robot options that have pytest equivalents:
 
@@ -228,11 +235,11 @@ since this is a pytest plugin, you should avoid using robot options that have py
 
 if the robot option you want to use isn't mentioned here, check the pytest [command line options](https://docs.pytest.org/en/latest/reference/reference.html#command-line-flags) and [ini options](https://docs.pytest.org/en/latest/reference/reference.html#configuration-options) for a complete list of pytest settings as there are probably many missing from this list.
 
-### specifying robot options directlty
+## specifying robot options directlty
 
 there are multiple ways you can specify the robot arguments directly. however, arguments that have pytest equivalents should not be set with robot as they will probably cause the plugin to behave incorrectly.
 
-#### `pytest_robot_modify_args` hook
+### `pytest_robot_modify_args` hook
 
 you can specify a `pytest_robot_modify_args` hook in your `conftest.py` to programmatically modify the arguments
 
@@ -244,19 +251,19 @@ def pytest_robot_modify_args(args: list[str], collect_only: bool, session: Sessi
 
 note that not all arguments that the plugin passes to robot will be present in the `args` list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook
 
-#### `--robotargs` pytest argument
+### `--robotargs` pytest argument
 
 ```
 pytest --robotargs="-d results --listener foo.Foo"
 ```
 
-#### `ROBOT_OPTIONS` environment variable
+### `ROBOT_OPTIONS` environment variable
 
 ```
 ROBOT_OPTIONS="-d results --listener foo.Foo"
 ```
 
-### enabling pytest assertions in the robot log
+## enabling pytest assertions in the robot log
 
 by default, only failed assertions will appear in the log. to make passed assertions show up, you'll have to add `enable_assertion_pass_hook = true` to your pytest ini options:
 
@@ -268,17 +275,17 @@ enable_assertion_pass_hook = true
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/c2525ccf-c1c6-4c06-be79-c36fefd3bed4)
 
-## limitations with python tests
+# limitations with python tests
 
 there are several limitations with using robotframework without the language that this plugin includes workarounds for
 
-### making keywords show in the robot log
+## making keywords show in the robot log
 
 by default when writing tests in python, the only keywords that you'll see in the robot log are `Setup`, `Run Test` and `Teardown`. this is because robot is not capable of recognizing keywords called outside of robot code. (see [this issue](https://github.com/robotframework/robotframework/issues/4252))
 
 this plugin has several workarounds for the problem:
 
-#### `@keyword` decorator
+### `@keyword` decorator
 
 if you want a function you wrote to show up as a keyword in the log, decorate it with the `pytest_robotframework.keyword` instead of `robot.api.deco.keyword`
 
@@ -290,7 +297,7 @@ def foo():
     ...
 ```
 
-#### pytest functions are patched by the plugin
+### pytest functions are patched by the plugin
 
 most of the [pytest functions](https://docs.pytest.org/en/7.1.x/reference/reference.html#functions) are patched so that they show as keywords in the robot log
 
@@ -318,7 +325,7 @@ keywordify(some_module, "some_function")
 keywordify(some_module.SomeClass, "some_method")
 ```
 
-### `run_keyword_and_continue_on_failure` doesn't continue after the failure
+## `run_keyword_and_continue_on_failure` doesn't continue after the failure
 
 some robot keywords such as `run_keyword_and_continue_on_failure` don't work properly when called from python code.
 
@@ -333,9 +340,9 @@ except SomeException:
 
 the keyword will still show as failed in the log (as long as it's decorated with `pytest_robotframework.keyword`), but it won't effect the status of the test unless the exception is re-raised
 
-## IDE integration
+# IDE integration
 
-### vscode
+## vscode
 
 vscode's builtin python plugin should discover both your python and robot tests by default, and show run buttons next to them:
 
@@ -345,6 +352,6 @@ if you use the [robotframework-lsp](https://github.com/robocorp/robotframework-l
 
 (note: at the time of writing, this option is not yet in the latest version of the extension, so for now you'll need to install [this build](https://github.com/DetachHead/robotframework-lsp/releases/tag/asdf))
 
-### pycharm
+## pycharm
 
 pycharm currently does not support pytest plugins for non-python files. see [this issue](https://youtrack.jetbrains.com/issue/PY-63110/use-pytest-collect-only-to-collect-pytest-tests)

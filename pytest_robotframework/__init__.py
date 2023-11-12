@@ -1,4 +1,9 @@
-"""useful helpers for you to use in your pytest tests and `conftest.py` files."""
+"""
+.. include:: ../README.md
+
+# API
+useful helpers for you to use in your pytest tests and `conftest.py` files
+"""
 
 from __future__ import annotations
 
