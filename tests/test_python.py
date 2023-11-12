@@ -73,13 +73,6 @@ def test_nested_suites(pytester_dir: PytesterDir):
     assert xml.xpath("./suite/suite[@name='Test Top Level']/test[@name='test_func1']")
 
 
-def test_robot_args(pytester_dir: PytesterDir):
-    results_path = pytester_dir.path / "results"
-    result = pytester_dir.runpytest_subprocess("--robotargs", f"-d {results_path}")
-    result.assert_outcomes(passed=1)
-    assert (results_path / "log.html").exists()
-
-
 def test_robot_options_variable(pytester_dir: PytesterDir):
     results_path = pytester_dir.path / "results"
     env_variable = "ROBOT_OPTIONS"
