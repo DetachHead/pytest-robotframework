@@ -251,12 +251,6 @@ def pytest_robot_modify_args(args: list[str], collect_only: bool, session: Sessi
 
 note that not all arguments that the plugin passes to robot will be present in the `args` list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook
 
-### `--robotargs` pytest argument
-
-```
-pytest --robotargs="-d results --listener foo.Foo"
-```
-
 ### `ROBOT_OPTIONS` environment variable
 
 ```

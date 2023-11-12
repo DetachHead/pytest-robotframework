@@ -30,6 +30,7 @@ run = "pdm run"
 outdated = "pdm update --outdated"
 test = "pdm run pytest"
 
+
 [tool.pdm.dev-dependencies]
 lint = [
     "black>=23",
@@ -40,7 +41,11 @@ lint = [
     "robotframework-tidy>=4.5.0",
     "pyright>=1.1.334",
 ]
-test = ["lxml>=4.9.3", "lxml-stubs>=0.4.0"]
+test = [
+    "lxml>=4.9.3",
+    "lxml-stubs>=0.4.0",
+    "pytest-xdist>=3.5.0",
+]
 docs = ["pdoc>=14.1.0"]
 
 # maybe these should be pyprojectx scripts instead once https://github.com/pyprojectx/pyprojectx/issues/26 is fixed
@@ -268,7 +273,7 @@ score = "no"
 max-line-length = 200
 
 [tool.pytest.ini_options]
-addopts = ['-p no:robotframework', '--ignore=tests/fixtures']
+addopts = ['-p no:robotframework', '--ignore=tests/fixtures', '-n', 'auto']
 xfail_strict = true
 enable_assertion_pass_hook = true
 

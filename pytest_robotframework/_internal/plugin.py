@@ -142,23 +142,39 @@ def pytest_addhooks(pluginmanager: PluginManager):
     pluginmanager.add_hookspecs(hooks)
 
 
+_robotargs_deprecation_msg = (
+    "use a `pytest_robot_modify_args` hook or set the `ROBOT_OPTIONS` environment"
+    " variable instead"
+)
+
+
 def pytest_addoption(parser: Parser):
     parser.addoption(
         "--robotargs",
         default="",
-        help="additional arguments to be passed to robotframework",
+        help=(
+            "additional arguments to be passed to robotframework (deprecated:"
+            f" {_robotargs_deprecation_msg})"
+        ),
     )
 
 
 def pytest_robot_modify_args(args: list[str], session: Session):
-    args.extend(
-        cast(
-            str,
-            session.config.getoption(  # type:ignore[no-untyped-call]
-                "--robotargs"
-            ),
-        ).split(" ")
+    result = cast(
+        str,
+        session.config.getoption(  # type:ignore[no-untyped-call]
+            "--robotargs"
+        ),
     )
+    if result:
+        # i saw some code that uses session.config.issue_config_time_warning but that doesnt work
+        # who knows why
+        print(  # noqa: T201
+            f"\n`--robotargs` is deprecated (received {result!r}). specifying arguments"
+            " via the command line is unreliable because CLIs suck."
+            f" {_robotargs_deprecation_msg}"
+        )
+    args.extend(result.split(" "))
 
 
 @hookimpl(tryfirst=True)  # type:ignore[no-any-expr]
