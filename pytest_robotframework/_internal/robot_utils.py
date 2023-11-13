@@ -55,10 +55,9 @@ def report_robot_errors(item_or_session: Item | Session) -> str | None:
     errors = item_or_session.stash.get(robot_errors_key, None)
     if not errors:
         return None
-    # need separate variable because \n doesn't work inside nested f strings <3.12
     result = (
         "robot errors occurred and were caught by pytest-robotframework:\n\n- "
-        "\n- ".join(errors)
+        + "\n- ".join(errors)
     )
     del item_or_session.stash[robot_errors_key]
     return result
