@@ -104,7 +104,6 @@ enable = [
     "assignment-from-none",
     "bad-except-order",
     "bad-exception-cause",
-    "bad-format-character",
     "bad-reversed-sequence",
     "bad-super-call",
     "catching-non-exception",
