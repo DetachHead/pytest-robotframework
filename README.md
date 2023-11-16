@@ -351,18 +351,32 @@ the keyword will still show as failed in the log (as long as it's decorated with
 
 ### why?
 
-allowing continuable failures in python code would break type-safety, which is one of the biggest benefits of writing tests in python instead of robot. for example:
+robotframework introduced `TRY`/`EXCEPT` statements in version 5.0, which they [now recommend using](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#other-ways-to-handle-errors) instead of the old `Run Keyword And Ignore Error`/`Run Keyword And Expect Error` keywords.
+
+however `TRY`/`EXCEPT` behaves differently to its python equivalent, as it allows for errors that do not actually raise an exception to be caught:
+
+```robot
+*** Test Cases ***
+Foo
+    TRY
+        Run Keyword And Continue On Failure    Fail
+        Log    this is executed
+    EXCEPT
+        Log    and so is this
+    END
+```
+
+this means that if control flows like `Run Keyword And Continue On Failure` were supported, its failures would be impossible to catch:
 
 ```py
-@keyword
-def foo() -> int:
-    if some_condition:
-        raise ContinuableFailure("oops")
-    return 1
+from robot.api.logger import info
+from robot.libraries.BuiltIn import BuiltIn
 
-def test_foo():
-    value: int = foo() # actually returns `int | None`
-    value + 1 # runtime type error
+try:
+    BuiltIn().run_keyword_and_continue_on_failure("fail")
+    info("this is executed because an exception was not actually raised")
+except:
+    info("this is NOT executed, but the test will still fail")
 ```
 
 # IDE integration
