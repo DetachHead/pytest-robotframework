@@ -325,11 +325,20 @@ keywordify(some_module, "some_function")
 keywordify(some_module.SomeClass, "some_method")
 ```
 
-## `run_keyword_and_continue_on_failure` doesn't continue after the failure
+## continuable failures don't work
 
-some robot keywords such as `run_keyword_and_continue_on_failure` don't work properly when called from python code.
+keywords that raise [`ContinuableFailure`](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#continuable-failures) don't work properly when called from python code. this includes builtin keywords such as `run_keyword_and_continue_on_failure`.
 
-use a `try`/`except` statement to handle expected failures instead:
+use `pytest.raises` for expected failures instead:
+
+```py
+from pytest import raises
+
+with raises(SomeException):
+    some_keyword_that_fails()
+```
+
+or if the exception is conditionally raised, use a `try`/`except` statement like you would in regular python code:
 
 ```py
 try:
@@ -338,7 +347,23 @@ except SomeException:
     ... # ignore the exception, or re-raise it later
 ```
 
-the keyword will still show as failed in the log (as long as it's decorated with `pytest_robotframework.keyword`), but it won't effect the status of the test unless the exception is re-raised
+the keyword will still show as failed in the log (as long as it's decorated with `pytest_robotframework.keyword`), but it won't effect the status of the test unless the exception is re-raised.
+
+### why?
+
+allowing continuable failures in python code would break type-safety, which is one of the biggest benefits of writing tests in python instead of robot. for example:
+
+```py
+@keyword
+def foo() -> int:
+    if some_condition:
+        raise ContinuableFailure("oops")
+    return 1
+
+def test_foo():
+    value: int = foo() # actually returns `int | None`
+    value + 1 # runtime type error
+```
 
 # IDE integration
 
