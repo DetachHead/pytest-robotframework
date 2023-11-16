@@ -275,9 +275,9 @@ enable_assertion_pass_hook = true
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/c2525ccf-c1c6-4c06-be79-c36fefd3bed4)
 
-# limitations with python tests
+# limitations with tests written in python
 
-there are several limitations with using robotframework without the language that this plugin includes workarounds for
+there are some limitations when writing robotframework tests in python. pytest-robotframework includes solutions for these issues.
 
 ## making keywords show in the robot log
 
@@ -327,7 +327,7 @@ keywordify(some_module.SomeClass, "some_method")
 
 ## continuable failures don't work
 
-keywords that raise [`ContinuableFailure`](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#continuable-failures) don't work properly when called from python code. this includes builtin keywords such as `run_keyword_and_continue_on_failure`.
+keywords that raise [`ContinuableFailure`](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#continuable-failures) don't work properly when called from python code. this includes builtin keywords such as `Run Keyword And Continue On Failure`.
 
 use `pytest.raises` for expected failures instead:
 
