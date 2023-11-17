@@ -16,7 +16,7 @@ pytest should automatically find and activate the plugin once you install it.
 
 <h1 hidden>API documentation</h1>
 
-<b hidden><a href="https://detachhead.github.io/pytest-robotframework#api-documentation">click here</a></b>
+<b hidden><a href="https://detachhead.github.io/pytest-robotframework#api">click here</a></b>
 
 # features
 
