@@ -17,8 +17,8 @@ from pytest_robotframework import (
     _registry,
     _resources,
     _suite_variables,
+    as_keyword,
     import_resource,
-    keyword,
     keywordify,
     listener,
 )
@@ -159,17 +159,10 @@ def pytest_sessionfinish():
 
 def pytest_assertion_pass(orig: str, expl: str):
     """without this hook, passing assertions won't show up at all in the robot log"""
-
-    @keyword(name="assert", module="")
-    def assertion(
-        # unused argument just for showing it in the robot log
-        _expression: str,
-    ):
-        logger.info(expl)  # type:ignore[no-untyped-call]
-
     # this matches what's logged if an assertion fails, so we keep it the same here for consistency
     # (idk why there's no pytest_assertion_fail hook, only reprcompare which is different)
-    assertion(orig)
+    with as_keyword("assert", args=[orig]):
+        logger.info(expl)  # type:ignore[no-untyped-call]
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:
