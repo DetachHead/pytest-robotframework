@@ -84,7 +84,7 @@ class PythonParser(Parser):
         test_case.body = [
             _create_running_keyword(
                 "KEYWORD",
-                robot_library.internal_error,  # type:ignore[no-any-expr]
+                robot_library.internal_error,
                 Cloaked[str](
                     "fake placeholder test appeared. this should never happen :(("
                 ),
@@ -220,27 +220,21 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             # TODO: whats this mypy error
             #  https://github.com/DetachHead/pytest-robotframework/issues/36
             test.setup = _create_running_keyword(  # type:ignore[assignment]
-                "SETUP",
-                robot_library.setup,  # type:ignore[no-any-expr]
-                cloaked_item,
+                "SETUP", robot_library.setup, cloaked_item
             )
 
             item.stash[original_body_key] = test.body  # type:ignore[misc]
             test.body = Body(
                 items=[
                     _create_running_keyword(
-                        "KEYWORD",
-                        robot_library.run_test,  # type:ignore[no-any-expr]
-                        cloaked_item,
+                        "KEYWORD", robot_library.run_test, cloaked_item
                     )
                 ]
             )
 
             item.stash[original_teardown_key] = test.teardown
             test.teardown = _create_running_keyword(
-                "TEARDOWN",
-                robot_library.teardown,  # type:ignore[no-any-expr]
-                cloaked_item,
+                "TEARDOWN", robot_library.teardown, cloaked_item
             )
 
 

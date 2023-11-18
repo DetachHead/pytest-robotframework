@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING, List, Literal, cast
 from _pytest._code.code import TerminalRepr
 from _pytest.runner import call_and_report, show_test_item
 from pytest import Item, StashKey, TestReport
-from robot.api.deco import keyword
 from robot.libraries.BuiltIn import BuiltIn
 
+from pytest_robotframework import keyword
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_exception_getter import exception_key
@@ -65,8 +65,8 @@ def _call_and_report_robot_edition(
         )
 
 
-@keyword  # type:ignore[no-any-expr,misc]
-def setup(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
+@keyword
+def setup(arg: Cloaked[Item]):
     item = arg.value
     cringe_globals._current_item = item  # noqa: SLF001
     # mostly copied from the start of `_pytest.runner.runtestprotocol`:
@@ -80,8 +80,8 @@ def setup(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
     _call_and_report_robot_edition(item, "setup")
 
 
-@keyword  # type:ignore[no-any-expr,misc]
-def run_test(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
+@keyword
+def run_test(arg: Cloaked[Item]):
     item = arg.value
     # mostly copied from the middle of `_pytest.runner.runtestprotocol`:
     reports = item.stash[_report_key]
@@ -96,8 +96,8 @@ def run_test(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
             _call_and_report_robot_edition(item, "call")
 
 
-@keyword  # type:ignore[no-any-expr,misc]
-def teardown(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
+@keyword
+def teardown(arg: Cloaked[Item]):
     item = arg.value
     # mostly copied from the end of `_pytest.runner.runtestprotocol`:
     _call_and_report_robot_edition(
@@ -106,6 +106,6 @@ def teardown(arg: Cloaked[Item]):  # type:ignore[no-any-decorated]
     cringe_globals._current_item = None  # noqa: SLF001
 
 
-@keyword  # type:ignore[no-any-expr,misc]
-def internal_error(msg: Cloaked[str]):  # type:ignore[no-any-decorated]
+@keyword
+def internal_error(msg: Cloaked[str]):
     raise InternalError(msg.value)
