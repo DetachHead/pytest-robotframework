@@ -7,7 +7,7 @@
       "label": "pdm install requirements",
       "type": "shell",
       "command": "./pw",
-      "args": ["pdm", "install"],
+      "args": ["install"],
       "presentation": {
         "clear": true
       },
