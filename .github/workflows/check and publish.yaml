@@ -10,10 +10,10 @@ permissions:
 jobs:
   check:
     strategy:
-        fail-fast: false
-        matrix:
-          python_version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-          os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+      fail-fast: false
+      matrix:
+        python_version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - run: ./pw pdm lock --check
-      - run: ./pw install
+      - run: ./pw pdm install
       - run: ./pw run mypy -p pytest_robotframework
       - run: ./pw run mypy tests
       - run: ./pw run pyright
@@ -32,7 +32,7 @@ jobs:
       - run: ./pw run robocop
       - run: ./pw run robotidy --color --check --diff .
   publish:
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
     needs: check
     permissions:
@@ -48,7 +48,7 @@ jobs:
         run: echo ::set-output name=CURRENT_VERSION::$(./pw pdm show --version)
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
-            repo_token: ${{ secrets.GITHUB_TOKEN }}
-            prerelease: false
-            files: dist/*
-            automatic_release_tag: ${{ steps.current-version.outputs.CURRENT_VERSION }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          files: dist/*
+          automatic_release_tag: ${{ steps.current-version.outputs.CURRENT_VERSION }}

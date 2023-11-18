@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.12
-      - run: ./pw install --group=docs
+      - run: ./pw pdm install --group=docs
       - name: generate docs
         run: ./pw run pdoc pytest_robotframework -o docs
       - uses: actions/configure-pages@v3

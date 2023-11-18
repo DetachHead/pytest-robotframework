@@ -25,7 +25,7 @@ robotframework = "pytest_robotframework._internal.plugin"
 pdm = "pdm==2.10.1"
 
 [tool.pyprojectx.aliases]
-install = "pdm install"
+install = "pdm sync --clean"
 run = "pdm run"
 outdated = "pdm update --outdated"
 test = "pdm run pytest"
