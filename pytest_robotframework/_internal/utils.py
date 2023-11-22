@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from contextlib import AbstractContextManager
 from functools import wraps
 from typing import TYPE_CHECKING, Callable, Generic, Type, Union, cast
@@ -11,6 +12,7 @@ from pytest_robotframework._internal.errors import InternalError
 
 if TYPE_CHECKING:
     from abc import abstractmethod
+    from ast import AST
     from types import TracebackType
 
     from pytest import Item, Session, StashKey
@@ -82,6 +84,17 @@ else:
     # Generic that works at runtime
     class ContextManager(Generic[out_T], AbstractContextManager):
         pass
+
+
+# ast.unparse doesn't exist in 3.8
+if sys.version_info < (3, 9):
+    from astunparse import unparse as unparse_
+
+    def unparse(ast: AST) -> str:
+        return cast(str, unparse_(ast))  # type:ignore[no-untyped-call]
+
+else:
+    from ast import unparse as unparse
 
 
 def init_stash(  # pylint:disable=missing-param-doc

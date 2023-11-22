@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+from ast import AST
 from typing import TYPE_CHECKING, Dict, cast
 
 from lxml.etree import XML

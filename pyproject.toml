@@ -10,6 +10,8 @@ dependencies = [
     "robotframework<7.0.0,>=6.1.1",
     "deepmerge<2.0.0,>=1.1.0",
     "basedtyping<0.2,>=0.1.0",
+    "typer>=0.9.0",
+    "astunparse>=1.6.3",
 ]
 requires-python = ">=3.8,<4.0"
 readme = "README.md"
@@ -284,12 +286,13 @@ no_implicit_reexport = false
 ignore_missing_py_typed = true # https://github.com/robotframework/robotframework/issues/4822
 
 [[tool.mypy.overrides]]
-module = ['deepmerge.*']
+module = ['deepmerge.*', 'astunparse.*']
 ignore_missing_py_typed = true
 
 [[tool.mypy.overrides]]
 module = ['pytest_robotframework.*', 'tests.*']
 default_return = true
+
 
 [tool.pyright]
 pythonVersion = "3.8"
