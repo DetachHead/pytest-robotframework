@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Callable,
+    ClassVar,
     DefaultDict,
     Dict,
     Iterable,
@@ -529,20 +530,24 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
 
 
 class _RobotClassRegistry:
-    def __init__(self):
-        self.listeners: list[Listener] = []
-        self.pre_rebot_modifiers: list[SuiteVisitor] = []
-        self.too_late = False
+    listeners: ClassVar[list[Listener]] = []
+    pre_rebot_modifiers: ClassVar[list[SuiteVisitor]] = []
+    too_late: ClassVar[bool] = False
 
-    def check_too_late(self, obj: ClassOrInstance[Listener | SuiteVisitor]):
-        if self.too_late:
+    @classmethod
+    def check_too_late(cls, obj: ClassOrInstance[Listener | SuiteVisitor]):
+        if cls.too_late:
             raise UserError(
                 f"{obj} cannot be registered because robot has already"
                 " started running. make sure it's defined in a `conftest.py` file"
             )
 
+    @classmethod
+    def reset(cls):
+        cls.pre_rebot_modifiers.clear()
+        cls.listeners.clear()
+        cls.too_late = False
 
-_registry = _RobotClassRegistry()
 
 _T_Listener = TypeVar("_T_Listener", bound=ClassOrInstance[Listener])
 
@@ -554,8 +559,8 @@ def listener(obj: _T_Listener) -> _T_Listener:
     must be called before robot starts running (eg. in a `pytest_sessionstart` hook). if using as a
     decorator, the listener must be defined in your `conftest.py` (or in a module imported by it) so
     it gets registered before robot starts running."""
-    _registry.check_too_late(obj)
-    _registry.listeners.append(
+    _RobotClassRegistry.check_too_late(obj)
+    _RobotClassRegistry.listeners.append(
         obj
         if isinstance(obj, (ListenerV2, ListenerV3))
         # https://github.com/python/mypy/issues/16335
@@ -574,8 +579,8 @@ def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
     must be called before robot starts running (eg. in a `pytest_sessionstart` hook). if using as a
     decorator, the class must be defined in your `conftest.py` (or in a module imported by it) so
     it gets registered before robot starts running."""
-    _registry.check_too_late(obj)
-    _registry.pre_rebot_modifiers.append(
+    _RobotClassRegistry.check_too_late(obj)
+    _RobotClassRegistry.pre_rebot_modifiers.append(
         obj
         if isinstance(obj, SuiteVisitor)
         # https://github.com/python/mypy/issues/16335

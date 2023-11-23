@@ -14,6 +14,7 @@ from pytest_robotframework import keyword
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_exception_getter import exception_key
+from pytest_robotframework._internal.utils import init_stash
 
 if TYPE_CHECKING:
     from pytest_robotframework._internal.robot_utils import Cloaked
@@ -26,12 +27,7 @@ def _call_and_report_robot_edition(
 ):
     """wrapper for the `call_and_report` function used by `_pytest.runner.runtestprotocol`
     with additional logic to show the result in the robot log"""
-    reports: list[TestReport]
-    if _report_key in item.stash:
-        reports = item.stash[_report_key]
-    else:
-        reports = []
-        item.stash[_report_key] = reports
+    reports: list[TestReport] = init_stash(_report_key, list, item)
     report = call_and_report(  # type:ignore[no-untyped-call]
         item, when, log=True, **kwargs
     )

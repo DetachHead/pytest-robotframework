@@ -75,7 +75,7 @@ def test_nested_suites(pytester_dir: PytesterDir):
 
 def test_robot_args(pytester_dir: PytesterDir):
     results_path = pytester_dir.path / "results"
-    result = pytester_dir.runpytest("--robotargs", f"-d {results_path}")
+    result = pytester_dir.runpytest_subprocess("--robotargs", f"-d {results_path}")
     result.assert_outcomes(passed=1)
     assert (results_path / "log.html").exists()
 
@@ -85,7 +85,7 @@ def test_robot_options_variable(pytester_dir: PytesterDir):
     env_variable = "ROBOT_OPTIONS"
     try:
         os.environ[env_variable] = f"-d {results_path}"
-        result = pytester_dir.runpytest()
+        result = pytester_dir.runpytest_subprocess()
     finally:
         del os.environ[env_variable]
     result.assert_outcomes(passed=1)
@@ -93,7 +93,7 @@ def test_robot_options_variable(pytester_dir: PytesterDir):
 
 
 def test_robot_options_merge_listeners(pytester_dir: PytesterDir):
-    result = pytester_dir.runpytest(
+    result = pytester_dir.runpytest_subprocess(
         "--robotargs", f"--listener {pytester_dir.path / 'Listener.py'}"
     )
     result.assert_outcomes(passed=1)
@@ -104,7 +104,7 @@ def test_robot_options_variable_merge_listeners(pytester_dir: PytesterDir):
     env_variable = "ROBOT_OPTIONS"
     try:
         os.environ[env_variable] = f"--listener {pytester_dir.path / 'Listener.py'}"
-        result = pytester_dir.runpytest()
+        result = pytester_dir.runpytest_subprocess()
     finally:
         del os.environ[env_variable]
     result.assert_outcomes(passed=1)
@@ -117,13 +117,13 @@ def test_robot_modify_args_hook(pytester_dir: PytesterDir):
 
 
 def test_robot_modify_args_hook_collect_only(pytester_dir: PytesterDir):
-    result = pytester_dir.runpytest("--collect-only")
+    result = pytester_dir.runpytest_subprocess("--collect-only")
     assert result.parseoutcomes() == {"test": 1}
     assert not (pytester_dir.path / "log.html").exists()
 
 
 def test_listener_calls_log_file(pytester_dir: PytesterDir):
-    result = pytester_dir.runpytest(
+    result = pytester_dir.runpytest_subprocess(
         "--robotargs", f"--listener {pytester_dir.path / 'Listener.py'}"
     )
     result.assert_outcomes(passed=1)
@@ -132,7 +132,7 @@ def test_listener_calls_log_file(pytester_dir: PytesterDir):
 
 
 def test_doesnt_run_when_collecting(pytester_dir: PytesterDir):
-    result = pytester_dir.runpytest("--collect-only")
+    result = pytester_dir.runpytest_subprocess("--collect-only")
     result.assert_outcomes()
     assert not (pytester_dir.path / "log.html").exists()
 
@@ -140,13 +140,13 @@ def test_doesnt_run_when_collecting(pytester_dir: PytesterDir):
 # TODO: this test doesnt actually test anything
 # https://github.com/DetachHead/pytest-robotframework/issues/61
 def test_collect_only_nested_suites(pytester_dir: PytesterDir):
-    result = pytester_dir.runpytest("--collect-only")
+    result = pytester_dir.runpytest_subprocess("--collect-only")
     assert result.parseoutcomes() == {"tests": 2}
     assert "<Function test_func2>" in (line.strip() for line in result.outlines)
 
 
 def test_correct_items_collected_when_collect_only(pytester_dir: PytesterDir):
-    result = pytester_dir.runpytest("--collect-only", "test_bar.py")
+    result = pytester_dir.runpytest_subprocess("--collect-only", "test_bar.py")
     assert result.parseoutcomes() == {"test": 1}
     assert "<Function test_func2>" in (line.strip() for line in result.outlines)
 
@@ -269,7 +269,7 @@ def test_error_moment_exitonerror_multiple_tests(pytester_dir: PytesterDir):
 
 
 def test_teardown_skipped(pytester_dir: PytesterDir):
-    result = pytester_dir.runpytest()
+    result = pytester_dir.runpytest_subprocess()
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
     assert_robot_total_stats(pytester_dir, skipped=1)
@@ -523,6 +523,8 @@ def test_listener_decorator(pytester_dir: PytesterDir):
 
 
 def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
+    # all the other tests run pytest in subprocess mode but we keep this one as inprocess to check
+    # for https://github.com/DetachHead/pytest-robotframework/issues/38
     result = pytester_dir.runpytest()
     result.assert_outcomes(errors=1)
     # pytest failed before test was collected so nothing in the robot run
