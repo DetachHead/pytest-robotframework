@@ -20,6 +20,7 @@
   },
   "files.eol": "\n",
   "python.testing.pytestEnabled": true,
+  "testing.automaticallyOpenPeekView": "never",
   "python.analysis.typeCheckingMode": "off",
   "python.analysis.autoFormatStrings": true,
   "python.analysis.gotoDefinitionInStringLiteral": true,

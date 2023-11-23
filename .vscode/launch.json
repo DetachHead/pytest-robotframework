@@ -9,8 +9,7 @@
       "type": "python",
       "request": "launch",
       "module": "pytest",
-      // https://github.com/microsoft/pylance-release/issues/4980
-      "args": ["${input:pytestArgs}"],
+      "args": "${input:pytestArgs}",
       "justMyCode": false
     }
   ],
