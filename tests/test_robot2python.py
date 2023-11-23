@@ -9,9 +9,6 @@ from pytest import mark
 from pytest_robotframework._internal.utils import unparse
 from pytest_robotframework.robot2python import _convert
 
-current_file = Path(__file__)
-fixtures_folder = current_file.parent / f"fixtures/{current_file.stem}"
-
 
 def format_code(code: str) -> str:
     """hacky way to format code however the ast unparser does. would use black but it's a pain to
@@ -19,8 +16,13 @@ def format_code(code: str) -> str:
     return unparse(parse(code))
 
 
+current_file = Path(__file__)
+fixtures_folder = current_file.parent / f"fixtures/{current_file.stem}"
+suite_names = listdir(fixtures_folder)
+
+
 @mark.parametrize(
-    "suite", [fixtures_folder / suite for suite in listdir(fixtures_folder)]
+    "suite", [fixtures_folder / suite for suite in suite_names], ids=suite_names
 )
 def test_robot2python(suite: Path):
     converted_tests = _convert(suite, suite)

@@ -383,6 +383,10 @@ fixture-parentheses = false
 "tests/**/*.py" = [
     "S101", # Use of assert detected (pytest uses assert statements)
 ]
+"tests/fixtures/test_robot2python/**/*.py" = [
+    "INP001", # implicit-namespace-package
+]
+
 [tool.ruff.isort]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
