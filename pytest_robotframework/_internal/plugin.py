@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Generator, cast
 
 import pytest
@@ -10,13 +9,15 @@ from deepmerge import always_merger
 from pluggy import Result
 from pytest import TestReport, hookimpl
 from robot.api import logger
+from robot.conf.settings import _BaseSettings
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.run import RobotFramework
+from robot.utils import abspath
 
 from pytest_robotframework import (
-    _registry,
     _resources,
+    _RobotClassRegistry,
     _suite_variables,
     as_keyword,
     import_resource,
@@ -42,6 +43,8 @@ from pytest_robotframework._internal.robot_utils import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pluggy import PluginManager
     from pytest import CallInfo, Collector, Item, Parser, Session
 
@@ -54,15 +57,21 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     collection and running, it's more efficient to just have `pytest_runtestloop` handle the
     collection as well if possible.
     """
-    if _registry.too_late:
+    if _RobotClassRegistry.too_late:
         raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()  # type:ignore[no-untyped-call]
 
-    # need to set outputdir because if anything from robot gets imported before pytest runs, then
+    # need to reset outputdir because if anything from robot gets imported before pytest runs, then
     # the cwd gets updated, robot will still run with the outdated cwd.
-    # we set it here so it doesn't override any user preferences
-    robot_arg_list: list[str] = ["--outputdir", str(Path.cwd())]
+    # we set it in this wacky way to make sure it never overrides user preferences
+    _BaseSettings._cli_opts[  # type:ignore[no-untyped-usage,no-any-expr] # noqa: SLF001
+        "OutputDir"
+    ] = (  # type:ignore[no-any-expr]
+        "outputdir",
+        abspath("."),  # type:ignore[no-untyped-call,no-any-expr]
+    )
 
+    robot_arg_list: list[str] = []
     session.config.hook.pytest_robot_modify_args(
         args=robot_arg_list, session=session, collect_only=collect_only
     )
@@ -106,11 +115,11 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 "prerunmodifier": [  # type:ignore[no-any-expr]
                     PytestRuntestProtocolInjector(session)
                 ],
-                "listener": _registry.listeners,
-                "prerebotmodifier": _registry.pre_rebot_modifiers,
+                "listener": _RobotClassRegistry.listeners,
+                "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
             },
         )
-    _registry.too_late = True
+    _RobotClassRegistry.too_late = True
 
     try:
         # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
@@ -122,7 +131,8 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 **robot_args,
             )
     finally:
-        _registry.too_late = False
+        _RobotClassRegistry.reset()
+
     robot_errors = report_robot_errors(session)
     if robot_errors:
         raise Exception(robot_errors)
@@ -207,6 +217,7 @@ def pytest_runtest_setup(item: Item) -> HookImplResult:
                 r"${" + key + "}",
                 escape_robot_str(value) if isinstance(value, str) else value,
             )
+        del _suite_variables[item.path]
         for resource in _resources:
             import_resource(resource)
     result = yield
