@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Generator, cast
 
 import pytest
@@ -41,8 +42,6 @@ from pytest_robotframework._internal.robot_utils import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from pluggy import PluginManager
     from pytest import CallInfo, Collector, Item, Parser, Session
 
@@ -58,7 +57,12 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     if _registry.too_late:
         raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()  # type:ignore[no-untyped-call]
-    robot_arg_list: list[str] = []
+
+    # need to set outputdir because if anything from robot gets imported before pytest runs, then
+    # the cwd gets updated, robot will still run with the outdated cwd.
+    # we set it here so it doesn't override any user preferences
+    robot_arg_list: list[str] = ["--outputdir", str(Path.cwd())]
+
     session.config.hook.pytest_robot_modify_args(
         args=robot_arg_list, session=session, collect_only=collect_only
     )

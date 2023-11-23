@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pytest import ExitCode
 
+from pytest_robotframework._internal.errors import UserError
 from tests.utils import (
     PytesterDir,
     assert_log_file_exists,
@@ -522,9 +523,6 @@ def test_listener_decorator(pytester_dir: PytesterDir):
 
 
 def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
-    # not a top ledvel import due to https://github.com/DetachHead/pytest-robotframework/issues/38
-    from pytest_robotframework._internal.errors import UserError  # noqa: PLC0415
-
     result = pytester_dir.runpytest()
     result.assert_outcomes(errors=1)
     # pytest failed before test was collected so nothing in the robot run
