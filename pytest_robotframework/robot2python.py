@@ -71,6 +71,7 @@ class Robot2Python(SuiteVisitor):
             ImportFrom(
                 module=module.__name__,
                 names=[alias(name=name) for name in names],  # type:ignore[no-any-expr]
+                level=0,
             ),
         )
 
@@ -84,6 +85,7 @@ class Robot2Python(SuiteVisitor):
                 ImportFrom(
                     module="__future__",
                     names=[alias(name="annotations")],  # type:ignore[no-any-expr]
+                    level=0,
                 )
             ],
             type_ignores=[],  # type:ignore[no-any-expr]
