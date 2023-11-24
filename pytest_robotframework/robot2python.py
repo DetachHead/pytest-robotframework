@@ -90,12 +90,8 @@ class Robot2Python(SuiteVisitor):
         )
         self.current_module = module
         self.modules[
-            # cringe
-            Path(
-                str(robot_file.parent.resolve()).replace(
-                    str(Path.cwd()), str(self.output_dir)
-                )
-            )
+            self.output_dir
+            / (robot_file.parent).relative_to(self.output_dir)
             / f"{_pytestify_name(robot_file.stem)}.py"
         ] = module
 
@@ -161,6 +157,8 @@ class Robot2Python(SuiteVisitor):
 
 
 def _convert(suite: Path, output: Path) -> dict[Path, str]:
+    suite = suite.resolve()
+    output = output.resolve()
     robot_2_python = Robot2Python(output)
     RobotFramework().main(  # type:ignore[no-untyped-call]
         [suite],  # type:ignore[no-any-expr]
