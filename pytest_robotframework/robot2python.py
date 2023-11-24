@@ -70,7 +70,9 @@ class Robot2Python(SuiteVisitor):
             1,
             ImportFrom(
                 module=module.__name__,
-                names=[alias(name=name) for name in names],  # type:ignore[no-any-expr]
+                names=[
+                    alias(name=name, asname=None) for name in names
+                ],  # type:ignore[no-any-expr]
                 level=0,
             ),
         )
@@ -84,7 +86,9 @@ class Robot2Python(SuiteVisitor):
             body=[
                 ImportFrom(
                     module="__future__",
-                    names=[alias(name="annotations")],  # type:ignore[no-any-expr]
+                    names=[
+                        alias(name="annotations", asname=None)
+                    ],  # type:ignore[no-any-expr]
                     level=0,
                 )
             ],
@@ -128,7 +132,7 @@ class Robot2Python(SuiteVisitor):
             return Call(
                 func=Name(id=function),
                 args=[
-                    Constant(value=arg)
+                    Constant(value=arg, kind=None)
                     for arg in keyword.args  # type:ignore[no-any-expr]
                 ],
                 keywords=[],  # type:ignore[no-any-expr]
