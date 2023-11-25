@@ -28,7 +28,7 @@ pdm = "pdm==2.10.4"
 install = "pdm sync --clean"
 run = "pdm run"
 outdated = "pdm update --outdated"
-test = "pdm run pytest -n 0"
+test = "pdm run pytest -n auto"
 
 
 [tool.pdm.dev-dependencies]
