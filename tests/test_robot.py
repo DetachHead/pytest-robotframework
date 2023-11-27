@@ -299,3 +299,8 @@ def test_line_number(pytester_dir: PytesterDir):
     assert items
     assert items[0].reportinfo()[1] == 1
     assert items[1].reportinfo()[1] == 4
+
+
+def test_tags_with_kwargs(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=1)
+    assert_log_file_exists(pytester_dir)
