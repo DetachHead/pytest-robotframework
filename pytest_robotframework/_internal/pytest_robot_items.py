@@ -72,10 +72,11 @@ class RobotItem(Item):
                 except ValueError:
                     break
                 tag_kwargs.update({key: values})
+            marker = cast(MarkDecorator, getattr(mark, tag))
             if tag_kwargs:
-                self.add_marker(cast(MarkDecorator, getattr(mark, tag))(**tag_kwargs))
+                self.add_marker(marker(**tag_kwargs))
             else:
-                self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
+                self.add_marker(marker(*args))
 
     @staticmethod
     @contextmanager
