@@ -223,7 +223,6 @@ enable = [
     "unnecessary-ellipsis",
     "unreachable",
     "unused-private-member",
-    "unused-wildcard-import",
     "useless-param-doc",
     "useless-parent-delegation",
     "useless-type-doc",
