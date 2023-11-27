@@ -23,6 +23,9 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 [project.entry-points.pytest11]
 robotframework = "pytest_robotframework._internal.plugin"
 
+[project.scripts]
+robot2python = "pytest_robotframework._internal.scripts.robot2python:main"
+
 [tool.pyprojectx]
 pdm = "pdm==2.10.4"
 

@@ -170,12 +170,11 @@ def _convert(suite: Path, output: Path) -> dict[Path, str]:
     return {path: unparse(module) for path, module in robot_2_python.modules.items()}
 
 
-def main(suite: Path, output: Path):
-    for path, module_text in _convert(suite, output).items():
-        if not path.parent.exists():
-            path.parent.mkdir(parents=True)
-        path.write_text(module_text)
+def main():
+    def inner(suite: Path, output: Path):
+        for path, module_text in _convert(suite, output).items():
+            if not path.parent.exists():
+                path.parent.mkdir(parents=True)
+            path.write_text(module_text)
 
-
-if __name__ == "__main__":
-    run(main)
+    run(inner)

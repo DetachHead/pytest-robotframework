@@ -6,8 +6,8 @@ from pathlib import Path
 
 from pytest import mark
 
+from pytest_robotframework._internal.scripts.robot2python import _convert
 from pytest_robotframework._internal.utils import unparse
-from pytest_robotframework.robot2python import _convert
 
 
 def format_code(code: str) -> str:
