@@ -16,7 +16,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterator, cast
 
+from robot import running
 from robot.api import SuiteVisitor, logger
+from robot.model.itemlist import ItemList
 from robot.run import RobotFramework
 from typer import run
 from typing_extensions import override
@@ -64,52 +66,49 @@ class Robot2Python(SuiteVisitor):
         finally:
             self.statement_stack.pop()
 
-    def _add_import(self, module: ModuleType, names: list[str]):
-        # insert it at the top of the file but not before the `__future__` import
+    def _add_import(self, module: ModuleType | str, names: list[str] | None = None):
+        module_name = module if isinstance(module, str) else module.__name__
+        if names is None:
+            names = ["*"]
         self.current_module.body.insert(
-            1,
+            # __future__ imports need to go first
+            (0 if module_name == "__future__" else 1),
             ImportFrom(
-                module=module.__name__,
-                names=[
+                module=module_name,
+                names=([  # type:ignore[no-any-expr]
                     alias(name=name, asname=None) for name in names
-                ],  # type:ignore[no-any-expr]
+                ]),
                 level=0,
             ),
         )
 
     @override
-    def start_suite(self, suite: model.TestSuite):
+    def start_suite(self, suite: running.TestSuite):
         robot_file = _robot_file(suite)
         if robot_file is None:
             return
         module = Module(
-            body=[
-                ImportFrom(
-                    module="__future__",
-                    names=[
-                        alias(name="annotations", asname=None)
-                    ],  # type:ignore[no-any-expr]
-                    level=0,
-                )
-            ],
-            type_ignores=[],  # type:ignore[no-any-expr]
+            body=[], type_ignores=[]  # type:ignore[no-any-expr]
         )
         self.current_module = module
+        self._add_import("__future__", ["annotations"])
         self.modules[
             self.output_dir
             / (robot_file.parent).relative_to(self.output_dir)
             / f"{_pytestify_name(robot_file.stem)}.py"
         ] = module
+        for module in cast(ItemList[running.model.Import], suite.resource.imports):
+            self._add_import(module.name)
 
     @override
-    def end_suite(self, suite: model.TestSuite):
+    def end_suite(self, suite: running.TestSuite):
         # make sure no tests are actually executed once this is done
         suite.tests.clear()  # type:ignore[no-untyped-call]
         if _robot_file(suite) is not None:
             del self.current_module
 
     @override
-    def visit_test(self, test: model.TestCase):
+    def visit_test(self, test: running.TestCase):
         function = FunctionDef(
             name=_pytestify_name(test.name),
             args=[],  # type:ignore[no-any-expr]
@@ -122,40 +121,33 @@ class Robot2Python(SuiteVisitor):
             super().visit_test(test)
 
     # eventually this will add imports to self.current_module
-    def _resolve_call(self, keyword: model.Keyword) -> expr:
+    def _resolve_call(self, keyword: running.Keyword) -> expr:
         if not keyword.name:
             raise UserError("why yo keyword aint got no name")
         python_name = _pythonify_name(keyword.name)
 
-        def create_call(module: ModuleType, function: str) -> Call:
-            self._add_import(module, [function])
+        def create_call(function: str, module: ModuleType | None = None) -> Call:
+            if module:
+                self._add_import(module, [function])
             return Call(
                 func=Name(id=function),
                 args=[
                     Constant(value=arg, kind=None)
                     for arg in keyword.args  # type:ignore[no-any-expr]
                 ],
+                # TODO
                 keywords=[],  # type:ignore[no-any-expr]
             )
 
         if python_name == "no_operation":
             return Constant(value=...)
         if python_name == "log":
-            return create_call(logger, "info")
-        return Call(
-            func=Name(id="run_keyword"),
-            args=[
-                Constant(value=keyword.name),
-                *(
-                    Constant(value=arg)
-                    for arg in keyword.args  # type:ignore[no-any-expr]
-                ),
-            ],
-            keywords=[],  # type:ignore[no-any-expr]
-        )
+            return create_call("info", logger)
+        return create_call(python_name)
 
     @override
-    def visit_keyword(self, keyword: model.Keyword):
+    # https://github.com/robotframework/robotframework/issues/4940
+    def visit_keyword(self, keyword: running.Keyword):  # type:ignore[override]
         function = cast(FunctionDef, self.current_module.body[-1])
         function.body.append(Expr(self._resolve_call(keyword)))
         with self._stack_frame(function):
@@ -170,6 +162,10 @@ def _convert(suite: Path, output: Path) -> dict[Path, str]:
         [suite],  # type:ignore[no-any-expr]
         prerunmodifier=robot_2_python,
         runemptysuite=True,
+        report=None,
+        output=None,
+        log=None,
+        exitonerror=True,
     )
     return {path: unparse(module) for path, module in robot_2_python.modules.items()}
 
