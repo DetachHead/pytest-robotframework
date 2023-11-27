@@ -65,7 +65,17 @@ class RobotItem(Item):
         self.robot_test = robot_test
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
-            self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
+            tag_kwargs: dict[str, str | int | bool] = {}
+            for arg in args:
+                try:
+                    key, values = arg.split("=")
+                except ValueError:
+                    break
+                tag_kwargs.update({key: values})
+            if tag_kwargs:
+                self.add_marker(cast(MarkDecorator, getattr(mark, tag))(**tag_kwargs))
+            else:
+                self.add_marker(cast(MarkDecorator, getattr(mark, tag))(*args))
 
     @staticmethod
     @contextmanager
