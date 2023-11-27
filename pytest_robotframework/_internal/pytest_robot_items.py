@@ -65,7 +65,7 @@ class RobotItem(Item):
         self.robot_test = robot_test
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
-            tag_kwargs: dict[str, str | int | bool] = {}
+            tag_kwargs: dict[str, str] = {}
             for arg in args:
                 try:
                     key, values = arg.split("=")
