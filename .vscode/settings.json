@@ -49,5 +49,6 @@
   "explorer.compactFolders": false,
   "search.exclude": {
     "pw": true
-  }
+  },
+  "mypy-type-checker.ignorePatterns": ["pw"]
 }
