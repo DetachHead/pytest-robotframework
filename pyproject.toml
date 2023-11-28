@@ -10,6 +10,8 @@ dependencies = [
     "robotframework<7.0.0,>=6.1.1",
     "deepmerge<2.0.0,>=1.1.0",
     "basedtyping<0.2,>=0.1.0",
+    "typer>=0.9.0",
+    "astunparse>=1.6.3",
 ]
 requires-python = ">=3.8,<4.0"
 readme = "README.md"
@@ -20,6 +22,9 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 
 [project.entry-points.pytest11]
 robotframework = "pytest_robotframework._internal.plugin"
+
+[project.scripts]
+robot2python = "pytest_robotframework._internal.scripts.robot2python:main"
 
 [tool.pyprojectx]
 pdm = "pdm==2.10.4"
@@ -221,7 +226,6 @@ enable = [
     "unnecessary-ellipsis",
     "unreachable",
     "unused-private-member",
-    "unused-wildcard-import",
     "useless-param-doc",
     "useless-parent-delegation",
     "useless-type-doc",
@@ -274,9 +278,9 @@ xfail_strict = true
 enable_assertion_pass_hook = true
 
 [tool.mypy]
-allow_redefinition = true
+allow_redefinition = false
 default_return = false
-cache_dir = 'nul'         # disable cache because it sucks
+cache_dir = 'nul'          # disable cache because it sucks
 
 [[tool.mypy.overrides]]
 module = ['robot.*']
@@ -284,12 +288,13 @@ no_implicit_reexport = false
 ignore_missing_py_typed = true # https://github.com/robotframework/robotframework/issues/4822
 
 [[tool.mypy.overrides]]
-module = ['deepmerge.*']
+module = ['deepmerge.*', 'astunparse.*']
 ignore_missing_py_typed = true
 
 [[tool.mypy.overrides]]
 module = ['pytest_robotframework.*', 'tests.*']
 default_return = true
+
 
 [tool.pyright]
 pythonVersion = "3.8"
@@ -380,6 +385,10 @@ fixture-parentheses = false
 "tests/**/*.py" = [
     "S101", # Use of assert detected (pytest uses assert statements)
 ]
+"tests/fixtures/test_robot2python/**/*.py" = [
+    "INP001", # implicit-namespace-package
+]
+
 [tool.ruff.isort]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]

@@ -5,6 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "robot2python",
+      "type": "python",
+      "request": "launch",
+      "program": "pytest_robotframework/robot2python.py",
+      "args": ["${input:robot2pythonInput}", "robot2python_output"],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
       "name": "pytest justMyCode disabled",
       "type": "python",
       "request": "launch",
@@ -18,6 +27,12 @@
       "id": "pytestArgs",
       "type": "promptString",
       "description": "args for pytest",
+      "default": ""
+    },
+    {
+      "id": "robot2pythonInput",
+      "type": "promptString",
+      "description": "robot test suite to convert to python",
       "default": ""
     }
   ]

@@ -81,6 +81,23 @@ def test_bar():
     ...
 ```
 
+## automatically convert `.robot` tests to `.py`
+
+pytest-robotframework comes with a script to automatically convert tests from robot to python:
+
+```
+robot2python ./foo.robot ./tests
+```
+
+this will convert the `foo.robot` file to an equivalent `test_foo.py` file and output it to the `tests` directory.
+
+### limitations
+
+note that the script is not perfect and you will probably have to make manual changes to tests converted with it.
+
+- robot converters are not yet used, so all arguments to keywords are assumed to be strings in the converted python code.
+- some of the control flows possible in robot aren't able to be accurately converted to python (see [here](#continuable-failures-dont-work)). the script attempts to convert what it can but you will probably have to rewrite parts of your tests that use continuable failures
+
 ## setup/teardown and other hooks
 
 to define a function that runs for each test at setup or teardown, create a `conftest.py` with a `pytest_runtest_setup` and/or `pytest_runtest_teardown` function:
