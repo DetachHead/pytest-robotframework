@@ -59,6 +59,7 @@ build-backend = "pdm.backend"
 target-version = ["py38"]
 skip-magic-trailing-comma = true
 preview = true
+force-exclude = "pw"
 
 [tool.pylint.MASTER]
 fail-on = "I"
@@ -368,6 +369,7 @@ target-version = "py38"
 respect-gitignore = true
 line-length = 100
 preview = true
+extend-exclude = ["pw"]
 
 [tool.ruff.pycodestyle]
 ignore-overlong-task-comments = true
