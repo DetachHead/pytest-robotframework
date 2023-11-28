@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import *  # noqa: F403
+from typing import cast
 
 
 def test_foo():
-    cast("str", "asdf")  # noqa: F405
+    cast("str", "asdf")
