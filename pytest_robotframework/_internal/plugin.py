@@ -208,8 +208,7 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
 
 
 def pytest_collection(session: Session) -> object:
-    if session.config.option.collectonly:  # type:ignore[no-any-expr]
-        _collect_slash_run(session, collect_only=True)
+    _collect_slash_run(session, collect_only=True)
     return True
 
 

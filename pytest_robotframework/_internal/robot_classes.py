@@ -121,12 +121,14 @@ class PytestCollector(SuiteVisitor):
     def visit_suite(self, suite: running.TestSuite):
         if not suite.parent:  # only do this once, on the top level suite
             self.session.stash[collected_robot_suite_key] = suite
-            try:
-                self.session.perform_collect()
-            except Exception as e:  # noqa: BLE001
-                # if collection fails we still need to clean up the suite (ie. delete all the fake
-                # tests), so we defer the error to `end_suite` for the top level suite
-                self.collection_error = e
+            # if collection has already happened, collecting again will result in an empty list
+            if not hasattr(self.session, "items"):
+                try:
+                    self.session.perform_collect()
+                except Exception as e:  # noqa: BLE001
+                    # if collection fails we still need to clean up the suite (ie. delete all the fake
+                    # tests), so we defer the error to `end_suite` for the top level suite
+                    self.collection_error = e
             # create robot test cases for python tests:
             for item in self.session.items:
                 if (
