@@ -2,15 +2,28 @@ from __future__ import annotations
 
 from os import symlink
 from pathlib import Path
-from shutil import copytree
+from shutil import copy, copytree
 from types import ModuleType
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from pytest import FixtureRequest, Function, Pytester, fixture
 
 from tests.utils import PytesterDir
 
+if TYPE_CHECKING:
+    from _typeshed import StrPath
+
 pytest_plugins = ["pytester"]
+
+
+def try_symlink(src: StrPath, dest: StrPath):
+    """try to use symlinks so breakpoints in the copied python files still work
+
+    but some computers don't support symlinks so fall back to the copy method"""
+    try:
+        symlink(src, dest)
+    except OSError:
+        copy(src, dest)
 
 
 @fixture  # type:ignore[no-any-expr]
@@ -29,20 +42,19 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
         .stem
     )
     fixture_dir_for_current_test = test_file_fixture_dir / test_name
-    # we use symlinks so breakpoints still work
     if fixture_dir_for_current_test.exists():
         copytree(
             fixture_dir_for_current_test,
             pytester.path,
             dirs_exist_ok=True,
-            copy_function=symlink,
+            copy_function=try_symlink,
         )
     else:
         for file in (
             test_file_fixture_dir / f"{test_name}.{ext}" for ext in ("py", "robot")
         ):
             if file.exists():
-                symlink(file, pytester.path / file.name)
+                try_symlink(file, pytester.path / file.name)
                 break
         else:
             raise Exception(f"no fixtures found for {test_name=}")
