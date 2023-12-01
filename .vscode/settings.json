@@ -50,5 +50,6 @@
   "search.exclude": {
     "pw": true
   },
-  "mypy-type-checker.ignorePatterns": ["pw"]
+  "mypy-type-checker.ignorePatterns": ["pw"],
+  "python.terminal.activateEnvInCurrentTerminal": true
 }
