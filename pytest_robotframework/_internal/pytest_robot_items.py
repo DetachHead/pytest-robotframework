@@ -34,7 +34,7 @@ class RobotFile(File):
     def collect(self) -> Iterable[Item]:
         for test in self.session.stash[collected_robot_suite_key].all_tests:
             if self.path == test.source:
-                yield RobotItem.from_parent(  # type:ignore[no-untyped-call,no-any-expr]
+                yield RobotItem.from_parent(  # pyright:ignore[no-untyped-call,no-any-expr]
                     self, name=test.name, robot_test=test
                 )
 
@@ -86,8 +86,8 @@ class RobotItem(Item):
         try:
             yield
         except ExecutionFailed as e:
-            if e.status == "SKIP":  # type:ignore[no-any-expr]
-                skip(e.message)  # type:ignore[no-any-expr]
+            if e.status == "SKIP":  # pyright:ignore[no-any-expr]
+                skip(e.message)  # pyright:ignore[no-any-expr]
             raise
 
     def _run_keyword(self, keyword: model.Keyword | None):
@@ -106,7 +106,7 @@ class RobotItem(Item):
         with self._check_skipped():
             BodyRunner(
                 context=context, templated=bool(test.template)
-            ).run(  # type:ignore[no-untyped-call]
+            ).run(  # pyright:ignore[no-untyped-call]
                 self.stash[original_body_key]
             )
 

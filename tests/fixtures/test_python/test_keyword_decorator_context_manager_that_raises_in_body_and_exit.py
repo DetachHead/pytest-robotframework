@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 @keyword(wrap_context_manager=True)
 @contextmanager
 def asdf() -> Iterator[None]:
-    logger.info("start")  # type:ignore[no-untyped-call]
+    logger.info("start")  # pyright:ignore[no-untyped-call]
     try:
         yield
     finally:
@@ -24,4 +24,4 @@ def asdf() -> Iterator[None]:
 def test_foo():
     with asdf():
         raise Exception("fdsa")
-    logger.info(1)  # type:ignore[unreachable]
+    logger.info(1)  # pyright:ignore[unreachable]

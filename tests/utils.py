@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 if TYPE_CHECKING:
     # Pytester is final so it's probably a bad idea to rely on extending this at runtime
-    class PytesterDir(Pytester):  # type:ignore[misc]
+    class PytesterDir(Pytester):  # pyright:ignore[misc]
         """fake subtype of `Pytester` that bans you from using file creation methods. you should put
         real life files in `tests/fixtures/[test file path]/[test name]` instead"""
 
@@ -69,7 +69,7 @@ def run_and_assert_assert_pytest_result(
     result = (
         pytester.runpytest_subprocess
         if subprocess
-        else pytester.runpytest  # type:ignore[no-any-expr]
+        else pytester.runpytest  # pyright:ignore[no-any-expr]
     )(*(pytest_args or []))
     result.assert_outcomes(
         passed=passed, skipped=skipped, failed=failed, errors=errors, xfailed=xfailed

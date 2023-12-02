@@ -178,13 +178,13 @@ def test_parameterized_tags(pytester_dir: PytesterDir):
     result = pytester_dir.runpytest(
         "--collectonly",
         "--strict-markers",
-        plugins=[TagGetter()],  # type:ignore[no-any-expr]
+        plugins=[TagGetter()],  # pyright:ignore[no-any-expr]
     )
     result.assert_outcomes()
     assert markers
     assert len(markers) == 1
     assert markers[0].name == "key"
-    assert markers[0].args == ("hi",)  # type:ignore[no-any-expr]
+    assert markers[0].args == ("hi",)  # pyright:ignore[no-any-expr]
 
 
 def test_doesnt_run_when_collecting(pytester_dir: PytesterDir):
@@ -294,7 +294,7 @@ def test_line_number(pytester_dir: PytesterDir):
     pytester_dir.runpytest(
         "--collectonly",
         "--strict-markers",
-        plugins=[ItemGetter()],  # type:ignore[no-any-expr]
+        plugins=[ItemGetter()],  # pyright:ignore[no-any-expr]
     )
     assert items
     assert items[0].reportinfo()[1] == 1

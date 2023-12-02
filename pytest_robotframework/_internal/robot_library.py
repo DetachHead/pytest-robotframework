@@ -28,7 +28,7 @@ def _call_and_report_robot_edition(
     """wrapper for the `call_and_report` function used by `_pytest.runner.runtestprotocol`
     with additional logic to show the result in the robot log"""
     reports: list[TestReport] = init_stash(_report_key, list, item)
-    report = call_and_report(  # type:ignore[no-untyped-call]
+    report = call_and_report(  # pyright:ignore[no-untyped-call]
         item, when, log=True, **kwargs
     )
     reports.append(report)
@@ -37,7 +37,7 @@ def _call_and_report_robot_edition(
         xfail_reason = (
             cast(str, report.wasxfail) if hasattr(report, "wasxfail") else None
         )
-        BuiltIn().skip(  # type:ignore[no-untyped-call]
+        BuiltIn().skip(  # pyright:ignore[no-untyped-call]
             # TODO: is there a reliable way to get the reason when skipped by a skip/skipif marker?
             # https://github.com/DetachHead/pytest-robotframework/issues/51
             ""
@@ -68,11 +68,11 @@ def setup(arg: Cloaked[Item]):
     # mostly copied from the start of `_pytest.runner.runtestprotocol`:
     if (
         hasattr(item, "_request")
-        and not item._request  # type: ignore[no-any-expr] # noqa: SLF001
+        and not item._request  # pyright: ignore[no-any-expr] # noqa: SLF001
     ):
         # This only happens if the item is re-run, as is done by
         # pytest-rerunfailures.
-        item._initrequest()  # type: ignore[attr-defined] # noqa: SLF001
+        item._initrequest()  # pyright: ignore[attr-defined] # noqa: SLF001
     _call_and_report_robot_edition(item, "setup")
 
 
@@ -82,11 +82,11 @@ def run_test(arg: Cloaked[Item]):
     # mostly copied from the middle of `_pytest.runner.runtestprotocol`:
     reports = item.stash[_report_key]
     if reports[0].passed:
-        if item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
+        if item.config.getoption(  # pyright:ignore[no-any-expr,no-untyped-call]
             "setupshow", default=False
         ):
             show_test_item(item)
-        if not item.config.getoption(  # type:ignore[no-any-expr,no-untyped-call]
+        if not item.config.getoption(  # pyright:ignore[no-any-expr,no-untyped-call]
             "setuponly", default=False
         ):
             _call_and_report_robot_edition(item, "call")
@@ -97,7 +97,7 @@ def teardown(arg: Cloaked[Item]):
     item = arg.value
     # mostly copied from the end of `_pytest.runner.runtestprotocol`:
     _call_and_report_robot_edition(
-        item, "teardown", nextitem=item.nextitem  # type:ignore[no-any-expr]
+        item, "teardown", nextitem=item.nextitem  # pyright:ignore[no-any-expr]
     )
     cringe_globals._current_item = None  # noqa: SLF001
 

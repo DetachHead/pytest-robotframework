@@ -14,4 +14,4 @@ def test_foo():
         with as_keyword("hi"):
             raise FooError  # noqa: TRY301
     except FooError:
-        logger.info(2)  # type:ignore[no-untyped-call]
+        logger.info(2)  # pyright:ignore[no-untyped-call]

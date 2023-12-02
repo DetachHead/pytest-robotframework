@@ -46,7 +46,7 @@ robot_errors_key = StashKey[List[str]]()
 def add_robot_error(item_or_session: Item | Session, message: str):
     if robot_errors_key not in item_or_session.stash:
         # https://github.com/python/mypy/issues/230
-        item_or_session.stash[robot_errors_key] = []  # type:ignore[misc]
+        item_or_session.stash[robot_errors_key] = []  # pyright:ignore[misc]
     errors = item_or_session.stash[robot_errors_key]
     errors.append(message)
 

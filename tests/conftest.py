@@ -12,7 +12,7 @@ from tests.utils import PytesterDir
 pytest_plugins = ["pytester"]
 
 
-@fixture  # type:ignore[no-any-expr]
+@fixture  # pyright:ignore[no-any-expr]
 def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
     """wrapper for pytester that moves the files located in
     `tests/fixtures/[test file]/[test name].py` to the pytester temp dir for the current test, so

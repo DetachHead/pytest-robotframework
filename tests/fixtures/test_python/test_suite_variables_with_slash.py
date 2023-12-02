@@ -9,5 +9,6 @@ set_variables({"foo": "bar\\baz"})
 
 def test_asdf():
     assert (
-        BuiltIn().get_variable_value("$foo") == "bar\\baz"  # type:ignore[no-any-expr]
+        BuiltIn().get_variable_value("$foo")
+        == "bar\\baz"  # pyright:ignore[no-any-expr]
     )

@@ -2,23 +2,23 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Generator, cast
+from typing import TYPE_CHECKING, Any, Dict, Generator, cast
 
 import pytest
 from deepmerge import always_merger
 from pluggy import Result
 from pytest import TestReport, hookimpl
 from robot.api import logger
-from robot.conf.settings import _BaseSettings
+from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsage]
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.run import RobotFramework
-from robot.utils import abspath
+from robot.utils import abspath  # pyright:ignore[reportUnknownVariableType]
 
 from pytest_robotframework import (
-    _resources,
-    _RobotClassRegistry,
-    _suite_variables,
+    _resources,  # pyright:ignore[reportPrivateUsage]
+    _RobotClassRegistry,  # pyright:ignore[reportPrivateUsage]
+    _suite_variables,  # pyright:ignore[reportPrivateUsage]
     as_keyword,
     import_resource,
     keywordify,
@@ -59,43 +59,38 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     """
     if _RobotClassRegistry.too_late:
         raise InternalError("somehow ran collect/run twice???")
-    robot = RobotFramework()  # type:ignore[no-untyped-call]
+    robot = RobotFramework()
 
     # need to reset outputdir because if anything from robot gets imported before pytest runs, then
     # the cwd gets updated, robot will still run with the outdated cwd.
     # we set it in this wacky way to make sure it never overrides user preferences
-    _BaseSettings._cli_opts[  # type:ignore[no-untyped-usage,no-any-expr] # noqa: SLF001
+    _BaseSettings._cli_opts[  # pyright:ignore[reportPrivateUsage,reportUnknownMemberType]
         "OutputDir"
-    ] = (  # type:ignore[no-any-expr]
+    ] = (
         "outputdir",
-        abspath("."),  # type:ignore[no-untyped-call,no-any-expr]
+        abspath("."),
     )
 
     robot_arg_list: list[str] = []
-    session.config.hook.pytest_robot_modify_args(
+    session.config.hook.pytest_robot_modify_args(  # pyright:ignore[reportUnknownMemberType]
         args=robot_arg_list, session=session, collect_only=collect_only
     )
     robot_args = cast(
         Dict[str, object],
-        always_merger.merge(  # type:ignore[no-untyped-call]
-            # https://github.com/psf/black/issues/4036
-            # fmt:off
-            robot.parse_arguments(  # type:ignore[no-untyped-call]
-                [  # type:ignore[no-any-expr]
-                    *robot_arg_list,
-                    # not actually used here, but the argument parser requires at least one path
-                    session.path,
-                ]
-            )[0],
-            # fmt:on
-            {  # type:ignore[no-any-expr]
+        always_merger.merge(  # pyright:ignore[reportUnknownMemberType]
+            robot.parse_arguments([  # pyright:ignore[reportUnknownMemberType,reportUnknownArgumentType]
+                *robot_arg_list,
+                # not actually used here, but the argument parser requires at least one path
+                session.path,
+            ])[
+                0
+            ],
+            {
                 "extension": "py:robot",
                 "runemptysuite": True,
-                "parser": [PythonParser(session)],  # type:ignore[no-any-expr]
-                "prerunmodifier": [  # type:ignore[no-any-expr]
-                    PytestCollector(session, collect_only=collect_only)
-                ],
-            }
+                "parser": [PythonParser(session)],
+                "prerunmodifier": [PytestCollector(session, collect_only=collect_only)],
+            },
         ),
     )
     if collect_only:
@@ -107,14 +102,12 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
             "exitonerror": True,
         }
     else:
-        listener(PytestRuntestProtocolHooks(session))
-        listener(ErrorDetector(session))
-        robot_args = always_merger.merge(  # type:ignore[no-untyped-call]
+        _ = listener(PytestRuntestProtocolHooks(session))
+        _ = listener(ErrorDetector(session))
+        robot_args = always_merger.merge(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
             robot_args,
-            {  # type:ignore[no-any-expr]
-                "prerunmodifier": [  # type:ignore[no-any-expr]
-                    PytestRuntestProtocolInjector(session)
-                ],
+            {
+                "prerunmodifier": [PytestRuntestProtocolInjector(session)],
                 "listener": _RobotClassRegistry.listeners,
                 "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
             },
@@ -125,8 +118,8 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
         # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
         # the test is over
         with LOGGER:
-            robot.main(  # type:ignore[no-untyped-call]
-                [session.path],  # type:ignore[no-any-expr]
+            robot.main(  # pyright:ignore[reportUnknownMemberType,reportUnusedCallResult]
+                [session.path],
                 # needed because PythonParser.visit_init creates an empty suite
                 **robot_args,
             )
@@ -160,12 +153,7 @@ def pytest_addoption(parser: Parser):
 
 
 def pytest_robot_modify_args(args: list[str], session: Session):
-    result = cast(
-        str,
-        session.config.getoption(  # type:ignore[no-untyped-call]
-            "--robotargs"
-        ),
-    )
+    result = cast(str, session.config.getoption("--robotargs"))
     if result:
         # i saw some code that uses session.config.issue_config_time_warning but that doesnt work
         # who knows why
@@ -177,14 +165,14 @@ def pytest_robot_modify_args(args: list[str], session: Session):
     args.extend(result.split(" "))
 
 
-@hookimpl(tryfirst=True)  # type:ignore[no-any-expr]
+@hookimpl(tryfirst=True)
 def pytest_sessionstart(session: Session):
-    cringe_globals._current_session = session  # noqa: SLF001
+    cringe_globals._current_session = session  # pyright:ignore[reportPrivateUsage]
 
 
-@hookimpl(trylast=True)  # type:ignore[no-any-expr]
+@hookimpl(trylast=True)
 def pytest_sessionfinish():
-    cringe_globals._current_session = None  # noqa: SLF001
+    cringe_globals._current_session = None  # pyright:ignore[reportPrivateUsage]
 
 
 def pytest_assertion_pass(orig: str, expl: str):
@@ -192,7 +180,7 @@ def pytest_assertion_pass(orig: str, expl: str):
     # this matches what's logged if an assertion fails, so we keep it the same here for consistency
     # (idk why there's no pytest_assertion_fail hook, only reprcompare which is different)
     with as_keyword("assert", args=[orig]):
-        logger.info(expl)  # type:ignore[no-untyped-call]
+        logger.info(expl)  # pyright:ignore[reportUnknownMemberType]
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:
@@ -208,20 +196,20 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
 
 
 def pytest_collection(session: Session) -> object:
-    if session.config.option.collectonly:  # type:ignore[no-any-expr]
+    if session.config.option.collectonly:
         _collect_slash_run(session, collect_only=True)
     return True
 
 
 def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
     if file_path.suffix == ".robot":
-        return RobotFile.from_parent(  # type:ignore[no-untyped-call,no-any-expr,no-any-return]
+        return RobotFile.from_parent(  # pyright:ignore[reportUnknownMemberType]
             parent, path=file_path
         )
     return None
 
 
-@hookimpl(hookwrapper=True)  # type:ignore[no-any-expr]
+@hookimpl(hookwrapper=True)
 def pytest_runtest_setup(item: Item) -> HookImplResult:
     if not isinstance(item, RobotItem):
         # `set_variables` and `import_resource` is only supported in python files.
@@ -229,7 +217,7 @@ def pytest_runtest_setup(item: Item) -> HookImplResult:
         # section and resources should be imported with `Resource` in the `*** Settings***` section
         builtin = BuiltIn()
         for key, value in _suite_variables[item.path].items():
-            builtin.set_suite_variable(
+            builtin.set_suite_variable(  # pyright:ignore[reportUnknownMemberType]
                 r"${" + key + "}",
                 escape_robot_str(value) if isinstance(value, str) else value,
             )
@@ -240,20 +228,20 @@ def pytest_runtest_setup(item: Item) -> HookImplResult:
     save_exception_to_item(item, result)
 
 
-@hookimpl(hookwrapper=True)  # type:ignore[no-any-expr]
+@hookimpl(hookwrapper=True)
 def pytest_runtest_call(item: Item) -> HookImplResult:
     result = yield
     save_exception_to_item(item, result)
 
 
-@hookimpl(hookwrapper=True)  # type:ignore[no-any-expr]
+@hookimpl(hookwrapper=True)
 def pytest_runtest_teardown(item: Item) -> HookImplResult:
     result = yield
     save_exception_to_item(item, result)
 
 
 def pytest_runtestloop(session: Session) -> object:
-    if session.config.option.collectonly:  # type:ignore[no-any-expr]
+    if session.config.option.collectonly:
         return None
     # TODO: should probably keywordify skip as well, but it messes with the handling in robot_library
     # https://github.com/DetachHead/pytest-robotframework/issues/51

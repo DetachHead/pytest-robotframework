@@ -34,16 +34,6 @@
       "problemMatcher": []
     },
     {
-      "label": "basedmypy - all files",
-      "type": "shell",
-      "command": "./pw",
-      "args": ["pdm", "run", "mypy_all"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
       "label": "pyright - all files",
       "type": "shell",
       "command": "./pw",

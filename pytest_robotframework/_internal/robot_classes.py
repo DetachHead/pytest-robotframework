@@ -46,7 +46,7 @@ def _create_running_keyword(
         name=f"{fn.__module__}.{fn.__name__}",
         # robot says this can only be a str but keywords can take any object when called from
         # python
-        args=args,  # type:ignore[arg-type]
+        args=args,  # pyright:ignore[arg-type]
         type=keyword_type,
     )
 
@@ -151,7 +151,7 @@ class PytestCollector(SuiteVisitor):
                 test_case.body = Body()
                 item.stash[running_test_case_key] = test_case
         if self.collect_only:
-            suite.tests.clear()  # type:ignore[no-untyped-call]
+            suite.tests.clear()  # pyright:ignore[no-untyped-call]
         else:
             # remove any .robot tests that were filtered out by pytest (and the fake test
             # from `PythonParser`):
@@ -219,11 +219,11 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             item.stash[original_setup_key] = test.setup
             # TODO: whats this mypy error
             #  https://github.com/DetachHead/pytest-robotframework/issues/36
-            test.setup = _create_running_keyword(  # type:ignore[assignment]
+            test.setup = _create_running_keyword(  # pyright:ignore[assignment]
                 "SETUP", robot_library.setup, cloaked_item
             )
 
-            item.stash[original_body_key] = test.body  # type:ignore[misc]
+            item.stash[original_body_key] = test.body  # pyright:ignore[misc]
             test.body = Body(
                 items=[
                     _create_running_keyword(
@@ -268,7 +268,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
     @staticmethod
     def _get_hookcaller(item: Item) -> HookCaller:
         return cast(
-            HookCaller, item.ihook.pytest_runtest_protocol  # type:ignore[no-any-expr]
+            HookCaller,
+            item.ihook.pytest_runtest_protocol,  # pyright:ignore[no-any-expr]
         )
 
     def _call_hooks(self, item: Item, hookimpls: list[HookImpl]) -> object:
@@ -375,7 +376,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         if self._call_hooks(item, self.start_test_hooks) is not None:
             # stop on non-None result
             self.stop_running_hooks = True
-        item.ihook.pytest_runtest_logstart(  # type:ignore[no-any-expr]
+        item.ihook.pytest_runtest_logstart(  # pyright:ignore[no-any-expr]
             nodeid=item.nodeid, location=item.location
         )
 
@@ -388,7 +389,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         item = self._get_item(data)
 
         # call end test hooks and finish hookwrappers:
-        item.ihook.pytest_runtest_logfinish(  # type:ignore[no-any-expr]
+        item.ihook.pytest_runtest_logfinish(  # pyright:ignore[no-any-expr]
             nodeid=item.nodeid, location=item.location
         )
         if self.stop_running_hooks:
