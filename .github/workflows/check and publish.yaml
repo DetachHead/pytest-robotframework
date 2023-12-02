@@ -22,7 +22,8 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - run: ./pw pdm lock --check
       - run: ./pw pdm install
-      - run: ./pw run pyright
+        # pyright is configured in a separate file to prevent pylance from looking at it. see https://github.com/microsoft/pylance-release/issues/5201
+      - run: ./pw run pyright -p _pyrightconfig.json
       - run: ./pw run black --check --diff .
       - run: ./pw run ruff .
       - run: ./pw run pylint pytest_robotframework tests

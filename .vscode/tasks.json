@@ -34,10 +34,40 @@
       "problemMatcher": []
     },
     {
+      "label": "pyright - current file",
+      "type": "shell",
+      "command": "./pw",
+      "args": ["run", "pyright", "-p", "_pyrightconfig.json", "${file}"],
+      // can't use pylance due to https://github.com/microsoft/pylance-release/issues/5201
+      "problemMatcher": {
+        "owner": "python",
+        "fileLocation": "absolute",
+        "pattern": [
+          {
+            "regexp": ".*\\((.*)\\)$",
+            "code": 1
+          },
+          {
+            "regexp": "\\s+((?:[a-zA-Z]:)?[^:]+):(\\d+):(\\d+)\\s-\\s(error|warning): (.*)",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        ],
+        "severity": "error"
+      },
+      "presentation": {
+        "clear": true,
+        "reveal": "never"
+      }
+    },
+    {
       "label": "pyright - all files",
       "type": "shell",
       "command": "./pw",
-      "args": ["run", "pyright"],
+      "args": ["run", "pyright", "-p", "_pyrightconfig.json"],
       "presentation": {
         "clear": true
       },

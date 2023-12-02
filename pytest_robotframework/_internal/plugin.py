@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Generator, cast
+from typing import TYPE_CHECKING, Dict, Generator, cast
 
 import pytest
 from deepmerge import always_merger
@@ -77,14 +77,12 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
     )
     robot_args = cast(
         Dict[str, object],
-        always_merger.merge(  # pyright:ignore[reportUnknownMemberType]
-            robot.parse_arguments([  # pyright:ignore[reportUnknownMemberType,reportUnknownArgumentType]
+        always_merger.merge(
+            robot.parse_arguments([  # pyright:ignore[reportUnknownArgumentType]
                 *robot_arg_list,
                 # not actually used here, but the argument parser requires at least one path
                 session.path,
-            ])[
-                0
-            ],
+            ])[0],
             {
                 "extension": "py:robot",
                 "runemptysuite": True,

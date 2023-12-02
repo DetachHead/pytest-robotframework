@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Tuple, cast
 
 from _pytest import runner
 from pluggy import HookCaller, HookImpl
-from pluggy._hooks import _SubsetHookCaller
+from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
 from pytest import Function, Item, Session, StashKey
 from robot import model, result, running
 from robot.api import SuiteVisitor

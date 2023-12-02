@@ -267,25 +267,6 @@ addopts = ['-p no:robotframework', '--ignore=tests/fixtures']
 xfail_strict = true
 enable_assertion_pass_hook = true
 
-[tool.pyright]
-pythonVersion = "3.8"
-pythonPlatform = "All"
-typeCheckingMode = "strict"
-deprecateTypingAliases = true
-enableExperimentalFeatures = true
-reportMissingModuleSource = true
-reportCallInDefaultInitializer = true
-reportImplicitOverride = true
-reportImportCycles = true
-reportMissingSuperCall = true
-reportPropertyTypeMismatch = true
-reportShadowedImports = true
-reportUninitializedInstanceVariable = true
-reportUnnecessaryTypeIgnoreComment = true
-reportUnusedCallResult = true
-reportMissingTypeStubs = false             # https://github.com/robotframework/robotframework/issues/4822
-reportImplicitStringConcatenation = false
-
 [tool.ruff]
 unsafe-fixes = true
 extend-select = ["ALL"]

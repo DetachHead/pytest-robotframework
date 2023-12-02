@@ -47,5 +47,8 @@
   "search.exclude": {
     "pw": true
   },
-  "python.terminal.activateEnvInCurrentTerminal": true
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "triggerTaskOnSave.tasks": {
+    "pyright - current file": ["**/*.py"]
+  }
 }

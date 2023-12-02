@@ -1,0 +1,20 @@
+{
+  "pythonVersion": "3.8",
+  "pythonPlatform": "All",
+  "typeCheckingMode": "strict",
+  "deprecateTypingAliases": true,
+  "enableExperimentalFeatures": true,
+  "reportMissingModuleSource": true,
+  "reportCallInDefaultInitializer": true,
+  "reportImplicitOverride": true,
+  "reportImportCycles": true,
+  "reportMissingSuperCall": true,
+  "reportPropertyTypeMismatch": true,
+  "reportShadowedImports": true,
+  "reportUninitializedInstanceVariable": true,
+  "reportUnnecessaryTypeIgnoreComment": true,
+  "reportUnusedCallResult": true,
+  "reportMissingTypeStubs": false,
+  "reportImplicitStringConcatenation": false,
+  "reportUnusedImport": false
+}

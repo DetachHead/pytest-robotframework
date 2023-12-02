@@ -9,6 +9,7 @@
     "mhutchie.git-graph",
     "tamasfe.even-better-toml",
     "redhat.vscode-yaml",
-    "robocorp.robotframework-lsp"
+    "robocorp.robotframework-lsp",
+    "gruntfuggly.triggertaskonsave"
   ]
 }
