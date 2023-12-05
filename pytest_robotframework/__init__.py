@@ -91,7 +91,7 @@ def import_resource(path: Path | str):
 @patch_method(  # type:ignore[arg-type,no-any-decorated,misc]
     LibraryKeywordRunner, "_runner_for"
 )
-def _(
+def _(  # noqa: PLR0917
     old_method: Callable[
         [
             LibraryKeywordRunner,
