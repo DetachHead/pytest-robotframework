@@ -155,7 +155,8 @@ class PytestCollector(SuiteVisitor):
         else:
             # remove any .robot tests that were filtered out by pytest (and the fake test
             # from `PythonParser`):
-            for test in suite.tests[:]:
+            # messed up types, fixed in robot 7
+            for test in suite.tests[:]:  # type:ignore[var-annotated]
                 if not get_item_from_robot_test(self.session, test):
                     suite.tests.remove(test)
 
@@ -166,7 +167,10 @@ class PytestCollector(SuiteVisitor):
                     if module.__doc__ and not suite.doc:
                         suite.doc = module.__doc__
                     if item.path == suite.source:
-                        suite.tests.append(item.stash[running_test_case_key])
+                        suite.tests.append(
+                            # messed up types, fixed in robot 7
+                            item.stash[running_test_case_key]  # type:ignore[index]
+                        )
         super().visit_suite(suite)
 
     @override
@@ -208,7 +212,8 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
         suite.resource.imports.library(
             robot_library.__name__, alias=robot_library.__name__
         )
-        for test in suite.tests:
+        # fixed in robot 7
+        for test in suite.tests:  # type:ignore[var-annotated]
             item = get_item_from_robot_test(self.session, test)
             if not item:
                 raise InternalError(
@@ -217,13 +222,11 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                 )
             cloaked_item = Cloaked(item)
             item.stash[original_setup_key] = test.setup
-            # TODO: whats this mypy error
-            #  https://github.com/DetachHead/pytest-robotframework/issues/36
-            test.setup = _create_running_keyword(  # type:ignore[assignment]
+            test.setup = _create_running_keyword(
                 "SETUP", robot_library.setup, cloaked_item
             )
 
-            item.stash[original_body_key] = test.body  # type:ignore[misc]
+            item.stash[original_body_key] = test.body
             test.body = Body(
                 items=[
                     _create_running_keyword(
@@ -308,7 +311,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         with suppress(ValueError):  # already been removed
             original_hook_caller._remove_plugin(runner)  # noqa: SLF001
 
-        def enter_wrapper(hook: HookImpl, item: Item, nextitem: Item) -> object:
+        def enter_wrapper(hook: HookImpl, item: Item, nextitem: Item):
             """calls the first half of a hookwrapper"""
             wrapper_generator = cast(
                 _HookWrapper,
@@ -320,6 +323,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                 ),
             )
             self.hookwrappers[hook] = wrapper_generator
+            # pretty sure these only ever return `None` but we return it either way just to be safe
             return next(wrapper_generator)
 
         def exit_wrapper(hook: HookImpl) -> object:

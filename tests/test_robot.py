@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, cast
 
-from pytest import ExitCode, Item
+from pytest import ExitCode, Item, Mark
 
 from tests.utils import (
     PytesterDir,
@@ -14,7 +14,7 @@ from tests.utils import (
 )
 
 if TYPE_CHECKING:
-    from pytest import Mark, Session
+    from pytest import Session
 
 
 def test_one_test_passes(pytester_dir: PytesterDir):
@@ -166,7 +166,9 @@ def test_warning_on_unknown_tag(pytester_dir: PytesterDir):
 
 
 def test_parameterized_tags(pytester_dir: PytesterDir):
-    markers: list[Mark] | None = None
+    # casting to avoid narrowing on initial assignment, since mypy can't see that it's modified in
+    # the TagGetter
+    markers = cast(Optional[List[Mark]], None)
 
     class TagGetter:
         @staticmethod
@@ -283,7 +285,9 @@ def test_keyword_decorator_and_other_decorator(pytester_dir: PytesterDir):
 
 
 def test_line_number(pytester_dir: PytesterDir):
-    items: list[Item] | None = None
+    # casting to avoid narrowing on initial assignment, since mypy can't see that it's modified in
+    # the ItemGetter
+    items = cast(Optional[List[Item]], None)
 
     class ItemGetter:
         @staticmethod
