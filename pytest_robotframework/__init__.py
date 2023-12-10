@@ -87,10 +87,7 @@ def import_resource(path: Path | str):
         _resources.append(Path(path))
 
 
-# https://github.com/DetachHead/pytest-robotframework/issues/36
-@patch_method(  # type:ignore[arg-type,no-any-decorated,misc]
-    LibraryKeywordRunner, "_runner_for"
-)
+@patch_method(LibraryKeywordRunner, "_runner_for")
 def _(  # noqa: PLR0917
     old_method: Callable[
         [
@@ -130,7 +127,7 @@ class _KeywordDecorator:
     @staticmethod
     def inner(
         fn: Callable[P, T],
-        status_reporter: AbstractContextManager[None],
+        status_reporter: ContextManager[object],
         /,
         *args: P.args,
         **kwargs: P.kwargs,
@@ -147,7 +144,8 @@ class _KeywordDecorator:
         return result_
 
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
-        if isinstance(fn, _KeywordDecorator):
+        # https://github.com/python/mypy/issues/16024
+        if isinstance(fn, _KeywordDecorator):  # type:ignore[redundant-expr]
             return fn  # type:ignore[unreachable]
         keyword_name = self.name or cast(
             str,
@@ -168,8 +166,9 @@ class _KeywordDecorator:
                 *(f"{key}={value}" for key, value in kwargs.items()),
             )
             context = execution_context()
-            context_manager = (
-                StatusReporter(
+            context_manager: ContextManager[object] = (
+                # needed to work around mypy/pyright bug, see ContextManager documentation
+                StatusReporter(  # type:ignore[assignment]
                     running.Keyword(name=keyword_name, args=log_args),
                     result.Keyword(
                         kwname=keyword_name,
@@ -247,7 +246,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
     def inner(
         cls,
         fn: Callable[P, T],
-        status_reporter: AbstractContextManager[None],
+        status_reporter: ContextManager[object],
         /,
         *args: P.args,
         **kwargs: P.kwargs,
@@ -259,7 +258,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
             def __init__(
                 self,
                 wrapped: AbstractContextManager[T],
-                status_reporter: AbstractContextManager[None],
+                status_reporter: ContextManager[object],
             ) -> None:
                 self.wrapped = wrapped
                 self.status_reporter = status_reporter
