@@ -44,16 +44,6 @@
       "problemMatcher": []
     },
     {
-      "label": "pyright - all files",
-      "type": "shell",
-      "command": "./pw",
-      "args": ["run", "pyright"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
       "label": "ruff - all files",
       "type": "shell",
       "command": "${command:python.interpreterPath}",

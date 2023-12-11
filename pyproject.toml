@@ -39,7 +39,6 @@ lint = [
     "ruff>=0.0.290",
     "robotframework-robocop>=4.1.0",
     "robotframework-tidy>=4.5.0",
-    "pyright>=1.1.334",
 ]
 test = ["lxml>=4.9.3", "lxml-stubs>=0.4.0", "pytest-xdist>=3.5.0"]
 docs = ["pdoc>=14.1.0"]
@@ -288,31 +287,9 @@ module = ['pytest_robotframework.*', 'tests.*']
 default_return = true
 
 [tool.pyright]
+# we dont use pyright for type checking, this is just for vscode import suggestions and reachability checks
 pythonVersion = "3.8"
 pythonPlatform = "All"
-
-# We don't use pyright for type checking because we use basedmypy:
-reportGeneralTypeIssues = false
-reportInvalidTypeVarUse = false
-reportMissingImports = false
-reportUnboundVariable = false
-reportOptionalOperand = false
-reportOptionalMemberAccess = false
-reportPrivateImportUsage = false
-
-# but some of its lint tier rules are still useful:
-reportUnusedExpression = true
-reportUnusedClass = true
-reportUnusedFunction = true
-reportUnusedCoroutine = true
-enableExperimentalFeatures = true
-reportTypeCommentUsage = true
-reportInconsistentConstructor = true
-reportSelfClsParameterName = true
-reportInvalidStubStatement = true
-reportIncompleteStub = true
-reportUnsupportedDunderAll = true
-reportDuplicateImport = true
 
 [tool.ruff]
 unsafe-fixes = true
