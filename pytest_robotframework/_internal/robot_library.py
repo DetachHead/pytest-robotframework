@@ -57,7 +57,7 @@ def _call_and_report_robot_edition(
             # errors such as invalid fixture (FixtureLookupErrorRepr)
             raise Exception(str(longrepr))
         raise InternalError(
-            f"failed to get exception from failed test ({item=}, {when=}): {longrepr}"
+            f"failed to get exception from failed test ({item=}, {when=}): {longrepr!s}"
         )
 
 
