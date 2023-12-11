@@ -270,8 +270,13 @@ enable_assertion_pass_hook = true
 
 [tool.mypy]
 allow_redefinition = false
-default_return = false
-cache_dir = 'nul'          # disable cache because it sucks
+enable_error_code = "helpful-string"
+default_return = false               # enabled for our own code only as 3rd party code is not coompatible
+cache_dir = 'nul'                    # disable cache because it sucks
+
+[[tool.mypy.overrides]]
+module = ['pytest_robotframework.*', 'tests.*']
+default_return = true
 
 [[tool.mypy.overrides]]
 module = ['robot.*']
@@ -282,9 +287,6 @@ ignore_missing_py_typed = true # https://github.com/robotframework/robotframewor
 module = ['deepmerge.*']
 ignore_missing_py_typed = true
 
-[[tool.mypy.overrides]]
-module = ['pytest_robotframework.*', 'tests.*']
-default_return = true
 
 [tool.pyright]
 # we dont use pyright for type checking, this is just for vscode import suggestions and reachability checks

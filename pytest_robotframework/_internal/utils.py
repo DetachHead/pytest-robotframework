@@ -95,7 +95,7 @@ def init_stash(  # pylint:disable=missing-param-doc
     if not session_or_item:
         session_or_item = current_session()
         if not session_or_item:
-            raise InternalError(f"failed to get session for {key}")
+            raise InternalError(f"failed to get session for {key!s}")
     if key in session_or_item.stash:
         return session_or_item.stash[key]
     result = initializer()

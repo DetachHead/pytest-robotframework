@@ -163,7 +163,7 @@ class _KeywordDecorator:
                 self.module = fn.__module__
             log_args = (
                 *(str(arg) for arg in args),
-                *(f"{key}={value}" for key, value in kwargs.items()),
+                *(f"{key}={value!s}" for key, value in kwargs.items()),
             )
             context = execution_context()
             context_manager: ContextManager[object] = (
@@ -537,8 +537,9 @@ class _RobotClassRegistry:
     def check_too_late(cls, obj: ClassOrInstance[Listener | SuiteVisitor]):
         if cls.too_late:
             raise UserError(
-                f"{obj} cannot be registered because robot has already"
-                " started running. make sure it's defined in a `conftest.py` file"
+                f"{(obj if isinstance(obj, type) else type(obj)).__name__} cannot be"
+                " registered because robot has already started running. make sure it's"
+                " defined in a `conftest.py` file"
             )
 
     @classmethod
