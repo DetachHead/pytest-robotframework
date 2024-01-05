@@ -317,12 +317,10 @@ class PytestRuntestProtocolHooks(ListenerV3):
             """calls the first half of a hookwrapper"""
             wrapper_generator = cast(
                 _HookWrapper,
-                hook.function(
-                    *(
-                        {"item": item, "nextitem": nextitem}[argname]
-                        for argname in hook.argnames
-                    )
-                ),
+                hook.function(*(
+                    {"item": item, "nextitem": nextitem}[argname]
+                    for argname in hook.argnames
+                )),
             )
             self.hookwrappers[hook] = wrapper_generator
             # pretty sure these only ever return `None` but we return it either way just to be safe
