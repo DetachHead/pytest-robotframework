@@ -22,7 +22,7 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 robotframework = "pytest_robotframework._internal.plugin"
 
 [tool.pyprojectx]
-pdm = "pdm==2.10.4"
+pdm = "pdm==2.11.2"
 
 [tool.pyprojectx.aliases]
 install = "pdm sync --clean"
@@ -214,7 +214,6 @@ enable = [
     "shallow-copy-environ",
     "signature-differs",
     "super-init-not-called",
-    "super-without-brackets",
     "unbalanced-dict-unpacking",
     "unbalanced-tuple-unpacking",
     "undefined-loop-variable",
@@ -248,7 +247,6 @@ enable = [
     "consider-using-min-builtin",
     "consider-using-namedtuple-or-dataclass",
     "consider-using-tuple",
-    "empty-comment",
     "simplifiable-condition",
     "simplify-boolean-expression",
     "stop-iteration-return",
