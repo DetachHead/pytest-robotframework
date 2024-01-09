@@ -1,12 +1,20 @@
 from __future__ import annotations
 
-from typing import Generic, List, Union, cast
+from typing import Final, Generic, List, Union, cast
 
 from basedtyping import T
 from pytest import Item, Session, StashKey
-from robot import running
+from robot import model, running
 from robot.running.context import _ExecutionContext
+from robot.version import VERSION
 from typing_extensions import override
+
+ModelTestCase = model.TestCase[model.Keyword]
+"""robot `model.TestSuite` with the default generic value"""
+
+
+ModelTestSuite = model.TestSuite[model.Keyword, ModelTestCase]
+"""robot `model.TestSuite` with the default generic values"""
 
 
 class Cloaked(Generic[T]):
@@ -66,3 +74,6 @@ def escape_robot_str(value: str) -> str:
     r"""in the robot language, backslashes (`\`) get stripped as they are used as escape characters,
     so they need to be duplicated when used in keywords called from python code"""
     return value.replace("\\", "\\\\")
+
+
+robot_6: Final = VERSION.startswith("6.")

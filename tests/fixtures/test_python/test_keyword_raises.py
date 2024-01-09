@@ -16,4 +16,4 @@ def bar():
 
 def test_foo():
     bar()
-    logger.info(1)  # type:ignore[no-untyped-call]
+    logger.info("1")  # type:ignore[no-untyped-call]

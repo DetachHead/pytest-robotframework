@@ -8,7 +8,7 @@ from typing_extensions import override
 from pytest_robotframework import listener
 
 if TYPE_CHECKING:
-    from robot import model, result
+    from robot import result, running
 
 
 @listener
@@ -22,6 +22,6 @@ class Listener(ListenerV3):
         pass
 
     @override
-    def start_test(self, data: model.TestCase, result: result.TestCase):
+    def start_test(self, data: running.TestCase, result: result.TestCase):
         self.static_method()
         self.class_method()
