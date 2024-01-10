@@ -17,7 +17,8 @@
       "label": "pdm update lockfile",
       "type": "shell",
       "command": "./pw",
-      "args": ["pdm", "update"],
+      // TODO: remove this when pytest 8 is released
+      "args": ["pdm", "update", "--pre", "pytest"],
       "presentation": {
         "clear": true
       },

@@ -3,7 +3,7 @@ library by `robot_classes.PytestRuntestProtocolInjector`"""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal, cast
+from typing import TYPE_CHECKING, List, Literal
 
 from _pytest._code.code import TerminalRepr
 from _pytest.runner import call_and_report, show_test_item
@@ -34,9 +34,7 @@ def _call_and_report_robot_edition(
     reports.append(report)
     if report.skipped:
         # empty string means xfail with no reason, None means it was not an xfail
-        xfail_reason = (
-            cast(str, report.wasxfail) if hasattr(report, "wasxfail") else None
-        )
+        xfail_reason = report.wasxfail if hasattr(report, "wasxfail") else None
         BuiltIn().skip(  # type:ignore[no-untyped-call]
             # TODO: is there a reliable way to get the reason when skipped by a skip/skipif marker?
             # https://github.com/DetachHead/pytest-robotframework/issues/51
