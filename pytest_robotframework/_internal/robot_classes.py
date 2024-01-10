@@ -334,7 +334,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         all_hooks = hook_caller.get_hookimpls()
 
         for hook in all_hooks:
-            if hook.opts["hookwrapper"]:
+            if hook.opts["hookwrapper"] or hook.opts["wrapper"]:
                 # split the hook wrappers into separate tryfirst and trylast hooks so we can execute
                 # them separately
                 self.start_test_hooks.append(
@@ -347,6 +347,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                         {
                             **hook.opts,
                             "hookwrapper": False,
+                            "wrapper": False,
                             "tryfirst": True,
                             "trylast": False,
                         },
@@ -360,6 +361,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                         {
                             **hook.opts,
                             "hookwrapper": False,
+                            "wrapper": False,
                             "tryfirst": False,
                             "trylast": True,
                         },
