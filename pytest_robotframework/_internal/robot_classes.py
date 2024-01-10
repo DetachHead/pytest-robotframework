@@ -8,7 +8,7 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Callable, Generator, Literal, Tuple, cast
 
 from _pytest import runner
-from pluggy import HookCaller, HookImpl
+from pluggy import HookImpl
 from pluggy._hooks import _SubsetHookCaller
 from pytest import Function, Item, Session, StashKey
 from robot import model, result, running
@@ -271,13 +271,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
         return item
 
     @staticmethod
-    def _get_hookcaller(item: Item) -> HookCaller:
-        return cast(
-            HookCaller, item.ihook.pytest_runtest_protocol  # type:ignore[no-any-expr]
-        )
-
-    def _call_hooks(self, item: Item, hookimpls: list[HookImpl]) -> object:
-        hook_caller = self._get_hookcaller(item)
+    def _call_hooks(item: Item, hookimpls: list[HookImpl]) -> object:
+        hook_caller = item.ihook.pytest_runtest_protocol
         original_hookimpls = hook_caller.get_hookimpls()
         try:
             # can't use the public get_hookimpls method because it returns a copy and we need to
@@ -300,7 +295,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
     ):
         # setup hooks for the test:
         item = self._get_item(data)
-        hook_caller = self._get_hookcaller(item)
+        hook_caller = item.ihook.pytest_runtest_protocol
 
         # remove the runner plugin because `PytestRuntestProtocolInjector` re-implements it
         original_hook_caller = (
@@ -379,9 +374,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         if self._call_hooks(item, self.start_test_hooks) is not None:
             # stop on non-None result
             self.stop_running_hooks = True
-        item.ihook.pytest_runtest_logstart(  # type:ignore[no-any-expr]
-            nodeid=item.nodeid, location=item.location
-        )
+        item.ihook.pytest_runtest_logstart(nodeid=item.nodeid, location=item.location)
 
     @override
     def end_test(
@@ -392,9 +385,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         item = self._get_item(data)
 
         # call end test hooks and finish hookwrappers:
-        item.ihook.pytest_runtest_logfinish(  # type:ignore[no-any-expr]
-            nodeid=item.nodeid, location=item.location
-        )
+        item.ihook.pytest_runtest_logfinish(nodeid=item.nodeid, location=item.location)
         if self.stop_running_hooks:
             self.stop_running_hooks = False  # for next time
         else:
