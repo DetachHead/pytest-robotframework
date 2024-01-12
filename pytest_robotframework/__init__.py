@@ -329,8 +329,9 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
 
             @override
             def __enter__(self) -> T:
-                self.status_reporter.__enter__()
-                return self.wrapped.__enter__()
+                # https://github.com/astral-sh/ruff/issues/9499
+                self.status_reporter.__enter__()  # noqa: PLC2801
+                return self.wrapped.__enter__()  # noqa: PLC2801
 
             @override
             def __exit__(
