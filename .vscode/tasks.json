@@ -17,7 +17,7 @@
       "label": "pdm update lockfile",
       "type": "shell",
       "command": "./pw",
-      "args": ["pdm", "run", "update"],
+      "args": ["pdm", "update"],
       "presentation": {
         "clear": true
       },
