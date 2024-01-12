@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, cast
+from copy import copy
+from typing import TYPE_CHECKING
 
 from lxml.etree import XML
 from pytest import ExitCode, Pytester
@@ -43,11 +44,13 @@ def assert_robot_total_stats(pytester: Pytester, *, passed=0, skipped=0, failed=
     root = output_xml(pytester)
     statistics = next(child for child in root if child.tag == "statistics")
     total = next(child for child in statistics if child.tag == "total")
-    result = cast(
-        Dict[str, str],
-        next(child for child in total if child.tag == "stat").attrib.__copy__(),
-    )
-    assert result == {"pass": str(passed), "fail": str(failed), "skip": str(skipped)}
+    result = copy(next(child for child in total if child.tag == "stat").attrib)
+    # https://github.com/lxml/lxml-stubs/issues/98
+    assert result == {  # type:ignore[comparison-overlap]
+        "pass": str(passed),
+        "fail": str(failed),
+        "skip": str(skipped),
+    }
 
 
 def assert_log_file_exists(pytester: Pytester):
