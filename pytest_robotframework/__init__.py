@@ -92,8 +92,8 @@ _kw_attribute = "_keyword_original_function"
 
 if robot_6:
 
-    @patch_method(LibraryKeywordRunner, "_runner_for")
-    def _(  # noqa: PLR0917
+    @patch_method(LibraryKeywordRunner)
+    def _runner_for(  # noqa: PLR0917
         old_method: Callable[
             [
                 LibraryKeywordRunner,
