@@ -14,7 +14,7 @@ jobs:
       matrix:
         python_version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        robot_version: ["6.1.1", "7.0rc3"]
+        robot_version: ["6.1.1", "from lockfile"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -23,6 +23,7 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - run: ./pw pdm install
       - run: ./pw pdm add robotframework==${{ matrix.robot_version }}
+        if: ${{ matrix.robot_version != 'from lockfile' }}
       - run: ./pw test
   static_checks:
     strategy:
