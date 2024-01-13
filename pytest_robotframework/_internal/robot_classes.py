@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 from types import ModuleType
-from typing import TYPE_CHECKING, Callable, Generator, Literal, Tuple, cast
+from typing import TYPE_CHECKING, Callable, Generator, Literal, Optional, Tuple, cast
 
 from _pytest import runner
 from pluggy import HookImpl
@@ -221,8 +221,15 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
         suite.resource.imports.library(
             robot_library.__name__, alias=robot_library.__name__
         )
+        # https://github.com/KotlinIsland/basedmypy/issues/568
+        item = cast(Optional[Item], None)
         for test in suite.tests:
+            previous_item: Item | None = item
             item = get_item_from_robot_test(self.session, test)
+            # need to set nextitem on all the items, because for some reason the attribute exists on
+            # the class but is never used
+            if previous_item and not cast(Optional[Item], previous_item.nextitem):
+                previous_item.nextitem = item
             if not item:
                 raise InternalError(
                     "this should NEVER happen, `PytestCollector` failed to filter out"
@@ -287,7 +294,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
             for hookimpl in hookimpls:
                 hook_caller._add_hookimpl(hookimpl)  # noqa: SLF001
             hook_result = cast(
-                object, hook_caller(item=item, nextitem=cast(Item, item.nextitem))
+                object,
+                hook_caller(item=item, nextitem=cast(Optional[Item], item.nextitem)),
             )
         finally:
             hook_caller._hookimpls[:] = original_hookimpls  # noqa: SLF001
