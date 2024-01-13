@@ -195,6 +195,11 @@ def test_error_moment(pytester_dir: PytesterDir):
     assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='INFO' and .='bar']")
 
 
+def test_fixture_scope(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, passed=2)
+    assert_log_file_exists(pytester_dir)
+
+
 def test_error_moment_setup(pytester_dir: PytesterDir):
     run_and_assert_result(pytester_dir, errors=1, exit_code=ExitCode.TESTS_FAILED)
     assert_log_file_exists(pytester_dir)
