@@ -10,4 +10,4 @@ import_resource("bar/bar.resource")
 
 
 def test_foo():
-    BuiltIn().run_keyword("bar")
+    BuiltIn().run_keyword("bar")  # pyright:ignore[reportUnknownMemberType]

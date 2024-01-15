@@ -39,8 +39,7 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - run: ./pw pdm lock --check
       - run: ./pw pdm install
-      - run: ./pw run mypy -p pytest_robotframework
-      - run: ./pw run mypy tests
+      - run: ./pw run basedpyright
       - run: ./pw run black --check --diff .
       - run: ./pw run ruff .
       - run: ./pw run pylint pytest_robotframework tests

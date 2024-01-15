@@ -18,4 +18,4 @@ def test_foo():
     try:
         bar()
     except FooError:
-        logger.info("hi")  # type:ignore[no-untyped-call]
+        logger.info("hi")

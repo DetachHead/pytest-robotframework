@@ -8,4 +8,4 @@ from pytest_robotframework import keyword
 
 @keyword
 def bar():
-    logger.info("1")  # type:ignore[no-untyped-call]
+    logger.info("1")

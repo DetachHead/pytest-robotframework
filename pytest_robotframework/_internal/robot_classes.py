@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Optional, Tuple,
 
 from _pytest import runner
 from pluggy import HookImpl
-from pluggy._hooks import _SubsetHookCaller
+from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
 from pytest import Function, Item, Session, StashKey
 from robot import model, result, running
-from robot.api import SuiteVisitor
-from robot.api.interfaces import ListenerV3, Parser, TestDefaults
+from robot.api.interfaces import ListenerV3, Parser
+from robot.model import SuiteVisitor
 from robot.running.model import Body
 from typing_extensions import override
 
@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from basedtyping import P
+    from robot.running.builder.settings import TestDefaults
 
 
 def _create_running_keyword(
@@ -42,9 +43,7 @@ def _create_running_keyword(
 ) -> running.Keyword:
     """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
     if kwargs:
-        raise InternalError(
-            f"kwargs not supported: {kwargs}"  # type:ignore[helpful-string]
-        )
+        raise InternalError(f"kwargs not supported: {kwargs}")
     return running.Keyword(
         name=f"{fn.__module__}.{fn.__name__}", args=args, type=keyword_type
     )
@@ -89,7 +88,7 @@ class PythonParser(Parser):
                 ),
             )
         ]
-        suite.tests.append(test_case)
+        _ = suite.tests.append(test_case)
         return suite
 
     @override
@@ -120,6 +119,7 @@ class PytestCollector(SuiteVisitor):
     """
 
     def __init__(self, session: Session, *, collect_only: bool):
+        super().__init__()
         self.session = session
         self.collect_only = collect_only
         self.collection_error: Exception | None = None
@@ -133,7 +133,7 @@ class PytestCollector(SuiteVisitor):
         if not suite.parent:
             self.session.stash[collected_robot_suite_key] = suite
             try:
-                self.session.perform_collect()
+                _ = self.session.perform_collect()
             except Exception as e:  # noqa: BLE001
                 # if collection fails we still need to clean up the suite (ie. delete all the fake
                 # tests), so we defer the error to `end_suite` for the top level suite
@@ -147,7 +147,11 @@ class PytestCollector(SuiteVisitor):
                     continue
                 test_case = running.TestCase(
                     name=item.name,
-                    doc=cast(Function, item.function).__doc__ or "",
+                    doc=cast(
+                        Function,
+                        item.function,  # pyright:ignore[reportUnknownMemberType]
+                    ).__doc__
+                    or "",
                     tags=[
                         ":".join([
                             marker.name,
@@ -162,7 +166,7 @@ class PytestCollector(SuiteVisitor):
                 test_case.body = Body()
                 item.stash[running_test_case_key] = test_case
         if self.collect_only:
-            suite.tests.clear()  # type:ignore[no-untyped-call]
+            suite.tests.clear()
         else:
             # remove any .robot tests that were filtered out by pytest (and the fake test
             # from `PythonParser`):
@@ -177,8 +181,9 @@ class PytestCollector(SuiteVisitor):
                     if module.__doc__ and not suite.doc:
                         suite.doc = module.__doc__
                     if item.path == suite.source:
-                        suite.tests.append(item.stash[running_test_case_key])
-        super().visit_suite(suite)
+                        _ = suite.tests.append(item.stash[running_test_case_key])
+        # https://github.com/robotframework/robotframework/issues/4940
+        super().visit_suite(suite)  # pyright:ignore[reportUnknownMemberType]
 
     @override
     def end_suite(self, suite: ModelTestSuite):
@@ -212,24 +217,24 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     """
 
     def __init__(self, session: Session):
+        super().__init__()
         self.session = session
 
     @override
     def start_suite(self, suite: ModelTestSuite):
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
-        suite.resource.imports.library(
+        _ = suite.resource.imports.library(
             robot_library.__name__, alias=robot_library.__name__
         )
-        # https://github.com/KotlinIsland/basedmypy/issues/568
-        item = cast(Optional[Item], None)
+        item: Item | None = None
         for test in suite.tests:
             previous_item: Item | None = item
             item = get_item_from_robot_test(self.session, test)
             # need to set nextitem on all the items, because for some reason the attribute exists on
             # the class but is never used
             if previous_item and not cast(Optional[Item], previous_item.nextitem):
-                previous_item.nextitem = item
+                previous_item.nextitem = item  # pyright:ignore[reportGeneralTypeIssues]
             if not item:
                 raise InternalError(
                     "this should NEVER happen, `PytestCollector` failed to filter out"
@@ -268,6 +273,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
     """
 
     def __init__(self, session: Session):
+        super().__init__()
         self.session = session
         self.stop_running_hooks = False
         self.hookwrappers: dict[HookImpl, _HookWrapper] = {}
@@ -290,15 +296,25 @@ class PytestRuntestProtocolHooks(ListenerV3):
         try:
             # can't use the public get_hookimpls method because it returns a copy and we need to
             # mutate the original
-            hook_caller._hookimpls[:] = []  # noqa: SLF001
+            # https://github.com/microsoft/pyright/issues/6994
+            # https://github.com/psf/black/issues/3946
+            # fmt: off
+            hook_caller._hookimpls[:] = (  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType]
+                []
+            )
+            # fmt: on
             for hookimpl in hookimpls:
-                hook_caller._add_hookimpl(hookimpl)  # noqa: SLF001
+                hook_caller._add_hookimpl(  # pyright:ignore[reportPrivateUsage]
+                    hookimpl
+                )
             hook_result = cast(
                 object,
                 hook_caller(item=item, nextitem=cast(Optional[Item], item.nextitem)),
             )
         finally:
-            hook_caller._hookimpls[:] = original_hookimpls  # noqa: SLF001
+            hook_caller._hookimpls[:] = (  # pyright:ignore[reportPrivateUsage]
+                original_hookimpls
+            )
         return hook_result
 
     @override
@@ -315,12 +331,14 @@ class PytestRuntestProtocolHooks(ListenerV3):
         original_hook_caller = (
             # need to bypass the _SubsetHookCaller proxy otherwise it won't actually remove the
             # plugin
-            hook_caller._orig  # noqa: SLF001
+            hook_caller._orig  # pyright:ignore[reportPrivateUsage]
             if isinstance(hook_caller, _SubsetHookCaller)
             else hook_caller
         )
         with suppress(ValueError):  # already been removed
-            original_hook_caller._remove_plugin(runner)  # noqa: SLF001
+            original_hook_caller._remove_plugin(  # pyright:ignore[reportPrivateUsage]
+                runner
+            )
 
         def enter_wrapper(hook: HookImpl, item: Item, nextitem: Item):
             """calls the first half of a hookwrapper"""
@@ -355,8 +373,10 @@ class PytestRuntestProtocolHooks(ListenerV3):
                     HookImpl(
                         hook.plugin,
                         hook.plugin_name,
-                        lambda item, nextitem, *, hook=hook: enter_wrapper(
-                            hook, item, nextitem
+                        lambda item, nextitem, *, hook=hook: enter_wrapper(  # pyright:ignore[reportUnknownArgumentType,reportUnknownLambdaType]
+                            hook,
+                            item,  # pyright:ignore[reportUnknownArgumentType]
+                            nextitem,  # pyright:ignore[reportUnknownArgumentType]
                         ),
                         {
                             **hook.opts,
@@ -371,7 +391,9 @@ class PytestRuntestProtocolHooks(ListenerV3):
                     HookImpl(
                         hook.plugin,
                         hook.plugin_name,
-                        lambda hook=hook: exit_wrapper(hook),
+                        lambda hook=hook: exit_wrapper(  # pyright:ignore[reportUnknownArgumentType,reportUnknownLambdaType]
+                            hook  # pyright:ignore[reportUnknownArgumentType]
+                        ),
                         {
                             **hook.opts,
                             "hookwrapper": False,
@@ -405,7 +427,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         if self.stop_running_hooks:
             self.stop_running_hooks = False  # for next time
         else:
-            self._call_hooks(item, self.end_test_hooks)
+            _ = self._call_hooks(item, self.end_test_hooks)
 
         # remove all the hooks since they need to be re-evaluated for each item, since items can
         # have different hooks depending on what conftest files are nearby:
@@ -421,6 +443,7 @@ class ErrorDetector(ListenerV3):
     """
 
     def __init__(self, session: Session) -> None:
+        super().__init__()
         self.session = session
         self.current_test: running.TestCase | None = None
 

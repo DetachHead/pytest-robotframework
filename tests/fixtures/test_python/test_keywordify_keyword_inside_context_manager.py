@@ -8,7 +8,7 @@ from pytest_robotframework import keyword
 
 @keyword
 def asdf():
-    logger.info("1")  # type:ignore[no-untyped-call]
+    logger.info("1")
 
 
 def test_foo():
