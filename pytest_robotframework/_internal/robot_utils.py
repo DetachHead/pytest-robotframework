@@ -5,7 +5,9 @@ from typing import Final, Generic, List, Union, cast
 from basedtyping import T
 from pytest import Item, Session, StashKey
 from robot import model, running
-from robot.running.context import _ExecutionContext
+from robot.running.context import (
+    _ExecutionContext,  # pyright:ignore[reportPrivateUsage]
+)
 from robot.version import VERSION
 from typing_extensions import override
 
@@ -21,6 +23,7 @@ class Cloaked(Generic[T]):
     """allows you to pass arguments to robot keywords without them appearing in the log"""
 
     def __init__(self, value: T):
+        super().__init__()
         self.value = value
 
     @override
@@ -32,7 +35,10 @@ def execution_context() -> _ExecutionContext | None:
     # need to import it every time because it changes
     from robot.running import EXECUTION_CONTEXTS  # noqa: PLC0415
 
-    return cast(Union[_ExecutionContext, None], EXECUTION_CONTEXTS.current)
+    return cast(
+        Union[_ExecutionContext, None],
+        EXECUTION_CONTEXTS.current,  # pyright:ignore[reportUnknownMemberType]
+    )
 
 
 running_test_case_key = StashKey[running.TestCase]()

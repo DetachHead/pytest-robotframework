@@ -15,4 +15,4 @@ def pytest_runtest_setup(item: RobotItem):
     assert len(marker_names) == len(marker_kwargs) == len(markers)
     for marker, marker_name, marker_kwarg in zip(markers, marker_names, marker_kwargs):
         assert marker.name == marker_name
-        assert marker.kwargs == marker_kwarg  # type:ignore[no-any-expr]
+        assert marker.kwargs == marker_kwarg

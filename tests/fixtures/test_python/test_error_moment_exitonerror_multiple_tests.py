@@ -4,9 +4,9 @@ from robot.api import logger
 
 
 def test_foo():
-    logger.error("foo")  # type:ignore[no-untyped-call]
-    logger.info("bar")  # type:ignore[no-untyped-call]
+    logger.error("foo")
+    logger.info("bar")
 
 
 def test_bar():
-    logger.info("baz")  # type:ignore[no-untyped-call]
+    logger.info("baz")

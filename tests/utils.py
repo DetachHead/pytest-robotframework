@@ -7,13 +7,14 @@ from lxml.etree import XML
 from pytest import ExitCode, Pytester
 
 if TYPE_CHECKING:
-    from lxml.etree import _Element
+    from lxml.etree import _Element  # pyright:ignore[reportPrivateUsage]
     from typing_extensions import Never, override
 
 
 if TYPE_CHECKING:
     # Pytester is final so it's probably a bad idea to rely on extending this at runtime
-    class PytesterDir(Pytester):  # type:ignore[misc]
+    # https://github.com/DetachHead/basedpyright/issues/23
+    class PytesterDir(Pytester):  # pyright:ignore # noqa: PGH003
         """fake subtype of `Pytester` that bans you from using file creation methods. you should put
         real life files in `tests/fixtures/[test file path]/[test name]` instead"""
 
@@ -40,17 +41,14 @@ def output_xml(pytester: Pytester) -> _Element:
     return XML((pytester.path / "output.xml").read_bytes())
 
 
-def assert_robot_total_stats(pytester: Pytester, *, passed=0, skipped=0, failed=0):
+def assert_robot_total_stats(
+    pytester: Pytester, *, passed: int = 0, skipped: int = 0, failed: int = 0
+):
     root = output_xml(pytester)
     statistics = next(child for child in root if child.tag == "statistics")
     total = next(child for child in statistics if child.tag == "total")
     result = copy(next(child for child in total if child.tag == "stat").attrib)
-    # https://github.com/lxml/lxml-stubs/issues/98
-    assert result == {  # type:ignore[comparison-overlap]
-        "pass": str(passed),
-        "fail": str(failed),
-        "skip": str(skipped),
-    }
+    assert result == {"pass": str(passed), "fail": str(failed), "skip": str(skipped)}
 
 
 def assert_log_file_exists(pytester: Pytester):
@@ -61,19 +59,17 @@ def run_and_assert_assert_pytest_result(
     pytester: Pytester,
     *,
     pytest_args: list[str] | None = None,
-    subprocess=True,
-    passed=0,
-    skipped=0,
-    failed=0,
-    errors=0,
-    xfailed=0,
+    subprocess: bool = True,
+    passed: int = 0,
+    skipped: int = 0,
+    failed: int = 0,
+    errors: int = 0,
+    xfailed: int = 0,
     exit_code: ExitCode | None = None,
 ):
-    result = (
-        pytester.runpytest_subprocess
-        if subprocess
-        else pytester.runpytest  # type:ignore[no-any-expr]
-    )(*(pytest_args or []))
+    result = (pytester.runpytest_subprocess if subprocess else pytester.runpytest)(
+        *(pytest_args or [])
+    )
     result.assert_outcomes(
         passed=passed, skipped=skipped, failed=failed, errors=errors, xfailed=xfailed
     )
@@ -91,12 +87,12 @@ def run_and_assert_result(
     pytester: Pytester,
     *,
     pytest_args: list[str] | None = None,
-    subprocess=True,
-    passed=0,
-    skipped=0,
-    failed=0,
-    errors=0,
-    xfailed=0,
+    subprocess: bool = True,
+    passed: int = 0,
+    skipped: int = 0,
+    failed: int = 0,
+    errors: int = 0,
+    xfailed: int = 0,
     exit_code: ExitCode | None = None,
 ):
     run_and_assert_assert_pytest_result(

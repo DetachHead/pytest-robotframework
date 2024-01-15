@@ -35,7 +35,7 @@ test = "pdm run pytest -n auto"
 [tool.pdm.dev-dependencies]
 lint = [
     "black>=23",
-    "basedmypy>=2.1",
+    "basedpyright @ git+https://github.com/detachhead/basedpyright.git@d0b3dbe33add247adf58b2b24f30953cf15d97e3",
     "pylint>=3.0.0a7",
     "ruff>=0.0.290",
     "robotframework-robocop>=4.1.0",
@@ -43,12 +43,6 @@ lint = [
 ]
 test = ["lxml>=4.9.3", "lxml-stubs>=0.4.0", "pytest-xdist>=3.5.0"]
 docs = ["pdoc>=14.1.0"]
-
-# maybe these should be pyprojectx scripts instead once https://github.com/pyprojectx/pyprojectx/issues/26 is fixed
-[tool.pdm.scripts]
-_mypy_package = { cmd = "pdm run mypy -p pytest_robotframework" }
-_mypy_tests = { cmd = "pdm run mypy -p tests" }
-mypy_all = { composite = ["_mypy_package", "_mypy_tests"] }
 
 [build-system]
 requires = ["pdm-backend"]
@@ -103,7 +97,6 @@ enable = [
     "possibly-unused-variable",
     "access-member-before-definition",
     "assigning-non-slot",
-    "assignment-from-no-return",
     "assignment-from-none",
     "bad-except-order",
     "bad-exception-cause",
@@ -268,36 +261,73 @@ addopts = ['-p no:robotframework', '--ignore=tests/fixtures']
 xfail_strict = true
 enable_assertion_pass_hook = true
 
-[tool.mypy]
-allow_redefinition = false
-enable_error_code = "helpful-string"
-default_return = false               # enabled for our own code only as 3rd party code is not coompatible
-cache_dir = 'nul'                    # disable cache because it sucks
-
-[[tool.mypy.overrides]]
-module = ['pytest_robotframework.*', 'tests.*']
-default_return = true
-
-[[tool.mypy.overrides]]
-module = ['robot.*']
-no_implicit_reexport = false
-ignore_missing_py_typed = true # https://github.com/robotframework/robotframework/issues/4822
-
-[[tool.mypy.overrides]]
-module = ['deepmerge.*']
-ignore_missing_py_typed = true
-
-
 [tool.pyright]
-# we dont use pyright for type checking, this is just for vscode import suggestions and reachability checks
 pythonVersion = "3.8"
 pythonPlatform = "All"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true
+deprecateTypingAliases = true
+enableExperimentalFeatures = true
+disableBytesTypePromotions = true
+reportPropertyTypeMismatch = true
+reportFunctionMemberAccess = true
+reportMissingModuleSource = true
+reportImportCycles = true
+reportUnusedClass = true
+reportUnusedFunction = true
+reportUnusedVariable = true
+reportDuplicateImport = true
+reportWildcardImportFromLibrary = true
+reportUntypedFunctionDecorator = true
+reportUntypedClassDecorator = true
+reportUntypedBaseClass = true
+reportUntypedNamedTuple = true
+reportPrivateUsage = true
+reportTypeCommentUsage = true
+reportConstantRedefinition = true
+reportDeprecated = true
+reportIncompatibleMethodOverride = true
+reportIncompatibleVariableOverride = true
+reportInconsistentConstructor = true
+reportOverlappingOverload = true
+reportMissingSuperCall = true
+reportUninitializedInstanceVariable = true
+reportInvalidStringEscapeSequence = true
+reportUnknownParameterType = true
+reportUnknownArgumentType = true
+reportUnknownLambdaType = true
+reportUnknownVariableType = true
+reportUnknownMemberType = true
+reportMissingParameterType = true
+reportMissingTypeArgument = true
+reportInvalidTypeVarUse = true
+reportCallInDefaultInitializer = true
+reportUnnecessaryIsInstance = true
+reportUnnecessaryCast = true
+reportUnnecessaryComparison = true
+reportUnnecessaryContains = true
+reportAssertAlwaysTrue = true
+reportSelfClsParameterName = true
+reportImplicitStringConcatenation = false  # conflicts with black
+reportInvalidStubStatement = true
+reportIncompleteStub = true
+reportUnsupportedDunderAll = true
+reportUnusedCallResult = true
+reportUnusedCoroutine = true
+reportUnusedExpression = true
+reportUnnecessaryTypeIgnoreComment = true
+reportMatchNotExhaustive = true
+reportImplicitOverride = true
+reportShadowedImports = true
 
 [tool.ruff]
 unsafe-fixes = true
 extend-select = ["ALL"]
 ignore = [
-    "ANN",     # flake8-annotations (covered by mypy)
+    "ANN",     # flake8-annotations (covered by pyright)
     "COM",     # flake8-commas (covered by black)
     "EM",      # flake8-errmsg
     "FIX",     # flake8-fixme
@@ -307,13 +337,13 @@ ignore = [
     "PLR2004", # Magic value used in comparison
     "PLR1722", # Use `sys.exit()` instead of `exit`
     "PLW2901", # `for` loop variable overwritten by assignment target
-    "PLE0605", # Invalid format for `__all__`, must be `tuple` or `list` (covered by mypy)
+    "PLE0605", # Invalid format for `__all__`, must be `tuple` or `list` (covered by pyright)
     "PLR0911", # Too many return statements
     "PLW0603", # Using the global statement is discouraged
     "PLC0105", # `TypeVar` name does not reflect its covariance
-    "PLC0414", # Import alias does not rename original package (used by mypy for explicit re-export)
-    "RUF013",  # PEP 484 prohibits implicit Optional (covered by mypy)
-    "RUF016",  # Slice in indexed access to type (covered by mypy)
+    "PLC0414", # Import alias does not rename original package (used by pyright for explicit re-export)
+    "RUF013",  # PEP 484 prohibits implicit Optional (covered by pyright)
+    "RUF016",  # Slice in indexed access to type (covered by pyright)
     "TRY002",  # Create your own exception
     "TRY003",  # Avoid specifying long messages outside the exception class
     "D10",     # Missing docstring
@@ -334,10 +364,10 @@ ignore = [
     "D418",    # Function/Method decorated with @overload shouldn't contain a docstring (vscode supports it)
     "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
     "TD002",   # Missing author in TODO
-    "PGH003",  # Use specific rule codes when ignoring type issues (covered by mypy)
     "E701",    # Multiple statements on one line (sometimes conflicts with black)
     "CPY001",  # missing-copyright-notice
     "C901",    # max-complexity
+    "SLF001",  # private-member-access (covered by pyright)
 ]
 target-version = "py38"
 respect-gitignore = true
@@ -349,8 +379,7 @@ extend-exclude = ["pw"]
 ignore-overlong-task-comments = true
 
 [tool.ruff.flake8-pytest-style]
-# not including the parenthesis causes Any expression in mypy
-fixture-parentheses = true
+fixture-parentheses = false
 
 [tool.ruff.per-file-ignores]
 "*.pyi" = ["A001", "A002", "N"] # we don't control names in 3rd party modules

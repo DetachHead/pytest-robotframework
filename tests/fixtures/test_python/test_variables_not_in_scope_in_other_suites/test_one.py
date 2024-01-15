@@ -8,4 +8,7 @@ set_variables({"foo": "bar"})
 
 
 def test_asdf():
-    assert BuiltIn().get_variable_value("$foo") == "bar"  # type:ignore[no-any-expr]
+    assert (
+        BuiltIn().get_variable_value("$foo")  # pyright:ignore[reportUnknownMemberType]
+        == "bar"
+    )

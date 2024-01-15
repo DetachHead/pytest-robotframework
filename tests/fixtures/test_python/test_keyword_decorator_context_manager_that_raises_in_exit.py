@@ -14,12 +14,12 @@ if TYPE_CHECKING:
 @keyword(wrap_context_manager=True)
 @contextmanager
 def asdf() -> Iterator[None]:
-    logger.info("start")  # type:ignore[no-untyped-call]
+    logger.info("start")
     yield
     raise Exception("asdf")
 
 
 def test_foo():
     with asdf():
-        logger.info("0")  # type:ignore[no-untyped-call]
-    logger.info("1")  # type:ignore[no-untyped-call]
+        logger.info("0")
+    logger.info("1")

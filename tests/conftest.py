@@ -26,13 +26,13 @@ def try_symlink(src: StrPath, dest: StrPath):
         copy(src, dest)
 
 
-@fixture()
+@fixture
 def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
     """wrapper for pytester that moves the files located in
     `tests/fixtures/[test file]/[test name].py` to the pytester temp dir for the current test, so
     you don't have to write your test files as strings with the `makefile`/`makepyfile` methods
     """
-    test = cast(Function, request.node)
+    test = cast(Function, request.node)  # pyright:ignore[reportUnknownMemberType]
     test_name = test.name
     fixtures_folder = Path(__file__).parent / "fixtures"
     test_file_fixture_dir = (

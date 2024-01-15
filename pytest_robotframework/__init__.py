@@ -29,12 +29,16 @@ from typing import (
 
 from basedtyping import Function, P, T
 from robot import result, running
-from robot.api import SuiteVisitor, deco
+from robot.api import deco
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
+from robot.model.visitor import SuiteVisitor
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
-from robot.utils import getshortdoc, printable_name
+from robot.utils import (
+    getshortdoc,  # pyright:ignore[reportUnknownVariableType]
+    printable_name,  # pyright:ignore[reportUnknownVariableType]
+)
 from typing_extensions import Literal, Never, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
@@ -54,7 +58,9 @@ from pytest_robotframework._internal.utils import (
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from robot.running.context import _ExecutionContext
+    from robot.running.context import (
+        _ExecutionContext,  # pyright:ignore[reportPrivateUsage]
+    )
 
 
 RobotVariables = Dict[str, object]
@@ -83,7 +89,9 @@ def import_resource(path: Path | str):
 
     to import libraries, use a regular python import"""
     if execution_context():
-        BuiltIn().import_resource(escape_robot_str(str(path)))
+        BuiltIn().import_resource(  # pyright:ignore[reportUnknownMemberType]
+            escape_robot_str(str(path))
+        )
     else:
         _resources.append(Path(path))
 
@@ -93,7 +101,7 @@ _kw_attribute = "_keyword_original_function"
 if robot_6:
 
     @patch_method(LibraryKeywordRunner)
-    def _runner_for(  # noqa: PLR0917
+    def _runner_for(  # pyright:ignore[reportUnusedFunction] # noqa: PLR0917
         old_method: Callable[
             [
                 LibraryKeywordRunner,
@@ -121,15 +129,15 @@ else:
         """prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
         two status reporters when called from `.robot` tests"""
 
-        @override
         @property
+        @override
         def method(self) -> Function:
             method = cast(Function, super().method)
             return cast(Function, getattr(method, _kw_attribute, method))
 
         @override
         def copy(self, **attributes: object) -> _StaticKeyword:
-            return _StaticKeyword(  # type:ignore[no-untyped-call]
+            return _StaticKeyword(  # pyright:ignore[reportUnknownMemberType]
                 self.method_name,
                 self.owner,
                 self.name,
@@ -154,6 +162,7 @@ class _KeywordDecorator:
         module: str | None = None,
         doc: str | None = None,
     ) -> None:
+        super().__init__()
         self.name = name
         self.tags = tags or ()
         self.module = module
@@ -176,21 +185,21 @@ class _KeywordDecorator:
                 raise
         if error:
             raise error
-        return result_
+        # pyright assumes the assignment to error could raise an exception but that will NEVER
+        # happen
+        return result_  # pyright:ignore[reportGeneralTypeIssues,reportUnboundVariable]
 
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
-        # https://github.com/python/mypy/issues/16024
-        if isinstance(fn, _KeywordDecorator):  # type:ignore[redundant-expr]
-            return fn  # type:ignore[unreachable]
+        if isinstance(fn, _KeywordDecorator):
+            return fn
         keyword_name = self.name or cast(
-            str,
-            printable_name(  # type:ignore[no-untyped-call]
-                fn.__name__, code_style=True
-            ),
+            str, printable_name(fn.__name__, code_style=True)
         )
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
-        deco.keyword(name=keyword_name, tags=self.tags)(fn)
+        deco.keyword(  # pyright:ignore[reportUnknownMemberType]
+            name=keyword_name, tags=self.tags
+        )(fn)
 
         @wraps(fn)
         def inner(*args: P.args, **kwargs: P.kwargs) -> T:
@@ -203,12 +212,7 @@ class _KeywordDecorator:
             context = execution_context()
             data = running.Keyword(name=keyword_name, args=log_args)
             doc: str = (
-                (
-                    getshortdoc(  # type:ignore[no-untyped-call,no-any-expr]
-                        inspect.getdoc(fn)
-                    )
-                    or ""
-                )
+                (getshortdoc(inspect.getdoc(fn)) or "")
                 if self.doc is None
                 else self.doc
             )
@@ -218,16 +222,15 @@ class _KeywordDecorator:
             suppress = True
             context_manager: ContextManager[object] = (
                 (
-                    # needed to work around mypy/pyright bug, see ContextManager documentation
-                    StatusReporter(  # type:ignore[assignment]
+                    # needed to work around pyright bug, see ContextManager documentation
+                    StatusReporter(
                         data=data,
                         result=(
-                            # mypy is only run when robot 7 is installed
-                            result.Keyword(  # type:ignore[call-arg]
-                                kwname=keyword_name,
-                                libname=self.module,
-                                # https://github.com/KotlinIsland/basedmypy/issues/608
-                                doc=doc,  # type:ignore[no-any-expr]
+                            result.Keyword(
+                                # pyright is only run when robot 7 is installed
+                                kwname=keyword_name,  # pyright:ignore[reportGeneralTypeIssues]
+                                libname=self.module,  # pyright:ignore[reportGeneralTypeIssues]
+                                doc=doc,
                                 args=log_args,
                                 tags=self.tags,
                             )
@@ -242,8 +245,7 @@ class _KeywordDecorator:
                             result=result.Keyword(
                                 name=keyword_name,
                                 owner=self.module,
-                                # see issue link above
-                                doc=doc,  # type:ignore[no-any-expr]
+                                doc=doc,
                                 args=log_args,
                                 tags=self.tags,
                             ),
@@ -251,7 +253,7 @@ class _KeywordDecorator:
                             suppress=suppress,
                             implementation=cast(
                                 LibraryKeywordRunner,
-                                context.get_runner(  # type:ignore[no-untyped-call]
+                                context.get_runner(  # pyright:ignore[reportUnknownMemberType]
                                     keyword_name
                                 ),
                             ).keyword.bind(data),
@@ -315,45 +317,49 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> T:
-        class WrappedContextManager(ContextManager[T]):
+        T_WrappedContextManager = TypeVar("T_WrappedContextManager")
+
+        class WrappedContextManager(ContextManager[object]):
             """defers exiting the status reporter until after the wrapped context
             manager is finished"""
 
             def __init__(
                 self,
-                wrapped: AbstractContextManager[T],
+                wrapped: AbstractContextManager[T_WrappedContextManager],
                 status_reporter: ContextManager[object],
             ) -> None:
+                super().__init__()
                 self.wrapped = wrapped
                 self.status_reporter = status_reporter
 
             @override
-            def __enter__(self) -> T:
+            # https://github.com/DetachHead/basedpyright/issues/12
+            def __enter__(self) -> object:  # pyright:ignore[reportMissingSuperCall]
                 # https://github.com/astral-sh/ruff/issues/9499
-                self.status_reporter.__enter__()  # noqa: PLC2801
+                _ = self.status_reporter.__enter__()  # noqa: PLC2801
                 return self.wrapped.__enter__()  # noqa: PLC2801
 
             @override
-            def __exit__(
+            def __exit__(  # pyright:ignore[reportMissingSuperCall]
                 self,
                 exc_type: type[BaseException] | None,
                 exc_value: BaseException | None,
                 traceback: TracebackType | None,
                 /,
             ) -> bool:
+                suppress = False
                 try:
                     suppress = self.wrapped.__exit__(exc_type, exc_value, traceback)
                 except BaseException as e:
                     e.__context__ = exc_value
                     exc_value = e
-                    suppress = False
                     raise
                 finally:
                     error = None if suppress else exc_value
                     if error is None:
-                        self.status_reporter.__exit__(None, None, None)
+                        _ = self.status_reporter.__exit__(None, None, None)
                     else:
-                        self.status_reporter.__exit__(
+                        _ = self.status_reporter.__exit__(
                             type(error), error, error.__traceback__
                         )
                 return suppress or False
@@ -365,8 +371,8 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                 f" {fn_result!r}"
             )
         # 🚀 independently verified for safety by the overloads
-        return WrappedContextManager(  # type:ignore[return-value]
-            fn_result, status_reporter
+        return WrappedContextManager(  # pyright:ignore[reportGeneralTypeIssues]
+            fn_result, status_reporter  # pyright:ignore[reportUnknownArgumentType]
         )
 
     def __call__(
@@ -405,9 +411,11 @@ def keyword(
 ) -> _FunctionKeywordDecorator: ...
 
 
-# prevent functions that return Never from matching the context manager overload
 @overload
-def keyword(fn: Callable[P, Never]) -> Callable[P, Never]: ...
+# prevent functions that return Never from matching the context manager overload
+def keyword(  # pyright:ignore[reportOverlappingOverload]
+    fn: Callable[P, Never]
+) -> Callable[P, Never]: ...
 
 
 @deprecated(
@@ -425,11 +433,11 @@ def keyword(fn: Callable[P, T]) -> Callable[P, T]: ...
 def keyword(  # pylint:disable=missing-param-doc
     fn: Callable[P, T] | None = None,
     *,
-    name=None,
-    tags=None,
-    module=None,
-    wrap_context_manager=None,
-):
+    name: str | None = None,
+    tags: tuple[str, ...] | None = None,
+    module: str | None = None,
+    wrap_context_manager: bool | None = None,
+) -> _KeywordDecorator | Callable[P, T]:
     """marks a function as a keyword and makes it show in the robot log.
 
     unlike robot's `deco.keyword` decorator, this one will make your function appear as a keyword in
@@ -457,11 +465,12 @@ def keyword(  # pylint:disable=missing-param-doc
         return _NonWrappedContextManagerKeywordDecorator(
             name=name, tags=tags, module=module
         )
-    return keyword(  # type:ignore[return-value,type-var]
-        name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager
-    )(
-        fn  # type:ignore[arg-type]
-    )
+    return keyword(  # pyright:ignore[reportGeneralTypeIssues,reportUnknownVariableType]
+        name=name,
+        tags=tags,
+        module=module,
+        wrap_context_manager=wrap_context_manager,  # pyright:ignore[reportGeneralTypeIssues]
+    )(fn)
 
 
 def as_keyword(
@@ -524,14 +533,12 @@ def keywordify(
     setattr(
         obj,
         method_name,
-        keyword(  # type:ignore[call-overload]
+        keyword(
             name=name,
             tags=tags,
             module=module,
-            wrap_context_manager=wrap_context_manager,
-        )(
-            getattr(obj, method_name)  # type:ignore[no-any-expr]
-        ),
+            wrap_context_manager=wrap_context_manager,  # pyright:ignore[reportGeneralTypeIssues]
+        )(getattr(obj, method_name)),
     )
 
 
@@ -579,16 +586,15 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
         # the wrapper breaks static methods idk why, but we shouldn't need to wrap them anyway
         # because robot listeners/suite visitors don't call any static/class methods
         and not isinstance(
-            inspect.getattr_static(cls, attr.__name__),  # type:ignore[no-any-expr]
-            (staticmethod, classmethod),
+            inspect.getattr_static(cls, attr.__name__), (staticmethod, classmethod)
         )
         # only wrap methods that are overwritten on the subclass
-        and attr.__name__ in vars(cls)  # type:ignore[no-any-expr]
+        and attr.__name__ in vars(cls)
         # don't wrap private/dunder methods since they'll get called by the public ones and we don't
         # want to duplicate errors
         and not attr.__name__.startswith("_"),
     ):
-        setattr(cls, name, wrapped(method))  # type:ignore[no-any-expr]
+        setattr(cls, name, wrapped(method))
     setattr(cls, marker, True)
     return cls
 
@@ -626,10 +632,7 @@ def listener(obj: _T_Listener) -> _T_Listener:
     it gets registered before robot starts running."""
     _RobotClassRegistry.check_too_late(obj)
     _RobotClassRegistry.listeners.append(
-        obj
-        if isinstance(obj, (ListenerV2, ListenerV3))
-        # https://github.com/python/mypy/issues/16335
-        else catch_errors(obj)()  # type:ignore[type-var,operator]
+        obj if isinstance(obj, (ListenerV2, ListenerV3)) else catch_errors(obj)()
     )
     return obj
 
@@ -646,9 +649,6 @@ def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
     it gets registered before robot starts running."""
     _RobotClassRegistry.check_too_late(obj)
     _RobotClassRegistry.pre_rebot_modifiers.append(
-        obj
-        if isinstance(obj, SuiteVisitor)
-        # https://github.com/python/mypy/issues/16335
-        else catch_errors(obj)()  # type:ignore[type-var,operator]
+        obj if isinstance(obj, SuiteVisitor) else catch_errors(obj)()
     )
     return obj

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, cast
+from typing import TYPE_CHECKING
 
 from pytest import ExitCode, Item, Mark
 
@@ -166,9 +166,7 @@ def test_warning_on_unknown_tag(pytester_dir: PytesterDir):
 
 
 def test_parameterized_tags(pytester_dir: PytesterDir):
-    # casting to avoid narrowing on initial assignment, since mypy can't see that it's modified in
-    # the TagGetter
-    markers = cast(Optional[List[Mark]], None)
+    markers: list[Mark] | None = None
 
     class TagGetter:
         @staticmethod
@@ -178,15 +176,13 @@ def test_parameterized_tags(pytester_dir: PytesterDir):
                 markers = item.own_markers
 
     result = pytester_dir.runpytest(
-        "--collectonly",
-        "--strict-markers",
-        plugins=[TagGetter()],  # type:ignore[no-any-expr]
+        "--collectonly", "--strict-markers", plugins=[TagGetter()]
     )
     result.assert_outcomes()
     assert markers
     assert len(markers) == 1
     assert markers[0].name == "key"
-    assert markers[0].args == ("hi",)  # type:ignore[no-any-expr]
+    assert markers[0].args == ("hi",)
 
 
 def test_doesnt_run_when_collecting(pytester_dir: PytesterDir):
@@ -285,9 +281,7 @@ def test_keyword_decorator_and_other_decorator(pytester_dir: PytesterDir):
 
 
 def test_line_number(pytester_dir: PytesterDir):
-    # casting to avoid narrowing on initial assignment, since mypy can't see that it's modified in
-    # the ItemGetter
-    items = cast(Optional[List[Item]], None)
+    items: list[Item] | None = None
 
     class ItemGetter:
         @staticmethod
@@ -295,10 +289,8 @@ def test_line_number(pytester_dir: PytesterDir):
             nonlocal items
             items = session.items
 
-    pytester_dir.runpytest(
-        "--collectonly",
-        "--strict-markers",
-        plugins=[ItemGetter()],  # type:ignore[no-any-expr]
+    _ = pytester_dir.runpytest(
+        "--collectonly", "--strict-markers", plugins=[ItemGetter()]
     )
     assert items
     assert items[0].reportinfo()[1] == 1

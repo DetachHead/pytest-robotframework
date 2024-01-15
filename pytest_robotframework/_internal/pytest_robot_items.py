@@ -37,10 +37,13 @@ class RobotFile(File):
     def collect(self) -> Iterable[Item]:
         for test in cast(
             Iterator[ModelTestCase],
-            self.session.stash[collected_robot_suite_key].all_tests,
+            # https://github.com/robotframework/robotframework/issues/4940#issuecomment-1817683893
+            self.session.stash[  # pyright:ignore[reportUnknownMemberType]
+                collected_robot_suite_key
+            ].all_tests,
         ):
             if self.path == test.source:
-                yield RobotItem.from_parent(  # type:ignore[no-untyped-call,no-any-expr]
+                yield RobotItem.from_parent(  # pyright:ignore[reportUnknownMemberType]
                     self, name=test.name, robot_test=test
                 )
 
@@ -57,7 +60,7 @@ class RobotItem(Item):
         nodeid: str | None = None,
         **kwargs: object,
     ):
-        super().__init__(
+        super().__init__(  # pyright:ignore[reportUnknownMemberType]
             name=name,
             parent=parent,
             config=config,
@@ -92,14 +95,16 @@ class RobotItem(Item):
         try:
             yield
         except ExecutionFailed as e:
-            if e.status == "SKIP":  # type:ignore[no-any-expr]
-                skip(e.message)  # type:ignore[no-any-expr]
+            if e.status == "SKIP":
+                skip(e.message)
             raise
 
     def _run_keyword(self, keyword: model.Keyword | None):
         if keyword:
             with self._check_skipped():
-                BuiltIn().run_keyword(keyword.name, *keyword.args)
+                BuiltIn().run_keyword(  # pyright:ignore[reportUnknownMemberType]
+                    keyword.name, *keyword.args
+                )
 
     @override
     def setup(self):
@@ -114,22 +119,22 @@ class RobotItem(Item):
         check_skipped = self._check_skipped()
         if robot_6:
             with check_skipped:
-                # mypy is only run when robot 7 is installed
-                BodyRunner(  # type:ignore[call-arg]
+                # pyright is only run when robot 7 is installed
+                BodyRunner(  # pyright:ignore[reportUnknownMemberType,reportGeneralTypeIssues]
                     context=context, templated=bool(test.template)
-                ).run(  # type:ignore[no-untyped-call]
+                ).run(
                     self.stash[original_body_key]
                 )
         else:
             wrapped_body = test.body
-            # body uses robot's setter decorator which doesn't work with mypy
-            test.body = self.stash[original_body_key]  # type:ignore[index]
+            test.body = self.stash[original_body_key]
             try:
                 with check_skipped:
-                    BodyRunner(
+                    BodyRunner(  # pyright:ignore[reportUnknownMemberType]
                         context=context, templated=bool(test.template)
-                    ).run(  # type:ignore[no-untyped-call]
-                        data=test, result=context.test
+                    ).run(
+                        data=test,
+                        result=context.test,  # pyright:ignore[reportUnknownMemberType]
                     )
             finally:
                 test.body = wrapped_body
@@ -139,7 +144,6 @@ class RobotItem(Item):
         self._run_keyword(self.stash[original_teardown_key])
 
     @override
-    # https://github.com/microsoft/pyright/issues/6157
-    def reportinfo(self) -> (PathLike[str] | str, int | None, str):  # pyright:ignore
+    def reportinfo(self) -> tuple[PathLike[str] | str, int | None, str]:
         line_number = self.stash[running_test_case_key].lineno
         return (self.path, None if line_number is None else line_number - 1, self.name)

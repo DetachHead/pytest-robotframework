@@ -13,4 +13,4 @@ class Listener(ListenerV3):
     def log_file(self, path: Path):
         # TODO: this doesnt log to the console so no other way to verify that it ran
         #  https://github.com/DetachHead/pytest-robotframework/issues/39
-        Path("hi").write_text("")
+        _ = Path("hi").write_text("")

@@ -60,8 +60,7 @@ if TYPE_CHECKING:
 
     class ContextManager(Generic[out_T], AbstractContextManager[out_T]):
         """removes `None` from the return type of `AbstractContextManager.__exit__` to prevent code
-        from being incorrectly marked as unreachable by mypy and pyright. see these issues:
-        - https://github.com/python/mypy/issues/15158
+        from being incorrectly marked as unreachable by pyright. see these issues:
         - https://github.com/microsoft/pyright/issues/6034
 
         also fixes the issue where `AbstractContextManager` can't be subscripted at runtime

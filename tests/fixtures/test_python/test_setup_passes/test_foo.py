@@ -4,4 +4,4 @@ from robot.api import logger
 
 
 def test_one_test_robot2():
-    logger.info("1")  # type:ignore[no-untyped-call]
+    logger.info("1")
