@@ -5,7 +5,7 @@
 groups = ["default", "lint", "test", "docs"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:73ada6b5f26d53ee49eeb32469452c718c7f6b0298c8226fc067cbb7e81c851e"
+content_hash = "sha256:fe7a1fc11c1145cd881f894349c5743395caa0ac38edf7f84da8a378fb773562"
 
 [[package]]
 name = "astroid"
@@ -35,14 +35,15 @@ files = [
 
 [[package]]
 name = "basedpyright"
-version = "0.1.0"
+version = "0.2.2"
 requires_python = ">=3.8"
-git = "https://github.com/detachhead/basedpyright.git"
-ref = "d0b3dbe33add247adf58b2b24f30953cf15d97e3"
-revision = "d0b3dbe33add247adf58b2b24f30953cf15d97e3"
-summary = ""
+summary = "static type checking for Python (but based)"
 dependencies = [
     "nodejs-bin>=18.4.0a4",
+]
+files = [
+    {file = "basedpyright-0.2.2-py3-none-any.whl", hash = "sha256:4b4b279e66015711c20728f1bb4360924b49769c7df5808ac96369c77be53fdb"},
+    {file = "basedpyright-0.2.2.tar.gz", hash = "sha256:49f3954b4fbf995b35e20359e79c0055705136d55446b4b8b35ed5d5c0b02e7f"},
 ]
 
 [[package]]
@@ -572,7 +573,7 @@ files = [
 
 [[package]]
 name = "robotframework-robocop"
-version = "5.0.0"
+version = "5.0.1"
 requires_python = ">=3.8"
 summary = "Static code analysis tool (linter) for Robot Framework"
 dependencies = [
@@ -585,8 +586,8 @@ dependencies = [
     "tomli>=2.0.0",
 ]
 files = [
-    {file = "robotframework-robocop-5.0.0.tar.gz", hash = "sha256:7a6d92429211a48609386675bd90155ace5318e7bc56dea822c9be4faa67ff76"},
-    {file = "robotframework_robocop-5.0.0-py3-none-any.whl", hash = "sha256:327da889f9d10a4b38515b9e07f13691b8d30f0927ddc2d018f2e39d6f829344"},
+    {file = "robotframework-robocop-5.0.1.tar.gz", hash = "sha256:76cb629ef41f8b25862cc2992cc34b229e963c0c630e1eb3b8a4897dba3090f1"},
+    {file = "robotframework_robocop-5.0.1-py3-none-any.whl", hash = "sha256:84d7649f86917e05e0ef889224ad94fdd9d7da079f325642ef09f286b27c4022"},
 ]
 
 [[package]]

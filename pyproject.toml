@@ -35,7 +35,7 @@ test = "pdm run pytest -n auto"
 [tool.pdm.dev-dependencies]
 lint = [
     "black>=23",
-    "basedpyright @ git+https://github.com/detachhead/basedpyright.git@d0b3dbe33add247adf58b2b24f30953cf15d97e3",
+    "basedpyright>=0.2.2",
     "pylint>=3.0.0a7",
     "ruff>=0.0.290",
     "robotframework-robocop>=4.1.0",
