@@ -48,7 +48,9 @@ jobs:
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
-    needs: static_checks
+    needs:
+      - static_checks
+      - test
     permissions:
       id-token: write
       contents: write
