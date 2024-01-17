@@ -22,8 +22,7 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 robotframework = "pytest_robotframework._internal.plugin"
 
 [tool.pyprojectx]
-# https://github.com/pdm-project/pdm/issues/2552
-pdm = "pdm @ git+https://github.com/pdm-project/pdm.git@da56d4f771d4205768fd6b25bcae8fe8aa01770b"
+pdm = "pdm==2.12.1"
 
 [tool.pyprojectx.aliases]
 install = "pdm sync --clean"
