@@ -262,6 +262,7 @@ xfail_strict = true
 enable_assertion_pass_hook = true
 
 [tool.pyright]
+ignore = ["pw"]
 pythonVersion = "3.8"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
