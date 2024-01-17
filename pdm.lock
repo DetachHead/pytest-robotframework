@@ -35,15 +35,15 @@ files = [
 
 [[package]]
 name = "basedpyright"
-version = "0.2.4"
+version = "0.2.5"
 requires_python = ">=3.8"
 summary = "static type checking for Python (but based)"
 dependencies = [
     "nodejs-bin>=18.4.0a4",
 ]
 files = [
-    {file = "basedpyright-0.2.4-py3-none-any.whl", hash = "sha256:90f323f03537432e398371cc7e96bef7ea4ab77d61fff292dcbeda6e985fd846"},
-    {file = "basedpyright-0.2.4.tar.gz", hash = "sha256:2802db905fd3ffdd9c775478af247071f90fcbf89cfa285117e403eaa0338b68"},
+    {file = "basedpyright-0.2.5-py3-none-any.whl", hash = "sha256:a42fd71c8ed7095cb3962a607d735aafe418a5046d896ac8009cf4333eaedddd"},
+    {file = "basedpyright-0.2.5.tar.gz", hash = "sha256:3d737f9bb4bdb65a07a747d97803c11cd8bcdb271e70ddea0f1ecae12c93bd3e"},
 ]
 
 [[package]]
@@ -573,7 +573,7 @@ files = [
 
 [[package]]
 name = "robotframework-robocop"
-version = "5.0.1"
+version = "5.0.2"
 requires_python = ">=3.8"
 summary = "Static code analysis tool (linter) for Robot Framework"
 dependencies = [
@@ -586,8 +586,8 @@ dependencies = [
     "tomli>=2.0.0",
 ]
 files = [
-    {file = "robotframework-robocop-5.0.1.tar.gz", hash = "sha256:76cb629ef41f8b25862cc2992cc34b229e963c0c630e1eb3b8a4897dba3090f1"},
-    {file = "robotframework_robocop-5.0.1-py3-none-any.whl", hash = "sha256:84d7649f86917e05e0ef889224ad94fdd9d7da079f325642ef09f286b27c4022"},
+    {file = "robotframework-robocop-5.0.2.tar.gz", hash = "sha256:42e0a691aeb103b74f3089e0427106bd8619042e6c64b5d15651800da013071e"},
+    {file = "robotframework_robocop-5.0.2-py3-none-any.whl", hash = "sha256:767018b2d027d46c18af3876fc7ac1504fd39f94b7c7f7252ed6fac69d670c4f"},
 ]
 
 [[package]]
