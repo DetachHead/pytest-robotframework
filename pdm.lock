@@ -411,7 +411,7 @@ files = [
 
 [[package]]
 name = "pdoc"
-version = "14.3.0"
+version = "14.4.0"
 requires_python = ">=3.8"
 summary = "API Documentation for Python Projects"
 dependencies = [
@@ -421,8 +421,8 @@ dependencies = [
     "pygments>=2.12.0",
 ]
 files = [
-    {file = "pdoc-14.3.0-py3-none-any.whl", hash = "sha256:9a8f9a48bda5a99c249367c2b99779dbdd9f4a56f905068c9c2d6868dbae6882"},
-    {file = "pdoc-14.3.0.tar.gz", hash = "sha256:40bf8f092fcd91560d5e6cebb7c21b65df699f90a468c8ea316235c3368d5449"},
+    {file = "pdoc-14.4.0-py3-none-any.whl", hash = "sha256:6ea4fe07620b1f7601e2708a307a257636ec206e20b5611640b30f2e3cab47d6"},
+    {file = "pdoc-14.4.0.tar.gz", hash = "sha256:c92edc425429ccbe287ace2a027953c24f13de53eab484c1a6d31ca72dd2fda9"},
 ]
 
 [[package]]
@@ -480,7 +480,7 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.0.0rc1"
+version = "8.0.0rc2"
 requires_python = ">=3.8"
 summary = "pytest: simple powerful testing with Python"
 dependencies = [
@@ -492,8 +492,8 @@ dependencies = [
     "tomli>=1.0.0; python_version < \"3.11\"",
 ]
 files = [
-    {file = "pytest-8.0.0rc1-py3-none-any.whl", hash = "sha256:6c30d4c4409c5d227ef936678b72c56b6fbaed28a6ee4eafd2c93ed9a24c65af"},
-    {file = "pytest-8.0.0rc1.tar.gz", hash = "sha256:b5baeee6fb27cbca444fc1bab2ee7e1934f93daa50a4d475a6d0f819c263e573"},
+    {file = "pytest-8.0.0rc2-py3-none-any.whl", hash = "sha256:42ed2f917ded90ceb752dbe2ecb48c436c2a70d38bc16018c2d11da6426a18b6"},
+    {file = "pytest-8.0.0rc2.tar.gz", hash = "sha256:efc82dc5e6f2f41ae5acb9eabdf2ced192f336664c436b24a7db2c6aaafe4efd"},
 ]
 
 [[package]]
