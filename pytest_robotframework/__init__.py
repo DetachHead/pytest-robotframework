@@ -335,9 +335,8 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
             @override
             # https://github.com/DetachHead/basedpyright/issues/12
             def __enter__(self) -> object:  # pyright:ignore[reportMissingSuperCall]
-                # https://github.com/astral-sh/ruff/issues/9499
-                _ = self.status_reporter.__enter__()  # noqa: PLC2801
-                return self.wrapped.__enter__()  # noqa: PLC2801
+                _ = self.status_reporter.__enter__()
+                return self.wrapped.__enter__()
 
             @override
             def __exit__(  # pyright:ignore[reportMissingSuperCall]
