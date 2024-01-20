@@ -368,6 +368,7 @@ ignore = [
     "CPY001",  # missing-copyright-notice
     "C901",    # max-complexity
     "SLF001",  # private-member-access (covered by pyright)
+    "PLC2701", # import-private-name (covered by pyright)
 ]
 target-version = "py38"
 respect-gitignore = true
