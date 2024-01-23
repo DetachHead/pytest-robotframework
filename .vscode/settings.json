@@ -44,5 +44,7 @@
   "search.exclude": {
     "pw": true
   },
-  "python.terminal.activateEnvInCurrentTerminal": true
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  // interferes with basedpyright lsp
+  "python.languageServer": "None"
 }
