@@ -669,3 +669,8 @@ def test_traceback(pytester_dir: PytesterDir):
         "//msg[@level='DEBUG' and contains(., 'in test_foo') and contains(., 'in"
         " asdf')]"
     )
+
+
+def test_config_file_in_different_location(pytester_dir: PytesterDir):
+    run_and_assert_result(pytester_dir, pytest_args=["-c", "asdf/tox.ini"], passed=1)
+    assert_log_file_exists(pytester_dir)

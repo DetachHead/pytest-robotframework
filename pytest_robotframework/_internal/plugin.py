@@ -84,7 +84,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
                 [
                     *robot_arg_list,
                     # not actually used here, but the argument parser requires at least one path
-                    session.path,
+                    session.startpath,
                 ]
             )[0],
             # fmt:on
@@ -122,7 +122,7 @@ def _collect_slash_run(session: Session, *, collect_only: bool):
         # the test is over
         with LOGGER:
             _ = robot.main(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
-                [session.path],
+                [session.startpath],
                 # needed because PythonParser.visit_init creates an empty suite
                 **robot_args,
             )
