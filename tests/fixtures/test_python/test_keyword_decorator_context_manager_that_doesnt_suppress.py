@@ -25,4 +25,4 @@ def test_foo():
     with asdf():
         logger.info("0")
         raise Exception
-    logger.info("1")
+    logger.info("1")  # pyright:ignore[reportUnreachable]

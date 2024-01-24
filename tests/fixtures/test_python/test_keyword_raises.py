@@ -16,4 +16,4 @@ def bar():
 
 def test_foo():
     bar()
-    logger.info("1")
+    logger.info("1")  # pyright:ignore[reportUnreachable]

@@ -234,7 +234,9 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             # need to set nextitem on all the items, because for some reason the attribute exists on
             # the class but is never used
             if previous_item and not cast(Optional[Item], previous_item.nextitem):
-                previous_item.nextitem = item  # pyright:ignore[reportGeneralTypeIssues]
+                previous_item.nextitem = (  # pyright:ignore[reportAttributeAccessIssue]
+                    item
+                )
             if not item:
                 raise InternalError(
                     "this should NEVER happen, `PytestCollector` failed to filter out"

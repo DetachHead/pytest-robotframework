@@ -24,4 +24,4 @@ def asdf() -> Iterator[None]:
 def test_foo():
     with asdf():
         raise Exception("fdsa")
-    logger.info(1)
+    logger.info("1")  # pyright:ignore[reportUnreachable]

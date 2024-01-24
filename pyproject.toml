@@ -34,7 +34,7 @@ test = "pdm run pytest -n auto"
 [tool.pdm.dev-dependencies]
 lint = [
     "black>=23",
-    "basedpyright>=0.2.4",
+    "basedpyright>=0.2.7",
     "pylint>=3.0.0a7",
     "ruff>=0.0.290",
     "robotframework-robocop>=4.1.0",
@@ -322,6 +322,7 @@ reportUnnecessaryTypeIgnoreComment = true
 reportMatchNotExhaustive = true
 reportImplicitOverride = true
 reportShadowedImports = true
+reportUnreachable = true
 
 [tool.ruff]
 unsafe-fixes = true
