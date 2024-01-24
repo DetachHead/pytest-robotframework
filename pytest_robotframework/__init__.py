@@ -150,7 +150,9 @@ else:
             ).config(**attributes)
 
     # patch StaticKeywordCreator to use our one instead
-    StaticKeywordCreator.keyword_class = _StaticKeyword
+    StaticKeywordCreator.keyword_class = (  # pyright:ignore[reportGeneralTypeIssues]
+        _StaticKeyword
+    )
 
 
 class _KeywordDecorator:
@@ -187,7 +189,7 @@ class _KeywordDecorator:
             raise error
         # pyright assumes the assignment to error could raise an exception but that will NEVER
         # happen
-        return result_  # pyright:ignore[reportGeneralTypeIssues,reportUnboundVariable]
+        return result_  # pyright:ignore[reportReturnType,reportPossiblyUnboundVariable]
 
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
@@ -220,7 +222,11 @@ class _KeywordDecorator:
             # afterwards, so that context managers like `pytest.raises` can see the actual
             # exception instead of `robot.errors.HandlerExecutionFailed`
             suppress = True
-            context_manager: ContextManager[object] = (
+            context_manager: ContextManager[
+                object
+                # nullcontext is typed as returning None which pyright incorrectly marks as
+                # unreachable. see ContextManager documentation
+            ] = (  # pyright:ignore[reportAssignmentType]
                 (
                     # needed to work around pyright bug, see ContextManager documentation
                     StatusReporter(
@@ -228,8 +234,8 @@ class _KeywordDecorator:
                         result=(
                             result.Keyword(
                                 # pyright is only run when robot 7 is installed
-                                kwname=keyword_name,  # pyright:ignore[reportGeneralTypeIssues]
-                                libname=self.module,  # pyright:ignore[reportGeneralTypeIssues]
+                                kwname=keyword_name,  # pyright:ignore[reportCallIssue]
+                                libname=self.module,  # pyright:ignore[reportCallIssue]
                                 doc=doc,
                                 args=log_args,
                                 tags=self.tags,
@@ -370,7 +376,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                 f" {fn_result!r}"
             )
         # 🚀 independently verified for safety by the overloads
-        return WrappedContextManager(  # pyright:ignore[reportGeneralTypeIssues]
+        return WrappedContextManager(  # pyright:ignore[reportReturnType]
             fn_result, status_reporter  # pyright:ignore[reportUnknownArgumentType]
         )
 
@@ -464,11 +470,11 @@ def keyword(  # pylint:disable=missing-param-doc
         return _NonWrappedContextManagerKeywordDecorator(
             name=name, tags=tags, module=module
         )
-    return keyword(  # pyright:ignore[reportGeneralTypeIssues,reportUnknownVariableType]
+    return keyword(  # pyright:ignore[reportCallIssue,reportUnknownVariableType]
         name=name,
         tags=tags,
         module=module,
-        wrap_context_manager=wrap_context_manager,  # pyright:ignore[reportGeneralTypeIssues]
+        wrap_context_manager=wrap_context_manager,  # pyright:ignore[reportArgumentType]
     )(fn)
 
 
@@ -532,11 +538,11 @@ def keywordify(
     setattr(
         obj,
         method_name,
-        keyword(
+        keyword(  # pyright:ignore[reportCallIssue]
             name=name,
             tags=tags,
             module=module,
-            wrap_context_manager=wrap_context_manager,  # pyright:ignore[reportGeneralTypeIssues]
+            wrap_context_manager=wrap_context_manager,  # pyright:ignore[reportArgumentType]
         )(getattr(obj, method_name)),
     )
 

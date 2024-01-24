@@ -69,11 +69,11 @@ def setup(arg: Cloaked[Item]):
     # mostly copied from the start of `_pytest.runner.runtestprotocol`:
     if (
         hasattr(item, "_request")
-        and not item._request  # pyright:ignore[reportGeneralTypeIssues,reportUnknownMemberType]
+        and not item._request  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType]
     ):
         # This only happens if the item is re-run, as is done by
         # pytest-rerunfailures.
-        item._initrequest()  # pyright:ignore[reportGeneralTypeIssues,reportUnknownMemberType]
+        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType]
     _call_and_report_robot_edition(item, "setup")
 
 
@@ -84,11 +84,11 @@ def run_test(arg: Cloaked[Item]):
     reports = item.stash[_report_key]
     if reports[0].passed:
         if item.config.getoption(
-            "setupshow", default=False  # pyright:ignore[reportGeneralTypeIssues]
+            "setupshow", default=False  # pyright:ignore[reportArgumentType]
         ):
             show_test_item(item)
         if not item.config.getoption(
-            "setuponly", default=False  # pyright:ignore[reportGeneralTypeIssues]
+            "setuponly", default=False  # pyright:ignore[reportArgumentType]
         ):
             _call_and_report_robot_edition(item, "call")
 

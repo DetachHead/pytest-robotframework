@@ -120,11 +120,9 @@ class RobotItem(Item):
         if robot_6:
             with check_skipped:
                 # pyright is only run when robot 7 is installed
-                BodyRunner(  # pyright:ignore[reportUnknownMemberType,reportGeneralTypeIssues]
+                BodyRunner(  # pyright:ignore[reportUnknownMemberType,reportCallIssue]
                     context=context, templated=bool(test.template)
-                ).run(
-                    self.stash[original_body_key]
-                )
+                ).run(self.stash[original_body_key])
         else:
             wrapped_body = test.body
             test.body = self.stash[original_body_key]

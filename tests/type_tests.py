@@ -57,10 +57,10 @@ if TYPE_CHECKING:
 
     # keyword, non-context manager with wrap_context_manager=True:
     # expected type error
-    @keyword(wrap_context_manager=True)  # pyright:ignore[reportGeneralTypeIssues]
+    @keyword(wrap_context_manager=True)  # pyright:ignore[reportArgumentType]
     def e(): ...
 
     # keyword, non-context manager with wrap_context_manager=False:
     # expected type error
-    @keyword(wrap_context_manager=False)  # pyright:ignore[reportGeneralTypeIssues]
+    @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]
     def f(): ...
