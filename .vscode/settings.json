@@ -46,5 +46,6 @@
   },
   "python.terminal.activateEnvInCurrentTerminal": true,
   // interferes with basedpyright lsp
-  "python.languageServer": "None"
+  "python.languageServer": "None",
+  "debugpy.debugJustMyCode": false
 }

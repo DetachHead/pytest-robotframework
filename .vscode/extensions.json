@@ -4,6 +4,7 @@
     "detachhead.basedpyright",
     "ms-python.pylint",
     "ms-python.black-formatter",
+    "ms-python.debugpy",
     "charliermarsh.ruff",
     "shd101wyy.markdown-preview-enhanced",
     "mhutchie.git-graph",

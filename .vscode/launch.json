@@ -5,20 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "pytest justMyCode disabled",
+      // https://github.com/microsoft/vscode-python-debugger/issues/112#issuecomment-1817057920
+      "name": "pytest",
+      "purpose": ["debug-test"],
+      "presentation": {
+        "hidden": true
+      },
       "type": "python",
       "request": "launch",
-      "module": "pytest",
-      "args": "${input:pytestArgs}",
+      "program": "${file}",
+      "console": "internalConsole",
       "justMyCode": false
-    }
-  ],
-  "inputs": [
-    {
-      "id": "pytestArgs",
-      "type": "promptString",
-      "description": "args for pytest",
-      "default": ""
     }
   ]
 }
