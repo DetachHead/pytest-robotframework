@@ -112,7 +112,7 @@ class RobotItem(Item):
 
     @override
     def runtest(self):
-        test = self.stash[running_test_case_key]
+        test = self.robot_test
         context = execution_context()
         if not context:
             raise InternalError("failed to runtest because no execution context")
@@ -143,5 +143,5 @@ class RobotItem(Item):
 
     @override
     def reportinfo(self) -> tuple[PathLike[str] | str, int | None, str]:
-        line_number = self.stash[running_test_case_key].lineno
+        line_number = self.robot_test.lineno
         return (self.path, None if line_number is None else line_number - 1, self.name)
