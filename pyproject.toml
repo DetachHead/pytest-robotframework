@@ -265,7 +265,7 @@ ignore = ["pw"]
 pythonVersion = "3.8"
 pythonPlatform = "All"
 typeCheckingMode = "all"
-reportMissingTypeStubs = false            # https://github.com/robotframework/robotframework/issues/4822 
+reportMissingTypeStubs = false            # https://github.com/robotframework/robotframework/issues/4822
 reportImplicitStringConcatenation = false # conflicts with black
 enableTypeIgnoreComments = false          # https://github.com/DetachHead/basedpyright/issues/55
 

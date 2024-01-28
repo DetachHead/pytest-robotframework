@@ -531,8 +531,7 @@ def test_listener_decorator_registered_too_late(pytester_dir: PytesterDir):
     assert (
         f"E   {UserError.__module__}.{UserError.__qualname__}: Listener cannot be"
         " registered because robot has already started running. make sure it's defined"
-        " in a `conftest.py` file"
-        in result.outlines
+        " in a `conftest.py` file" in result.outlines
     )
 
 

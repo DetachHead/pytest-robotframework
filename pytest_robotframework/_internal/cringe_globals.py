@@ -1,7 +1,11 @@
+# https://github.com/psf/black/issues/4180
+# fmt: off
 """cringe global variables for when there's no other way to get the current session/item. this
 should only be used as a last resort
 
 this is safe for now since robot doesn't support running multiple tests at the same time"""
+# fmt: on
+
 
 from __future__ import annotations
 
