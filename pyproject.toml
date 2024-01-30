@@ -22,7 +22,7 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 robotframework = "pytest_robotframework._internal.plugin"
 
 [tool.pyprojectx]
-pdm = "pdm==2.12.1"
+pdm = "pdm==2.12.2"
 
 [tool.pyprojectx.aliases]
 install = "pdm sync --clean"
@@ -95,7 +95,6 @@ enable = [
     # (see https://github.com/astral-sh/ruff/issues/970):
     "possibly-unused-variable",
     "access-member-before-definition",
-    "assigning-non-slot",
     "assignment-from-none",
     "bad-except-order",
     "bad-exception-cause",
@@ -142,7 +141,6 @@ enable = [
     "not-async-context-manager",
     "not-callable",
     "not-context-manager",
-    "potential-index-error",
     "raising-non-exception",
     "redundant-keyword-arg",
     "relative-beyond-top-level",
@@ -308,6 +306,7 @@ ignore = [
     "D406",    # Section name should end with a newline
     "D415",    # First line should end with a period, question mark, or exclamation point
     "D418",    # Function/Method decorated with @overload shouldn't contain a docstring (vscode supports it)
+    "D413",    # blank-line-after-last-section
     "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
     "TD002",   # Missing author in TODO
     "E701",    # Multiple statements on one line (sometimes conflicts with black)

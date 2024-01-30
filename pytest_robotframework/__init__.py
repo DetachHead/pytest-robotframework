@@ -419,7 +419,7 @@ def keyword(
 @overload
 # prevent functions that return Never from matching the context manager overload
 def keyword(  # pyright:ignore[reportOverlappingOverload]
-    fn: Callable[P, Never]
+    fn: Callable[P, Never],
 ) -> Callable[P, Never]: ...
 
 
