@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Generator, Mapping, cast
 
 import pytest
-from deepmerge import always_merger
 from pluggy import Result
 from pytest import StashKey, TempPathFactory, TestReport, hookimpl
 from robot.api import logger
@@ -50,6 +49,7 @@ from pytest_robotframework._internal.robot_utils import (
 )
 from pytest_robotframework._internal.xdist_utils import (
     JobInfo,
+    is_xdist,
     is_xdist_master,
     is_xdist_worker,
     worker_id,
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     from pluggy import PluginManager
     from pytest import CallInfo, Collector, Item, Parser, Session
 
-HookImplResult = Generator[None, Result[object], None]
+HookWrapperResult = Generator[None, Result[object], None]
 
 
 def _xdist_temp_dir(session: Session) -> Path:
@@ -149,6 +149,7 @@ def _collect_or_run(
             "exitonerror": True,
         }
     else:
+        _keywordify()
         # if item_context is not set then it's being run from pytest_runtest_protocol instead of
         # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
         if job:
@@ -161,7 +162,7 @@ def _collect_or_run(
         else:
             _ = listener(PytestRuntestProtocolHooks(session=session, item=item))
         _ = listener(ErrorDetector(session=session, item=item))
-        robot_args = always_merger.merge(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
+        robot_args = merge_robot_options(
             robot_args,
             {
                 "prerunmodifier": [
@@ -229,8 +230,42 @@ def pytest_sessionstart(session: Session):
     cringe_globals._current_session = session  # pyright:ignore[reportPrivateUsage]
 
 
-@hookimpl(trylast=True)
-def pytest_sessionfinish():
+@hookimpl(wrapper=True, tryfirst=True)
+def pytest_sessionfinish(session: Session) -> HookWrapperResult:
+    if not session.config.option.collectonly and is_xdist_master(session):
+        robot_args = _get_robot_args(session=session, collect_only=False)
+
+        def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
+            return [value[0] for value in settings.values()]
+
+        Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
+            _xdist_temp_dir(session).glob("*/robot_xdist_outputs/*.xml"),
+            # merge is deliberately specified here instead of in the merged dict because it should
+            # never be overwritten
+            merge=True,
+            **merge_robot_options(
+                {
+                    # rebot doesn't recreate the output.xml unless you sepecify it explicitly. we
+                    # want to do this because our usage of rebot is an implementation detail and we
+                    # want the output to appear the same regardless of whether the user is running
+                    # with xdist
+                    "output": "output.xml"
+                },
+                {
+                    key: value
+                    for key, value in robot_args.items()
+                    if key
+                    in option_names(
+                        RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
+                    )
+                    or key
+                    in option_names(
+                        _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
+                    )
+                },
+            ),
+        )
+    yield
     cringe_globals._current_session = None  # pyright:ignore[reportPrivateUsage]
 
 
@@ -271,7 +306,7 @@ def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
 
 
 @hookimpl(hookwrapper=True)
-def pytest_runtest_setup(item: Item) -> HookImplResult:
+def pytest_runtest_setup(item: Item) -> HookWrapperResult:
     if not isinstance(item, RobotItem):
         # `set_variables` and `import_resource` is only supported in python files.
         # when running robot files, suite variables should be set using the `*** Variables ***`
@@ -290,13 +325,13 @@ def pytest_runtest_setup(item: Item) -> HookImplResult:
 
 
 @hookimpl(hookwrapper=True)
-def pytest_runtest_call(item: Item) -> HookImplResult:
+def pytest_runtest_call(item: Item) -> HookWrapperResult:
     result = yield
     save_exception_to_item(item, result)
 
 
 @hookimpl(hookwrapper=True)
-def pytest_runtest_teardown(item: Item) -> HookImplResult:
+def pytest_runtest_teardown(item: Item) -> HookWrapperResult:
     result = yield
     save_exception_to_item(item, result)
 
@@ -310,44 +345,17 @@ def _keywordify():
         keywordify(pytest, method, wrap_context_manager=True)
 
 
-@hookimpl(wrapper=True)
-def pytest_runtestloop(session: Session) -> Generator[None, Result[object], object]:
-    if session.config.option.collectonly:
-        yield
-        return None
-    robot_args = _get_robot_args(session=session, collect_only=False)
-
-    if is_xdist_master(session):
+@hookimpl(tryfirst=True)
+def pytest_runtestloop(session: Session) -> object:
+    if session.config.option.collectonly or is_xdist(session):
         # we can't rice the runtest protocol because xdist already does. so we need to run robot
         # individually on each test (in pytest_runtest_protocol) since we can't know which tests
         # we need to run ahead of time (i think they can dynamically change mid session)
         # Rebot.
-        yield
-
-        def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
-            return [value[0] for value in settings.values()]
-
-        Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
-            _xdist_temp_dir(session).glob("*/robot_xdist_outputs/*.xml"),
-            merge=True,
-            **{
-                key: value
-                for key, value in robot_args.items()
-                if key
-                in option_names(
-                    RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
-                )
-                or key
-                in option_names(
-                    _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
-                )
-            },
-        )
         return None
-    _keywordify()
-    if not is_xdist_worker():  # ie. no xdist at all
-        _collect_or_run(session, collect_only=False, robot_args=robot_args)
-    yield
+    robot_args = _get_robot_args(session=session, collect_only=False)
+    _collect_or_run(session, collect_only=False, robot_args=robot_args)
+    return True
 
 
 @hookimpl(tryfirst=True)

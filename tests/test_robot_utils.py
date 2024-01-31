@@ -16,3 +16,10 @@ def test_merge_robot_options_list():
 
 def test_merge_robot_options_other_side():
     assert merge_robot_options({"c": "e"}, {"a": "b", "c": "d"}) == {"a": "b", "c": "d"}
+
+
+def test_merge_robot_options_list_on_one_side():
+    assert merge_robot_options({"a": ["b"], "c": "d"}, {"c": "e"}) == {
+        "a": ["b"],
+        "c": "e",
+    }

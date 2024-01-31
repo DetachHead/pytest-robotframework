@@ -5,7 +5,7 @@
 groups = ["default", "lint", "test", "docs"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:70d0a124b910ddda7b3ceb66592f4aa1682583f8d33d3a94cc4d21fb640c711c"
+content_hash = "sha256:6d1b76401d4700d56fe941b66e6d68e2adcf6ae1195f1910810374bbd44783cd"
 
 [[package]]
 name = "astroid"
@@ -119,15 +119,6 @@ summary = "Cross-platform colored terminal text."
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
-]
-
-[[package]]
-name = "deepmerge"
-version = "1.1.1"
-summary = "a toolset to deeply merge python dictionaries."
-files = [
-    {file = "deepmerge-1.1.1-py3-none-any.whl", hash = "sha256:7219dad9763f15be9dcd4bcb53e00f48e4eed6f5ed8f15824223eb934bb35977"},
-    {file = "deepmerge-1.1.1.tar.gz", hash = "sha256:53a489dc9449636e480a784359ae2aab3191748c920649551c8e378622f0eca4"},
 ]
 
 [[package]]
