@@ -8,7 +8,6 @@ authors = [
 dependencies = [
     "pytest<9,>=7",
     "robotframework<8.0.0,>=6.1",
-    "deepmerge<2.0.0,>=1.1.0",
     "basedtyping<0.2,>=0.1.0",
 ]
 requires-python = ">=3.8,<4.0"
@@ -253,8 +252,7 @@ score = "no"
 max-line-length = 200
 
 [tool.pytest.ini_options]
-addopts = ['-n', '2', '--ignore=tests/fixtures']
-# addopts = ['-p', 'no:robotframework', '--ignore=tests/fixtures']
+addopts = ['-p', 'no:robotframework', '--ignore=tests/fixtures']
 xfail_strict = true
 enable_assertion_pass_hook = true
 

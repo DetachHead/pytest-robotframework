@@ -91,7 +91,8 @@ def merge_robot_options(obj1: RobotArgs, obj2: RobotArgs) -> RobotArgs:
     for key, value in obj1.items():
         if isinstance(value, list):
             new_value = cast(
-                List[object], [*value, *cast(Dict[str, List[object]], obj2[key])]
+                List[object],
+                [*value, *cast(Dict[str, List[object]], obj2.get(key, []))],
             )
         elif key in obj2:
             new_value = obj2[key]
