@@ -76,7 +76,7 @@ def _log_path(item: Item) -> Path:
     return (
         _xdist_temp_dir(item.session)
         / "robot_xdist_outputs"
-        / f"{worker_id()}_{hash(item.name)}.xml"
+        / f"{worker_id(item.session)}_{hash(item.name)}.xml"
     )
 
 
@@ -292,7 +292,7 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
 def pytest_collection(session: Session) -> object:
     collect_only = session.config.option.collectonly
     robot_args = _get_robot_args(session=session, collect_only=collect_only)
-    if collect_only or is_xdist_worker():
+    if collect_only or is_xdist_worker(session):
         _collect_or_run(session, collect_only=True, robot_args=robot_args)
     return True
 
@@ -360,7 +360,7 @@ def pytest_runtestloop(session: Session) -> object:
 
 @hookimpl(tryfirst=True)
 def pytest_runtest_protocol(item: Item, nextitem: Item | None):
-    if is_xdist_worker():
+    if is_xdist_worker(item.session):
         _collect_or_run(
             item.session,
             collect_only=False,
