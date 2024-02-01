@@ -143,13 +143,8 @@ class PytestCollector(SuiteVisitor):
     def visit_test(  # pyright:ignore[reportIncompatibleMethodOverride]
         self, test: running.TestCase
     ):
-        suite = cast(running.TestSuite, test.parent)
         for item in self.items():
-            if (  # only include items that are part of this current suite
-                item.path == suite.source
-                and isinstance(item, RobotItem)
-                and test.full_name == item.robot_full_name
-            ):
+            if isinstance(item, RobotItem) and test.full_name == item.robot_full_name:
                 # associate .robot test with its pytest item
                 item.stash[running_test_case_key] = test
 
@@ -174,7 +169,8 @@ class PytestCollector(SuiteVisitor):
                     # fake tests), so we defer the error to `end_suite` for the top level suite
                     self.collection_error = e
         for item in self.items():
-            if not isinstance(item, Function):
+            # only include items that are part of this current suite
+            if item.path != suite.source or not isinstance(item, Function):
                 continue
             # create robot test case for .py test:
             test_case = running.TestCase(
