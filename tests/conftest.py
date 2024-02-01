@@ -122,8 +122,12 @@ class PytestRobotTester:
         }
 
     def assert_log_file_exists(self):
-        # TODO: do something more here to verify that xdist ran
         assert (self.pytester.path / "log.html").exists()
+        # far from perfect but we can be reasonably confident that the xdist stuff ran if this
+        # folder exists
+        assert self.xdist == bool(
+            list(self.pytester.path.glob("**/robot_xdist_outputs"))
+        )
 
     def run_and_assert_assert_pytest_result(
         self,
