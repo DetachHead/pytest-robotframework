@@ -117,7 +117,7 @@ def _collect_or_run(
     *,
     robot_args: RobotArgs,
     collect_only: bool,
-    job: JobInfo | None = None,
+    xdist_job_info: JobInfo | None = None,
 ):
     """this is called either by `pytest_collection` or `pytest_runtestloop` depending on whether
     `collect_only` is `True`, because to avoid having to run robot multiple times for both the
@@ -126,7 +126,7 @@ def _collect_or_run(
     """
     if _RobotClassRegistry.too_late:
         raise InternalError("somehow ran collect/run twice???")
-    item = job.item if job else None
+    item = xdist_job_info.item if xdist_job_info else None
     robot = RobotFramework()
 
     robot_args = merge_robot_options(
@@ -153,12 +153,12 @@ def _collect_or_run(
     else:
         # if item_context is not set then it's being run from pytest_runtest_protocol instead of
         # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
-        if job:
+        if xdist_job_info:
             robot_args = {
                 **robot_args,
                 "report": None,
                 "log": None,
-                "output": _log_path(job.item),
+                "output": _log_path(xdist_job_info.item),
             }
         else:
             _ = listener(PytestRuntestProtocolHooks(session=session, item=item))
@@ -167,13 +167,21 @@ def _collect_or_run(
             robot_args,
             {
                 "prerunmodifier": [
-                    PytestRuntestProtocolInjector(session=session, item_context=job)
+                    PytestRuntestProtocolInjector(
+                        session=session, item_context=xdist_job_info
+                    )
                 ],
                 "listener": _RobotClassRegistry.listeners,
-                "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
+                # we don't want prerebotmodifiers to run multiple times so we defer them to the end
+                # of the test if we're running with xdist
+                "prerebotmodifier": (
+                    None if xdist_job_info else _RobotClassRegistry.pre_rebot_modifiers
+                ),
             },
         )
-    _RobotClassRegistry.too_late = True
+    # we don't want to clear listeners/pre_rebot_modifiers that were registered before collection
+    if not collect_only:
+        _RobotClassRegistry.too_late = True
 
     try:
         # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
@@ -185,7 +193,11 @@ def _collect_or_run(
                 **robot_args,
             )
     finally:
-        _RobotClassRegistry.reset()
+        if not collect_only:
+            _RobotClassRegistry.listeners.clear()
+            if not xdist_job_info:
+                _RobotClassRegistry.pre_rebot_modifiers.clear()
+            _RobotClassRegistry.too_late = False
 
     robot_errors = report_robot_errors(session)
     if robot_errors:
@@ -254,7 +266,8 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                         # we want to do this because our usage of rebot is an implementation detail
                         # and we want the output to appear the same regardless of whether the user
                         # is running with xdist
-                        "output": "output.xml"
+                        "output": "output.xml",
+                        "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
                     },
                     {
                         key: value
@@ -377,9 +390,7 @@ def pytest_runtest_protocol(item: Item, nextitem: Item | None):
         _collect_or_run(
             item.session,
             collect_only=False,
-            job=JobInfo(
-                item=item, nextitem=nextitem, temp_dir=_xdist_temp_dir(item.session)
-            ),
+            xdist_job_info=JobInfo(item=item, nextitem=nextitem),
             robot_args=_get_robot_args(session=item.session, collect_only=False),
         )
         return True

@@ -618,12 +618,6 @@ class _RobotClassRegistry:
                 " defined in a `conftest.py` file"
             )
 
-    @classmethod
-    def reset(cls):
-        cls.pre_rebot_modifiers.clear()
-        cls.listeners.clear()
-        cls.too_late = False
-
 
 _T_Listener = TypeVar("_T_Listener", bound=ClassOrInstance[Listener])
 
