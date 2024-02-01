@@ -74,7 +74,7 @@ def test_robot_options_variable(pr: PytestRobotTester):
     env_variable = "ROBOT_OPTIONS"
     try:
         os.environ[env_variable] = f"-d {results_path}"
-        result = pr.pytester.runpytest_subprocess()
+        result = pr.run_pytest(subprocess=True)
     finally:
         del os.environ[env_variable]
     result.assert_outcomes(passed=1)
@@ -82,8 +82,8 @@ def test_robot_options_variable(pr: PytestRobotTester):
 
 
 def test_robot_options_merge_listeners(pr: PytestRobotTester):
-    result = pr.pytester.runpytest_subprocess(
-        "--robotargs", f"--listener {pr.pytester.path / 'Listener.py'}"
+    result = pr.run_pytest(
+        "--robotargs", f"--listener {pr.pytester.path / 'Listener.py'}", subprocess=True
     )
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
@@ -93,7 +93,7 @@ def test_robot_options_variable_merge_listeners(pr: PytestRobotTester):
     env_variable = "ROBOT_OPTIONS"
     try:
         os.environ[env_variable] = f"--listener {pr.pytester.path / 'Listener.py'}"
-        result = pr.pytester.runpytest_subprocess()
+        result = pr.run_pytest(subprocess=True)
     finally:
         del os.environ[env_variable]
     result.assert_outcomes(passed=1)
@@ -106,14 +106,14 @@ def test_robot_modify_args_hook(pr: PytestRobotTester):
 
 
 def test_robot_modify_args_hook_collect_only(pr: PytestRobotTester):
-    result = pr.pytester.runpytest_subprocess("--collect-only")
+    result = pr.run_pytest("--collect-only", subprocess=True)
     assert result.parseoutcomes() == {"test": 1}
     assert not (pr.pytester.path / "log.html").exists()
 
 
 def test_listener_calls_log_file(pr: PytestRobotTester):
-    result = pr.pytester.runpytest_subprocess(
-        "--robotargs", f"--listener {pr.pytester.path / 'Listener.py'}"
+    result = pr.run_pytest(
+        "--robotargs", f"--listener {pr.pytester.path / 'Listener.py'}", subprocess=True
     )
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
@@ -121,7 +121,7 @@ def test_listener_calls_log_file(pr: PytestRobotTester):
 
 
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
-    result = pr.pytester.runpytest_subprocess("--collect-only")
+    result = pr.run_pytest("--collect-only", subprocess=True)
     result.assert_outcomes()
     assert not (pr.pytester.path / "log.html").exists()
 
@@ -129,13 +129,13 @@ def test_doesnt_run_when_collecting(pr: PytestRobotTester):
 # TODO: this test doesnt actually test anything
 # https://github.com/DetachHead/pytest-robotframework/issues/61
 def test_collect_only_nested_suites(pr: PytestRobotTester):
-    result = pr.pytester.runpytest_subprocess("--collect-only")
+    result = pr.run_pytest("--collect-only", subprocess=True)
     assert result.parseoutcomes() == {"tests": 2}
     assert "<Function test_func2>" in (line.strip() for line in result.outlines)
 
 
 def test_correct_items_collected_when_collect_only(pr: PytestRobotTester):
-    result = pr.pytester.runpytest_subprocess("--collect-only", "test_bar.py")
+    result = pr.run_pytest("--collect-only", "test_bar.py", subprocess=True)
     assert result.parseoutcomes() == {"test": 1}
     assert "<Function test_func2>" in (line.strip() for line in result.outlines)
 
@@ -265,7 +265,7 @@ def test_error_moment_exitonerror_multiple_tests(pr: PytestRobotTester):
 
 
 def test_teardown_skipped(pr: PytestRobotTester):
-    result = pr.pytester.runpytest_subprocess()
+    result = pr.run_pytest(subprocess=True)
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
     pr.assert_robot_total_stats(skipped=1)
@@ -513,7 +513,7 @@ def test_listener_decorator(pr: PytestRobotTester):
 def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
     # all the other tests run pytest in subprocess mode but we keep this one as inprocess to check
     # for https://github.com/DetachHead/pytest-robotframework/issues/38
-    result = pr.pytester.runpytest()
+    result = pr.run_pytest(subprocess=False)
     result.assert_outcomes(errors=1)
     # pytest failed before test was collected so nothing in the robot run
     pr.assert_robot_total_stats()
