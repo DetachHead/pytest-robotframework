@@ -205,7 +205,7 @@ class PytestRobotTester:
         self, *args: str, subprocess: bool = True, plugins: list[object] | None = None
     ) -> RunResult:
         if self.xdist:
-            args += ("-n", "2")
+            args += ("-n", "1")
         pytester = cast(Pytester, self.pytester)
         return (
             pytester.runpytest_subprocess(*args)
