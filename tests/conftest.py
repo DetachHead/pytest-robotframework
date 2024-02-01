@@ -167,6 +167,11 @@ class PytestRobotTester:
             else:
                 exit_code = ExitCode.OK
         assert result.ret == exit_code
+        if result.ret == ExitCode.OK and self.xdist:
+            # workaround for https://github.com/pytest-dev/pytest-xdist/issues/1017
+            assert not any(
+                line for line in result.outlines if line.startswith("INTERNALERROR>")
+            )
 
     def run_and_assert_result(
         self,
