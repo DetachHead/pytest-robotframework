@@ -528,7 +528,7 @@ def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
     result = pr.run_pytest(subprocess=False)
     # the error gets duplicated when running with xdist, i guess because the module where the
     # listener is defined gets imported multiple times, who knows
-    result.assert_outcomes(errors=4 if pr.xdist else 1)
+    result.assert_outcomes(errors=2 if pr.xdist else 1)
     # pytest failed before test was collected so nothing in the robot run. if xdist then it failed
     # before robot started so there'll be no robot files at all
     if not pr.xdist:
