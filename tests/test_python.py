@@ -192,7 +192,11 @@ def test_error_moment(pr: PytestRobotTester):
 
 
 def test_fixture_scope(pr: PytestRobotTester):
-    pr.run_and_assert_result(passed=2)
+    if pr.xdist:
+        # since the test is split into separate jobs, the fixture has to run multiple times
+        pr.run_and_assert_result(passed=1, failed=1)
+    else:
+        pr.run_and_assert_result(passed=2)
     pr.assert_log_file_exists()
 
 
