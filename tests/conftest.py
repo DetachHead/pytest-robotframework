@@ -204,7 +204,7 @@ class PytestRobotTester:
         return (
             pytester.runpytest_subprocess(*args)
             if subprocess
-            else pytester.runpytest(*args, plugins=plugins)
+            else pytester.runpytest(*args, plugins=plugins or [])
         )
 
     def run_and_assert_result(
