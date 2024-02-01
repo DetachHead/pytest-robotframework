@@ -117,7 +117,9 @@ def test_listener_calls_log_file(pr: PytestRobotTester):
     )
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
-    assert Path("hi").exists()
+    # the log file does not get created by robot when running in xdist mode, instead it gets created
+    # later by rebot, so the listener method is never called
+    assert pr.xdist != Path("hi").exists()
 
 
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
