@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from pytest import Item, Session
+    from pytest import Session
 
 
 def get_xdist():
@@ -39,11 +38,3 @@ def is_xdist_worker(session: Session) -> bool:
 
 def is_xdist(session: Session) -> bool:
     return is_xdist_master(session) or is_xdist_worker(session)
-
-
-@dataclass
-class JobInfo:
-    """info about the current job if running with pytest-xdist"""
-
-    item: Item
-    nextitem: Item | None

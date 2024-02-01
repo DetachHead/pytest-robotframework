@@ -48,7 +48,6 @@ from pytest_robotframework._internal.robot_utils import (
     report_robot_errors,
 )
 from pytest_robotframework._internal.xdist_utils import (
-    JobInfo,
     is_xdist,
     is_xdist_master,
     is_xdist_worker,
@@ -117,7 +116,7 @@ def _collect_or_run(
     *,
     robot_args: RobotArgs,
     collect_only: bool,
-    xdist_job_info: JobInfo | None = None,
+    xdist_item: Item | None = None,
 ):
     """this is called either by `pytest_collection` or `pytest_runtestloop` depending on whether
     `collect_only` is `True`, because to avoid having to run robot multiple times for both the
@@ -127,7 +126,6 @@ def _collect_or_run(
     # when running with xdist, collect/run gets called multiple times
     if not collect_only and not is_xdist(session) and _RobotClassRegistry.too_late:
         raise InternalError("somehow ran collect/run twice???")
-    item = xdist_job_info.item if xdist_job_info else None
     robot = RobotFramework()
 
     robot_args = merge_robot_options(
@@ -137,7 +135,7 @@ def _collect_or_run(
             "runemptysuite": True,
             "parser": [PythonParser(session)],
             "prerunmodifier": [
-                PytestCollector(session, collect_only=collect_only, item=item)
+                PytestCollector(session, collect_only=collect_only, item=xdist_item)
             ],
         },
     )
@@ -157,29 +155,29 @@ def _collect_or_run(
         listeners: list[Listener] = []
         # if item_context is not set then it's being run from pytest_runtest_protocol instead of
         # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
-        if xdist_job_info:
+        if xdist_item:
             robot_args = {
                 **robot_args,
                 "report": None,
                 "log": None,
-                "output": _log_path(xdist_job_info.item),
+                "output": _log_path(xdist_item),
             }
         else:
-            listeners.append(PytestRuntestProtocolHooks(session=session, item=item))
-        listeners.append(ErrorDetector(session=session, item=item))
+            listeners.append(
+                PytestRuntestProtocolHooks(session=session, item=xdist_item)
+            )
+        listeners.append(ErrorDetector(session=session, item=xdist_item))
         robot_args = merge_robot_options(
             robot_args,
             {
                 "prerunmodifier": [
-                    PytestRuntestProtocolInjector(
-                        session=session, item_context=xdist_job_info
-                    )
+                    PytestRuntestProtocolInjector(session=session, item=xdist_item)
                 ],
                 "listener": [*_RobotClassRegistry.listeners, *listeners],
                 # we don't want prerebotmodifiers to run multiple times so we defer them to the end
                 # of the test if we're running with xdist
                 "prerebotmodifier": (
-                    None if xdist_job_info else _RobotClassRegistry.pre_rebot_modifiers
+                    None if xdist_item else _RobotClassRegistry.pre_rebot_modifiers
                 ),
             },
         )
@@ -201,7 +199,7 @@ def _collect_or_run(
         # collection
         if not collect_only:
             _RobotClassRegistry.listeners.clear()
-            if not xdist_job_info:
+            if not xdist_item:
                 _RobotClassRegistry.pre_rebot_modifiers.clear()
             _RobotClassRegistry.too_late = False
 
@@ -391,12 +389,12 @@ def pytest_runtestloop(session: Session) -> object:
 
 
 @hookimpl(tryfirst=True)
-def pytest_runtest_protocol(item: Item, nextitem: Item | None):
+def pytest_runtest_protocol(item: Item):
     if is_xdist_worker(item.session):
         _collect_or_run(
             item.session,
             collect_only=False,
-            xdist_job_info=JobInfo(item=item, nextitem=nextitem),
+            xdist_item=item,
             robot_args=_get_robot_args(session=item.session, collect_only=False),
         )
         return True

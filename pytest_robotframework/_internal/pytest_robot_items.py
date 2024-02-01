@@ -5,21 +5,18 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Iterator, cast
 
-from pytest import Config, File, Item, MarkDecorator, Session, mark, skip
+from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark, skip
+from robot import model
 from robot.errors import ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
+from robot.running.model import Body
 from typing_extensions import override
 
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.robot_classes import (
-    collected_robot_suite_key,
-    original_body_key,
-    original_setup_key,
-    original_teardown_key,
-)
 from pytest_robotframework._internal.robot_utils import (
     ModelTestCase,
+    ModelTestSuite,
     execution_context,
     robot_6,
     running_test_case_key,
@@ -29,7 +26,12 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from os import PathLike
 
-    from robot import model, running
+    from robot import running
+
+collected_robot_suite_key = StashKey[ModelTestSuite]()
+original_setup_key = StashKey[model.Keyword]()
+original_body_key = StashKey[Body]()
+original_teardown_key = StashKey[model.Keyword]()
 
 
 class RobotFile(File):
@@ -68,10 +70,11 @@ class RobotItem(Item):
             nodeid=nodeid,
             **kwargs,
         )
-        # ideally this would only be stored on a normal attribute but we want a consistent way
-        # of accessing the robot test from both `RobotItem`s and regular `Item`s
-        self.stash[running_test_case_key] = robot_test
-        self.robot_test = robot_test
+        self.robot_full_name = robot_test.full_name
+        """unique identifier for the test (hopefully). ideally we would store the running `TestCase`
+        object here but it's not safe to do that as it'll be outdated by the time the test actually
+        runs if it's running with xdist (because robot needs to run once for collection and again
+        for the test execution)"""
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
             tag_kwargs: dict[str, str] = {}
@@ -112,7 +115,7 @@ class RobotItem(Item):
 
     @override
     def runtest(self):
-        test = self.robot_test
+        test = self.stash[running_test_case_key]
         context = execution_context()
         if not context:
             raise InternalError("failed to runtest because no execution context")
@@ -143,5 +146,5 @@ class RobotItem(Item):
 
     @override
     def reportinfo(self) -> tuple[PathLike[str] | str, int | None, str]:
-        line_number = self.robot_test.lineno
+        line_number = self.stash[running_test_case_key].lineno
         return (self.path, None if line_number is None else line_number - 1, self.name)
