@@ -249,20 +249,30 @@ def test_error_moment_exitonerror(pr: PytestRobotTester):
 
 
 def test_error_moment_exitonerror_multiple_tests(pr: PytestRobotTester):
-    pr.run_and_assert_assert_pytest_result(
-        failed=1, pytest_args=["--robotargs=--exitonerror"]
-    )
+
     # robot marks the remaining tests as failed but pytest never gets to actually run them
-    pr.assert_robot_total_stats(failed=2)
+    if pr.xdist:
+        pr.run_and_assert_result(failed=1, passed=1)
+    else:
+        pr.run_and_assert_assert_pytest_result(
+            failed=1, pytest_args=["--robotargs=--exitonerror"]
+        )
+        # they run in separate workers so exitonerror won't work here
+        pr.assert_robot_total_stats(failed=2)
     pr.assert_log_file_exists()
     xml = pr.output_xml()
     assert xml.xpath(
         ".//test[@name='test_foo' and ./status[@status='FAIL']]/kw[@name='Run"
         " Test']/msg[@level='ERROR' and .='foo']"
     )
-    assert xml.xpath(
-        ".//test[@name='test_bar']/status[@status='FAIL' and .='Error occurred and"
-        " exit-on-error mode is in use.']"
+    assert (
+        bool(
+            xml.xpath(
+                ".//test[@name='test_bar']/status[@status='FAIL' and .='Error occurred and"
+                " exit-on-error mode is in use.']"
+            )
+        )
+        != pr.xdist
     )
 
 
