@@ -76,7 +76,7 @@ def _log_path(item: Item) -> Path:
     return (
         _xdist_temp_dir(item.session)
         / "robot_xdist_outputs"
-        / f"{worker_id(item.session)}_{hash(item.name)}.xml"
+        / f"{worker_id(item.session)}_{hash(item.nodeid)}.xml"
     )
 
 
