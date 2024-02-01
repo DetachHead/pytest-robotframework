@@ -140,6 +140,8 @@ def _collect_or_run(
             ],
         },
     )
+    # needs to happen before collection cuz that's when the modules being keywordified get imported
+    _keywordify()
     if collect_only:
         robot_args = {
             **robot_args,
@@ -149,7 +151,6 @@ def _collect_or_run(
             "exitonerror": True,
         }
     else:
-        _keywordify()
         # if item_context is not set then it's being run from pytest_runtest_protocol instead of
         # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
         if job:
