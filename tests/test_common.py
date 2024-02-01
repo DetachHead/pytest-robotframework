@@ -10,4 +10,4 @@ if TYPE_CHECKING:
 
 def test_no_tests_found_no_files(pr: PytestRobotTester):
     pr.run_and_assert_result(exit_code=ExitCode.NO_TESTS_COLLECTED)
-    pr.assert_log_file_exists()
+    pr.assert_log_file_exists(check_xdist=False)
