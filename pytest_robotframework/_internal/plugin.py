@@ -238,33 +238,37 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
         def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
             return [value[0] for value in settings.values()]
 
-        Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
-            _xdist_temp_dir(session).glob("*/robot_xdist_outputs/*.xml"),
-            # merge is deliberately specified here instead of in the merged dict because it should
-            # never be overwritten
-            merge=True,
-            **merge_robot_options(
-                {
-                    # rebot doesn't recreate the output.xml unless you sepecify it explicitly. we
-                    # want to do this because our usage of rebot is an implementation detail and we
-                    # want the output to appear the same regardless of whether the user is running
-                    # with xdist
-                    "output": "output.xml"
-                },
-                {
-                    key: value
-                    for key, value in robot_args.items()
-                    if key
-                    in option_names(
-                        RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
-                    )
-                    or key
-                    in option_names(
-                        _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
-                    )
-                },
-            ),
-        )
+        outputs = list(_xdist_temp_dir(session).glob("*/robot_xdist_outputs/*.xml"))
+        # if there were no outputs there were probably no tests run or some other error occured, so
+        # silently skip this
+        if outputs:
+            Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
+                outputs,
+                # merge is deliberately specified here instead of in the merged dict because it
+                # should never be overwritten
+                merge=True,
+                **merge_robot_options(
+                    {
+                        # rebot doesn't recreate the output.xml unless you sepecify it explicitly.
+                        # we want to do this because our usage of rebot is an implementation detail
+                        # and we want the output to appear the same regardless of whether the user
+                        # is running with xdist
+                        "output": "output.xml"
+                    },
+                    {
+                        key: value
+                        for key, value in robot_args.items()
+                        if key
+                        in option_names(
+                            RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
+                        )
+                        or key
+                        in option_names(
+                            _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
+                        )
+                    },
+                ),
+            )
     yield
     cringe_globals._current_session = None  # pyright:ignore[reportPrivateUsage]
 
@@ -347,15 +351,23 @@ def _keywordify():
 
 @hookimpl(tryfirst=True)
 def pytest_runtestloop(session: Session) -> object:
-    if session.config.option.collectonly or is_xdist(session):
-        # we can't rice the runtest protocol because xdist already does. so we need to run robot
-        # individually on each test (in pytest_runtest_protocol) since we can't know which tests
-        # we need to run ahead of time (i think they can dynamically change mid session)
-        # Rebot.
+    if (
+        session.config.option.collectonly
+        # if we're running with xdist, we can't replace the runtestloop with our own because it
+        # conflicts with xdist's one. instead we need to run robot individually on each test (in
+        # pytest_runtest_protocol) since we can't know which tests we need to run ahead of time (i
+        # think they can dynamically change mid session)
+        or is_xdist_master(session)
+        # however if we're in a worker and there are no items, that means there are no items in the
+        # whole session (i hope). in which case we still need to run robot here to generate an empty
+        # log, because pytest_runtest_protocol never gets called if there's no items but we still
+        # want a log anyway cuz that's how robot normally behaves
+        or (is_xdist_worker(session) and session.items)
+    ):
         return None
     robot_args = _get_robot_args(session=session, collect_only=False)
     _collect_or_run(session, collect_only=False, robot_args=robot_args)
-    return True
+    return None if is_xdist(session) else True
 
 
 @hookimpl(tryfirst=True)
