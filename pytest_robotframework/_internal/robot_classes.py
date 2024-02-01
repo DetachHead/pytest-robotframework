@@ -186,8 +186,7 @@ class PytestCollector(SuiteVisitor):
                     ])
                     for marker in item.iter_markers()
                 ],
-                # https://github.com/robotframework/robotframework/issues/4940
-                parent=suite.parent,  # pyright:ignore[reportArgumentType]
+                parent=suite,
             )
             test_case.body = Body()
             item.stash[running_test_case_key] = test_case
