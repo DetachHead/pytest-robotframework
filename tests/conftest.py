@@ -161,7 +161,7 @@ class PytestRobotTester:
         xfailed: int = 0,
         exit_code: ExitCode | None = None,
     ):
-        result = self.run_pytest(*pytest_args, subprocess=subprocess)
+        result = self.run_pytest(*pytest_args or [], subprocess=subprocess)
 
         result.assert_outcomes(
             passed=passed,
