@@ -20,13 +20,13 @@ from robot.run import RobotFramework
 from robot.utils import abspath  # pyright:ignore[reportUnknownVariableType]
 
 from pytest_robotframework import (
+    Listener,
     _resources,  # pyright:ignore[reportPrivateUsage]
     _RobotClassRegistry,  # pyright:ignore[reportPrivateUsage]
     _suite_variables,  # pyright:ignore[reportPrivateUsage]
     as_keyword,
     import_resource,
     keywordify,
-    listener,
 )
 from pytest_robotframework._internal import cringe_globals, hooks
 from pytest_robotframework._internal.errors import InternalError
@@ -124,7 +124,8 @@ def _collect_or_run(
     collection and running, it's more efficient to just have `pytest_runtestloop` handle the
     collection as well if possible.
     """
-    if _RobotClassRegistry.too_late:
+    # when running with xdist, collect/run gets called multiple times
+    if not collect_only and not is_xdist(session) and _RobotClassRegistry.too_late:
         raise InternalError("somehow ran collect/run twice???")
     item = xdist_job_info.item if xdist_job_info else None
     robot = RobotFramework()
@@ -151,6 +152,9 @@ def _collect_or_run(
             "exitonerror": True,
         }
     else:
+        # we can't use our listener decorator here because we may have already set
+        # _RobotClassRegistry.too_late to True
+        listeners: list[Listener] = []
         # if item_context is not set then it's being run from pytest_runtest_protocol instead of
         # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
         if xdist_job_info:
@@ -161,8 +165,8 @@ def _collect_or_run(
                 "output": _log_path(xdist_job_info.item),
             }
         else:
-            _ = listener(PytestRuntestProtocolHooks(session=session, item=item))
-        _ = listener(ErrorDetector(session=session, item=item))
+            listeners.append(PytestRuntestProtocolHooks(session=session, item=item))
+        listeners.append(ErrorDetector(session=session, item=item))
         robot_args = merge_robot_options(
             robot_args,
             {
@@ -171,7 +175,7 @@ def _collect_or_run(
                         session=session, item_context=xdist_job_info
                     )
                 ],
-                "listener": _RobotClassRegistry.listeners,
+                "listener": [*_RobotClassRegistry.listeners, *listeners],
                 # we don't want prerebotmodifiers to run multiple times so we defer them to the end
                 # of the test if we're running with xdist
                 "prerebotmodifier": (
@@ -179,9 +183,9 @@ def _collect_or_run(
                 ),
             },
         )
-    # we don't want to clear listeners/pre_rebot_modifiers that were registered before collection
-    if not collect_only:
-        _RobotClassRegistry.too_late = True
+    # technically it's not too late if running with xdist and it's only up to the collection stage,
+    # but we don't want the errors to be dependent on whether the user is running with xdist or not.
+    _RobotClassRegistry.too_late = True
 
     try:
         # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
@@ -193,6 +197,8 @@ def _collect_or_run(
                 **robot_args,
             )
     finally:
+        # we don't want to clear listeners/pre_rebot_modifiers that were registered before
+        # collection
         if not collect_only:
             _RobotClassRegistry.listeners.clear()
             if not xdist_job_info:

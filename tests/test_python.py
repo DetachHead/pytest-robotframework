@@ -526,14 +526,21 @@ def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
     # all the other tests run pytest in subprocess mode but we keep this one as inprocess to check
     # for https://github.com/DetachHead/pytest-robotframework/issues/38
     result = pr.run_pytest(subprocess=False)
-    result.assert_outcomes(errors=1)
-    # pytest failed before test was collected so nothing in the robot run
-    pr.assert_robot_total_stats()
-    pr.assert_log_file_exists()
-    assert (
-        f"E   {UserError.__module__}.{UserError.__qualname__}: Listener cannot be"
-        " registered because robot has already started running. make sure it's defined"
-        " in a `conftest.py` file" in result.outlines
+    # the error gets duplicated when running with xdist, i guess because the module where the
+    # listener is defined gets imported multiple times, who knows
+    result.assert_outcomes(errors=4 if pr.xdist else 1)
+    # pytest failed before test was collected so nothing in the robot run. if xdist then it failed
+    # before robot started so there'll be no robot files at all
+    if not pr.xdist:
+        pr.assert_robot_total_stats()
+        pr.assert_log_file_exists()
+    assert any(
+        line.endswith(
+            f" {UserError.__module__}.{UserError.__qualname__}: Listener cannot be"
+            " registered because robot has already started running. make sure it's defined"
+            " in a `conftest.py` file"
+        )
+        for line in result.outlines
     )
 
 
