@@ -35,7 +35,7 @@ def test_two_tests_one_fail_one_pass(pr: PytestRobotTester):
 
 
 def test_listener_calls_log_file(pr: PytestRobotTester):
-    result = pr.pytester.runpytest(
+    result = pr.run_pytest(
         "--robotargs", f"--listener {pr.pytester.path / 'Listener.py'}"
     )
     result.assert_outcomes(passed=1)
@@ -84,7 +84,7 @@ def test_teardown_passes(pr: PytestRobotTester):
 
 
 def test_teardown_fails(pr: PytestRobotTester):
-    result = pr.pytester.runpytest()
+    result = pr.run_pytest(subprocess=False)
     result.assert_outcomes(passed=1, errors=1)
     # unlike pytest, teardown failures in robot count as a test failure
     pr.assert_robot_total_stats(failed=1)
@@ -98,7 +98,7 @@ def test_teardown_fails(pr: PytestRobotTester):
 
 
 def test_teardown_skipped(pr: PytestRobotTester):
-    result = pr.pytester.runpytest()
+    result = pr.run_pytest(subprocess=False)
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
     pr.assert_robot_total_stats(skipped=1)
@@ -152,7 +152,7 @@ def test_tags_in_settings(pr: PytestRobotTester):
 def test_warning_on_unknown_tag(pr: PytestRobotTester):
     # TODO: figure out why the error message is wack
     #  https://github.com/DetachHead/pytest-robotframework/issues/37
-    result = pr.pytester.runpytest("--strict-markers", "-m", "m1")
+    result = pr.run_pytest("--strict-markers", "-m", "m1", subprocess=False)
     result.assert_outcomes(errors=1)
 
 
@@ -166,8 +166,8 @@ def test_parameterized_tags(pr: PytestRobotTester):
             for item in session.items:
                 markers = item.own_markers
 
-    result = pr.pytester.runpytest(
-        "--collectonly", "--strict-markers", plugins=[TagGetter()]
+    result = pr.run_pytest(
+        "--collectonly", "--strict-markers", plugins=[TagGetter()], subprocess=False
     )
     result.assert_outcomes()
     assert markers
@@ -177,13 +177,13 @@ def test_parameterized_tags(pr: PytestRobotTester):
 
 
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
-    result = pr.pytester.runpytest("--collect-only")
+    result = pr.run_pytest("--collect-only", subprocess=False)
     result.assert_outcomes()
     assert not (pr.pytester.path / "log.html").exists()
 
 
 def test_correct_items_collected_when_collect_only(pr: PytestRobotTester):
-    result = pr.pytester.runpytest("--collect-only", "bar.robot")
+    result = pr.run_pytest("--collect-only", "bar.robot", subprocess=False)
     assert result.parseoutcomes() == {"test": 1}
     assert "<RobotItem Bar>" in (line.strip() for line in result.outlines)
 
@@ -191,7 +191,7 @@ def test_correct_items_collected_when_collect_only(pr: PytestRobotTester):
 # TODO: this test doesnt actually test anything
 # https://github.com/DetachHead/pytest-robotframework/issues/61
 def test_collect_only_nested_suites(pr: PytestRobotTester):
-    result = pr.pytester.runpytest("--collect-only")
+    result = pr.run_pytest("--collect-only", subprocess=False)
     assert result.parseoutcomes() == {"tests": 2}
     assert "<RobotItem Bar>" in (line.strip() for line in result.outlines)
 
@@ -210,20 +210,20 @@ def test_run_keyword_and_ignore_error(pr: PytestRobotTester):
 
 
 def test_init_file(pr: PytestRobotTester):
-    result = pr.pytester.runpytest()
+    result = pr.run_pytest(subprocess=False)
     result.assert_outcomes(passed=1)
     assert (pr.pytester.path / "log.html").exists()
     assert pr.output_xml().xpath("/robot/suite[@name='Test Init File0']")
 
 
 def test_init_file_nested(pr: PytestRobotTester):
-    result = pr.pytester.runpytest("foo")
+    result = pr.run_pytest("foo", subprocess=False)
     result.assert_outcomes(passed=2)
     assert (pr.pytester.path / "log.html").exists()
 
 
 def test_setup_with_args(pr: PytestRobotTester):
-    result = pr.pytester.runpytest()
+    result = pr.run_pytest(subprocess=False)
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
     xml = pr.output_xml()
@@ -274,8 +274,8 @@ def test_line_number(pr: PytestRobotTester):
             nonlocal items
             items = session.items
 
-    _ = pr.pytester.runpytest(
-        "--collectonly", "--strict-markers", plugins=[ItemGetter()]
+    _ = pr.run_pytest(
+        "--collectonly", "--strict-markers", plugins=[ItemGetter()], subprocess=False
     )
     assert items
     assert items[0].reportinfo()[1] == 1

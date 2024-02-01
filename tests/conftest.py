@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from copy import copy as copy_object
-from os import symlink
+from os import PathLike, symlink
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Literal, cast, overload
 
 from lxml.etree import XML
-from pytest import ExitCode, FixtureRequest, Function, Pytester, fixture
+from pytest import ExitCode, FixtureRequest, Function, Pytester, RunResult, fixture
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
@@ -70,8 +70,10 @@ if TYPE_CHECKING:
     # Pytester is final so it's probably a bad idea to rely on extending this at runtime
     # https://github.com/DetachHead/basedpyright/issues/23
     class PytesterDir(Pytester):  # pyright:ignore # noqa: PGH003
-        """fake subtype of `Pytester` that bans you from using file creation methods. you should put
-        real life files in `tests/fixtures/[test file path]/[test name]` instead"""
+        """fake subtype of `Pytester` that bans you from using file creation and runpytest methods.
+        you should put real life files in `tests/fixtures/[test file path]/[test name]` instead,
+        and use the runpytest methods on `PytestRobotTester` since they have handling for the xdist
+        parameterization"""
 
         @override
         def makepyfile(self, *args: Never, **kwargs: Never) -> Never: ...
@@ -87,6 +89,19 @@ if TYPE_CHECKING:
 
         @override
         def maketxtfile(self, *args: Never, **kwargs: Never) -> Never: ...
+
+        @override
+        def runpytest(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...
+
+        @override
+        def runpytest_inprocess(
+            self, *args: str | PathLike[str], **kwargs: Never
+        ) -> Never: ...
+
+        @override
+        def runpytest_subprocess(
+            self, *args: str | PathLike[str], timeout: float | None = None
+        ) -> Never: ...
 
 else:
     PytesterDir = Pytester
@@ -146,11 +161,7 @@ class PytestRobotTester:
         xfailed: int = 0,
         exit_code: ExitCode | None = None,
     ):
-        result = (
-            self.pytester.runpytest_subprocess
-            if subprocess
-            else self.pytester.runpytest
-        )(*(pytest_args or []))
+        result = self.run_pytest(*pytest_args, subprocess=subprocess)
 
         result.assert_outcomes(
             passed=passed,
@@ -173,6 +184,29 @@ class PytestRobotTester:
                 line for line in result.outlines if line.startswith("INTERNALERROR>")
             )
 
+    @overload
+    def run_pytest(
+        self,
+        *args: str,
+        subprocess: Literal[False],
+        plugins: list[object] | None = None,
+    ) -> RunResult: ...
+
+    @overload
+    def run_pytest(self, *args: str, subprocess: bool = ...) -> RunResult: ...
+
+    def run_pytest(
+        self, *args: str, subprocess: bool = True, plugins: list[object] | None = None
+    ) -> RunResult:
+        if self.xdist:
+            args += ("-n", "2")
+        pytester = cast(Pytester, self.pytester)
+        return (
+            pytester.runpytest_subprocess(*args)
+            if subprocess
+            else pytester.runpytest(*args, plugins=plugins)
+        )
+
     def run_and_assert_result(
         self,
         *,
@@ -188,7 +222,7 @@ class PytestRobotTester:
         if pytest_args is None:
             pytest_args = []
         self.run_and_assert_assert_pytest_result(
-            pytest_args=(["-n", "2"] if self.xdist else []) + pytest_args,
+            pytest_args=pytest_args,
             subprocess=subprocess,
             passed=passed,
             skipped=skipped,
