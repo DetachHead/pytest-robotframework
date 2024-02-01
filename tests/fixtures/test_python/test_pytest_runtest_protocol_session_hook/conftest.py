@@ -15,4 +15,5 @@ def pytest_runtest_protocol(item: Item) -> Iterator[None]:
 
 
 def pytest_sessionfinish(session: Session):
-    assert session.stash[run_key] == 2
+    if run_key in session.stash:  # may not be if running with xdist
+        assert session.stash[run_key] == 2

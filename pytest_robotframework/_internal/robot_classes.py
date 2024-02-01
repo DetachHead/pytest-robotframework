@@ -220,7 +220,13 @@ class PytestCollector(SuiteVisitor):
         # `PythonParser`). we do this in end_suite because that's when all the
         # running_test_case_keys should be populated:
         for test in suite.tests[:]:
-            if not get_item_from_robot_test(self.session, test):
+            try:
+                item = get_item_from_robot_test(self.session, test)
+            except KeyError:
+                # cringe hack for when there are tests discovered by robot outside of the directory
+                # pytest was run in
+                item = None
+            if not item:
                 suite.tests.remove(test)
 
         # delete any suites that are now empty:

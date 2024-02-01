@@ -528,7 +528,7 @@ def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
     result = pr.run_pytest(subprocess=False)
     # the error gets duplicated when running with xdist, i guess because the module where the
     # listener is defined gets imported multiple times, who knows
-    result.assert_outcomes(errors=2 if pr.xdist else 1)
+    result.assert_outcomes(errors=pr.xdist_count * 2 if pr.xdist else 1)
     # pytest failed before test was collected so nothing in the robot run. if xdist then it failed
     # before robot started so there'll be no robot files at all
     if not pr.xdist:
@@ -555,8 +555,17 @@ def test_catch_errors_decorator_with_non_instance_method(pr: PytestRobotTester):
 
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR)
-    pr.assert_log_file_exists()
+    if pr.xdist:
+        # when running with xdist, the error occurs before robot starts running so theres no log
+        # file
+        pr.run_and_assert_assert_pytest_result(
+            pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
+        )
+    else:
+        pr.run_and_assert_result(
+            pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
+        )
+        pr.assert_log_file_exists()
 
 
 def test_assertion_fails(pr: PytestRobotTester):

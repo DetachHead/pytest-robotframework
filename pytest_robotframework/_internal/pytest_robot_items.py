@@ -75,6 +75,7 @@ class RobotItem(Item):
         object here but it's not safe to do that as it'll be outdated by the time the test actually
         runs if it's running with xdist (because robot needs to run once for collection and again
         for the test execution)"""
+        self.line_number = robot_test.lineno
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
             tag_kwargs: dict[str, str] = {}
@@ -146,5 +147,8 @@ class RobotItem(Item):
 
     @override
     def reportinfo(self) -> tuple[PathLike[str] | str, int | None, str]:
-        line_number = self.stash[running_test_case_key].lineno
-        return (self.path, None if line_number is None else line_number - 1, self.name)
+        return (
+            self.path,
+            None if self.line_number is None else self.line_number - 1,
+            self.name,
+        )

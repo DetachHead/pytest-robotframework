@@ -5,7 +5,7 @@ from os import PathLike, symlink
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
-from typing import TYPE_CHECKING, Literal, cast, overload
+from typing import TYPE_CHECKING, Final, Literal, cast, overload
 
 from lxml.etree import XML
 from pytest import ExitCode, FixtureRequest, Function, Pytester, RunResult, fixture
@@ -118,6 +118,8 @@ class PytestRobotTester:
         self.pytester = pytester
         self.xdist: bool = xdist
 
+    xdist_count: Final = 2
+
     def output_xml(self) -> _Element:
         return XML((self.pytester.path / "output.xml").read_bytes())
 
@@ -205,7 +207,7 @@ class PytestRobotTester:
         self, *args: str, subprocess: bool = True, plugins: list[object] | None = None
     ) -> RunResult:
         if self.xdist:
-            args += ("-n", "1")
+            args += ("-n", str(self.xdist_count))
         pytester = cast(Pytester, self.pytester)
         return (
             pytester.runpytest_subprocess(*args)
