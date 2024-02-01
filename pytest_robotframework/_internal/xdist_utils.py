@@ -4,8 +4,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from pytest import Item, Session
 
 
@@ -49,4 +47,3 @@ class JobInfo:
 
     item: Item
     nextitem: Item | None
-    temp_dir: Path
