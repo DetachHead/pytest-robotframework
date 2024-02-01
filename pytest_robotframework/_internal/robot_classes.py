@@ -215,16 +215,21 @@ class PytestCollector(SuiteVisitor):
         # https://github.com/robotframework/robotframework/issues/4940
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
+
+        # remove any .robot tests that were filtered out by pytest (and the fake test from
+        # `PythonParser`). we do this in end_suite because that's when all the
+        # running_test_case_keys should be populated:
+        for test in suite.tests[:]:
+            if not get_item_from_robot_test(self.session, test):
+                suite.tests.remove(test)
+
+        # delete any suites that are now empty:
         suite.suites = [s for s in suite.suites if s.test_count > 0]
         if not suite.parent:
-            if self.collection_error:
-                raise self.collection_error
-            # remove any .robot tests that were filtered out by pytest (and the fake test
-            # from `PythonParser`). we do this at the end of the suite visitor because that's
-            # when all the running_test_case_keys should be populated:
-            for test in suite.tests[:]:
-                if not get_item_from_robot_test(self.session, test):
-                    suite.tests.remove(test)
+            pass
+        # if collection failed, raise the exception now:
+        if not suite.parent and self.collection_error:
+            raise self.collection_error
 
 
 @catch_errors
