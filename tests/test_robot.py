@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, cast
 
+from lxml.etree import _Element  # pyright:ignore[reportPrivateUsage]
 from pytest import ExitCode, Item, Mark
 
 if TYPE_CHECKING:
@@ -40,7 +41,9 @@ def test_listener_calls_log_file(pr: PytestRobotTester):
     )
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
-    assert Path("hi").exists()
+    # the log file does not get created by robot when running in xdist mode, instead it gets created
+    # later by rebot, so the listener method is never called
+    assert pr.xdist != Path("hi").exists()
 
 
 def test_setup_passes(pr: PytestRobotTester):
@@ -84,7 +87,7 @@ def test_teardown_passes(pr: PytestRobotTester):
 
 
 def test_teardown_fails(pr: PytestRobotTester):
-    result = pr.run_pytest(subprocess=False)
+    result = pr.run_pytest()
     result.assert_outcomes(passed=1, errors=1)
     # unlike pytest, teardown failures in robot count as a test failure
     pr.assert_robot_total_stats(failed=1)
@@ -98,7 +101,7 @@ def test_teardown_fails(pr: PytestRobotTester):
 
 
 def test_teardown_skipped(pr: PytestRobotTester):
-    result = pr.run_pytest(subprocess=False)
+    result = pr.run_pytest()
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
     pr.assert_robot_total_stats(skipped=1)
@@ -152,8 +155,8 @@ def test_tags_in_settings(pr: PytestRobotTester):
 def test_warning_on_unknown_tag(pr: PytestRobotTester):
     # TODO: figure out why the error message is wack
     #  https://github.com/DetachHead/pytest-robotframework/issues/37
-    result = pr.run_pytest("--strict-markers", "-m", "m1", subprocess=False)
-    result.assert_outcomes(errors=1)
+    result = pr.run_pytest("--strict-markers", "-m", "m1")
+    result.assert_outcomes(errors=pr.xdist_count * 2 if pr.xdist else 1)
 
 
 def test_parameterized_tags(pr: PytestRobotTester):
@@ -210,20 +213,23 @@ def test_run_keyword_and_ignore_error(pr: PytestRobotTester):
 
 
 def test_init_file(pr: PytestRobotTester):
-    result = pr.run_pytest(subprocess=False)
+    result = pr.run_pytest()
     result.assert_outcomes(passed=1)
     assert (pr.pytester.path / "log.html").exists()
-    assert pr.output_xml().xpath("/robot/suite[@name='Test Init File0']")
+    assert cast(
+        str,
+        cast(List[_Element], pr.output_xml().xpath("/robot/suite"))[0].attrib["name"],
+    ).startswith("Test Init File")
 
 
 def test_init_file_nested(pr: PytestRobotTester):
-    result = pr.run_pytest("foo", subprocess=False)
+    result = pr.run_pytest("foo")
     result.assert_outcomes(passed=2)
     assert (pr.pytester.path / "log.html").exists()
 
 
 def test_setup_with_args(pr: PytestRobotTester):
-    result = pr.run_pytest(subprocess=False)
+    result = pr.run_pytest()
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
     xml = pr.output_xml()
@@ -247,8 +253,17 @@ def test_keyword_with_conflicting_name(pr: PytestRobotTester):
 
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR)
-    pr.assert_log_file_exists()
+    if pr.xdist:
+        # when running with xdist, the error occurs before robot starts running so theres no log
+        # file
+        pr.run_and_assert_assert_pytest_result(
+            pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
+        )
+    else:
+        pr.run_and_assert_result(
+            pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
+        )
+        pr.assert_log_file_exists()
 
 
 def test_keyword_decorator(pr: PytestRobotTester):
@@ -266,7 +281,7 @@ def test_keyword_decorator_and_other_decorator(pr: PytestRobotTester):
 
 
 def test_line_number(pr: PytestRobotTester):
-    items: list[Item] | None = None
+    items = cast(Optional[List[Item]], None)
 
     class ItemGetter:
         @staticmethod
