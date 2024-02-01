@@ -54,7 +54,7 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
             dirs_exist_ok=True,
             copy_function=try_symlink,
         )
-    else:
+    elif test_file_fixture_dir.exists():
         for file in (
             test_file_fixture_dir / f"{test_name}.{ext}" for ext in ("py", "robot")
         ):
@@ -92,7 +92,7 @@ else:
     PytesterDir = Pytester
 
 
-@fixture(params=[True, False], ids=["xdist on", "xdist off"])
+@fixture(params=[True, False], ids=["xdist_on", "xdist_off"])
 def pr(pytester_dir: PytesterDir, request: FixtureRequest) -> PytestRobotTester:
     return PytestRobotTester(pytester=pytester_dir, xdist=request.param)
 
