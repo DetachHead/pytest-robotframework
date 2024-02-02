@@ -145,8 +145,9 @@ class PytestCollector(SuiteVisitor):
         self, test: running.TestCase
     ):
         for item in self.items():
-            robot_test_name = full_test_name(test)
-            if isinstance(item, RobotItem) and robot_test_name == item.robot_full_name:
+            if isinstance(item, RobotItem) and full_test_name(test) == full_test_name(
+                item.collected_robot_test
+            ):
                 # associate .robot test with its pytest item
                 item.stash[running_test_case_key] = test
 
