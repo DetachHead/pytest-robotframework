@@ -269,16 +269,16 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
             else:
                 previous_item: Item | None = item
                 item = get_item_from_robot_test(self.session, test)
+                if not item:
+                    raise InternalError(
+                        "this should NEVER happen, `PytestCollector` failed to filter out"
+                        f" {test.name}"
+                    )
                 # need to set nextitem on all the items, because for some reason the attribute
                 # exists on the class but is never used
                 if previous_item and not cast(Optional[Item], previous_item.nextitem):
                     previous_item.nextitem = (  # pyright:ignore[reportAttributeAccessIssue]
                         item
-                    )
-                if not item:
-                    raise InternalError(
-                        "this should NEVER happen, `PytestCollector` failed to filter out"
-                        f" {test.name}"
                     )
             cloaked_item = Cloaked(item)
             item.stash[original_setup_key] = test.setup
