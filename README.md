@@ -218,6 +218,10 @@ def test_variables():
 
 `set_variables` is equivalent to the `*** Variables ***` section in a `.robot` file. all variables are prefixed with `$`. `@` and `&` are not required since `$` variables can store lists and dicts anyway
 
+## running tests in parallel
+
+running tests in parallel using [pytest-xdist](https://pytest-xdist.readthedocs.io/en/stable/) is supported. when running with xdist, pytest-robotframework will run separate instances of robot for each test, then merge the robot output files together automatically using rebot.
+
 # config
 
 since this is a pytest plugin, you should avoid using robot options that have pytest equivalents:
