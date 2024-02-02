@@ -21,14 +21,16 @@ from robot.utils import abspath  # pyright:ignore[reportUnknownVariableType]
 
 from pytest_robotframework import (
     Listener,
+    RobotOptions,
     _resources,  # pyright:ignore[reportPrivateUsage]
     _RobotClassRegistry,  # pyright:ignore[reportPrivateUsage]
     _suite_variables,  # pyright:ignore[reportPrivateUsage]
     as_keyword,
+    hooks,
     import_resource,
     keywordify,
 )
-from pytest_robotframework._internal import cringe_globals, hooks
+from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_exception_getter import (
     save_exception_to_item,
@@ -42,7 +44,6 @@ from pytest_robotframework._internal.robot_classes import (
     PythonParser,
 )
 from pytest_robotframework._internal.robot_utils import (
-    RobotArgs,
     escape_robot_str,
     merge_robot_options,
     report_robot_errors,
@@ -79,10 +80,10 @@ def _log_path(item: Item) -> Path:
     )
 
 
-_robot_args_key = StashKey[RobotArgs]()
+_robot_args_key = StashKey[RobotOptions]()
 
 
-def _get_robot_args(session: Session) -> RobotArgs:
+def _get_robot_args(session: Session) -> RobotOptions:
     result = session.stash.get(_robot_args_key, None)
     if result is not None:
         return result
@@ -102,13 +103,14 @@ def _get_robot_args(session: Session) -> RobotArgs:
         collect_only=session.config.option.collectonly,
     )
     result = cast(
-        RobotArgs,
+        RobotOptions,
         RobotFramework().parse_arguments([  # pyright:ignore[reportUnknownMemberType]
             *robot_arg_list,
             # not actually used here, but the argument parser requires at least one path
             session.startpath,
         ])[0],
     )
+    session.config.hook.pytest_robot_modify_options(options=result, session=session)
     session.stash[_robot_args_key] = result
     return result
 
@@ -116,7 +118,7 @@ def _get_robot_args(session: Session) -> RobotArgs:
 def _collect_or_run(
     session: Session,
     *,
-    robot_args: RobotArgs,
+    robot_args: RobotOptions,
     collect_only: bool,
     xdist_item: Item | None = None,
 ):
@@ -222,7 +224,7 @@ def pytest_addhooks(pluginmanager: PluginManager):
 
 
 _robotargs_deprecation_msg = (
-    "use a `pytest_robot_modify_args` hook or set the `ROBOT_OPTIONS` environment"
+    "use a `pytest_robot_modify_options` hook or set the `ROBOT_OPTIONS` environment"
     " variable instead"
 )
 

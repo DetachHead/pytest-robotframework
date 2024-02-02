@@ -39,11 +39,12 @@ from robot.utils import (
     getshortdoc,  # pyright:ignore[reportUnknownVariableType]
     printable_name,  # pyright:ignore[reportUnknownVariableType]
 )
-from typing_extensions import Literal, Never, deprecated, override
+from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
 from pytest_robotframework._internal.robot_utils import (
+    RobotOptions as _RobotOptions,
     add_robot_error,
     escape_robot_str,
     execution_context,
@@ -63,10 +64,25 @@ if TYPE_CHECKING:
     )
 
 
-RobotVariables = Dict[str, object]
+Listener: TypeAlias = Union[ListenerV2, ListenerV3]
 
-Listener = Union[ListenerV2, ListenerV3]
+# ideally this would just use an explicit re-export
+# https://github.com/mitmproxy/pdoc/issues/667
+RobotOptions: TypeAlias = _RobotOptions
+"""robot command-line arguments after being parsed by robot into a `dict`.
 
+for example, the following robot options:
+
+```dotenv
+ROBOT_OPTIONS="--listener Foo --listener Bar -d baz"
+```
+
+will be converted to a `dict` like so:
+>>> {"listener": ["Foo", "Bar"], "outputdir": "baz"}
+"""
+
+RobotVariables: TypeAlias = Dict[str, object]
+"""variable names and values to be set on the suite level. see the `set_variables` function"""
 
 _suite_variables = DefaultDict[Path, RobotVariables](dict)
 

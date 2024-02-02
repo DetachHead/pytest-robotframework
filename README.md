@@ -243,9 +243,9 @@ if the robot option you want to use isn't mentioned here, check the pytest [comm
 
 there are multiple ways you can specify the robot arguments directly. however, arguments that have pytest equivalents should not be set with robot as they will probably cause the plugin to behave incorrectly.
 
-### `pytest_robot_modify_args` hook
+### `pytest_robot_modify_options` hook
 
-you can specify a `pytest_robot_modify_args` hook in your `conftest.py` to programmatically modify the arguments
+you can specify a `pytest_robot_modify_options` hook in your `conftest.py` to programmatically modify the arguments. see the [pytest_robotframework.hooks](http://detachhead.github.io/pytest-robotframework/pytest_robotframework/hooks.html#pytest_robot_modify_options) documentation for more information.
 
 ```py
 def pytest_robot_modify_args(args: list[str], collect_only: bool, session: Session) -> None:
