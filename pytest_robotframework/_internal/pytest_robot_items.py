@@ -18,7 +18,6 @@ from pytest_robotframework._internal.robot_utils import (
     ModelTestCase,
     ModelTestSuite,
     execution_context,
-    full_test_name,
     robot_6,
     running_test_case_key,
 )
@@ -27,7 +26,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from os import PathLike
 
-    from robot import running
 
 collected_robot_suite_key = StashKey[ModelTestSuite]()
 original_setup_key = StashKey[model.Keyword]()
@@ -55,7 +53,7 @@ class RobotItem(Item):
     def __init__(
         self,
         *,
-        robot_test: running.TestCase,
+        robot_test: ModelTestCase,
         name: str,
         parent: RobotItem | None = None,
         config: Config | None = None,
@@ -71,11 +69,13 @@ class RobotItem(Item):
             nodeid=nodeid,
             **kwargs,
         )
-        self.robot_full_name = full_test_name(robot_test)
-        """unique identifier for the test (hopefully). ideally we would store the running `TestCase`
-        object here but it's not safe to do that as it'll be outdated by the time the test actually
-        runs if it's running with xdist (because robot needs to run once for collection and again
-        for the test execution)"""
+        self.collected_robot_test: ModelTestCase = robot_test
+        """this should only be used to get metadata from the test and not during the runtestloop
+        because it'll be outdated by the time the test actually runs if it's running with xdist
+        (robot needs to run once for collection and again for the test execution)
+
+        for the `running.TestCase`, use `RobotItem.stash[running_test_case_key]` instead"""
+
         self.line_number = robot_test.lineno
         for tag in robot_test.tags:
             tag, *args = tag.split(":")
