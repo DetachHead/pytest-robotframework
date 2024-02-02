@@ -32,7 +32,7 @@ test = "pdm run pytest -n auto"
 
 [tool.pdm.dev-dependencies]
 lint = [
-    "black>=23",
+    "black>=24",
     "basedpyright>=1.0.0",
     "pylint>=3.0.0a7",
     "ruff>=0.2.0",
@@ -51,6 +51,7 @@ build-backend = "pdm.backend"
 target-version = ["py38"]
 skip-magic-trailing-comma = true
 preview = true
+enable-unstable-feature = ['string_processing']
 force-exclude = "pw"
 
 [tool.pylint.MASTER]

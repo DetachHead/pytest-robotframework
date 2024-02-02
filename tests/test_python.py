@@ -268,8 +268,8 @@ def test_error_moment_exitonerror_multiple_tests(pr: PytestRobotTester):
     assert (
         bool(
             xml.xpath(
-                ".//test[@name='test_bar']/status[@status='FAIL' and .='Error occurred and"
-                " exit-on-error mode is in use.']"
+                ".//test[@name='test_bar']/status[@status='FAIL' and .='Error occurred"
+                " and exit-on-error mode is in use.']"
             )
         )
         != pr.xdist
