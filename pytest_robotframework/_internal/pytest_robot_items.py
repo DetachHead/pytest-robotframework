@@ -18,6 +18,7 @@ from pytest_robotframework._internal.robot_utils import (
     ModelTestCase,
     ModelTestSuite,
     execution_context,
+    full_test_name,
     robot_6,
     running_test_case_key,
 )
@@ -70,7 +71,7 @@ class RobotItem(Item):
             nodeid=nodeid,
             **kwargs,
         )
-        self.robot_full_name = robot_test.full_name
+        self.robot_full_name = full_test_name(robot_test)
         """unique identifier for the test (hopefully). ideally we would store the running `TestCase`
         object here but it's not safe to do that as it'll be outdated by the time the test actually
         runs if it's running with xdist (because robot needs to run once for collection and again
