@@ -5,7 +5,7 @@
 groups = ["default", "lint", "test", "docs"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:065e431631c0d149ad94f28efcaf265a6c9e39ed889f39629746f385db78b893"
+content_hash = "sha256:5295400ae6ae8c4b04c580aa4f71f3b629fb4f8335406aa7ced83775ead170b1"
 
 [[package]]
 name = "astroid"

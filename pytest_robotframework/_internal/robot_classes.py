@@ -85,7 +85,7 @@ class PythonParser(Parser):
         # prerunmodifiers are called
         test_case = running.TestCase(
             name="fake test you shoud NEVER see this!!!!!!!",
-            tags=("_pytest_robotframework_fake_test"),
+            tags="_pytest_robotframework_fake_test",
         )
         test_case.body = [
             _create_running_keyword(
@@ -275,8 +275,8 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                 item = get_item_from_robot_test(self.session, test)
                 if not item:
                     raise InternalError(
-                        "this should NEVER happen, `PytestCollector` failed to filter out"
-                        f" {test.name}"
+                        "this should NEVER happen, `PytestCollector` failed to filter"
+                        f" out {test.name}"
                     )
                 # need to set nextitem on all the items, because for some reason the attribute
                 # exists on the class but is never used
