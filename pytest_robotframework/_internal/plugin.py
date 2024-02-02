@@ -82,7 +82,7 @@ def _log_path(item: Item) -> Path:
 _robot_args_key = StashKey[RobotArgs]()
 
 
-def _get_robot_args(session: Session, *, collect_only: bool) -> RobotArgs:
+def _get_robot_args(session: Session) -> RobotArgs:
     result = session.stash.get(_robot_args_key, None)
     if result is not None:
         return result
@@ -97,7 +97,9 @@ def _get_robot_args(session: Session, *, collect_only: bool) -> RobotArgs:
     )
     robot_arg_list: list[str] = []
     session.config.hook.pytest_robot_modify_args(
-        args=robot_arg_list, session=session, collect_only=collect_only
+        args=robot_arg_list,
+        session=session,
+        collect_only=session.config.option.collectonly,
     )
     result = cast(
         RobotArgs,
@@ -257,7 +259,7 @@ def pytest_sessionstart(session: Session):
 @hookimpl(wrapper=True, tryfirst=True)
 def pytest_sessionfinish(session: Session) -> HookWrapperResult:
     if not session.config.option.collectonly and is_xdist_master(session):
-        robot_args = _get_robot_args(session=session, collect_only=False)
+        robot_args = _get_robot_args(session=session)
 
         def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
             return [value[0] for value in settings.values()]
@@ -320,7 +322,7 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
 
 def pytest_collection(session: Session) -> object:
     collect_only = session.config.option.collectonly
-    robot_args = _get_robot_args(session=session, collect_only=collect_only)
+    robot_args = _get_robot_args(session=session)
     if collect_only or is_xdist_worker(session):
         _collect_or_run(session, collect_only=True, robot_args=robot_args)
     return True
@@ -390,7 +392,7 @@ def pytest_runtestloop(session: Session) -> object:
         or (is_xdist_worker(session) and session.items)
     ):
         return None
-    robot_args = _get_robot_args(session=session, collect_only=False)
+    robot_args = _get_robot_args(session=session)
     _collect_or_run(session, collect_only=False, robot_args=robot_args)
     return None if is_xdist(session) else True
 
@@ -402,7 +404,7 @@ def pytest_runtest_protocol(item: Item):
             item.session,
             collect_only=False,
             xdist_item=item,
-            robot_args=_get_robot_args(session=item.session, collect_only=False),
+            robot_args=_get_robot_args(session=item.session),
         )
         return True
     return None

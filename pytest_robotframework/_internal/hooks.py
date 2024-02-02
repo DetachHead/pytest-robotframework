@@ -12,4 +12,9 @@ if TYPE_CHECKING:
 def pytest_robot_modify_args(
     args: list[str], collect_only: bool, session: Session
 ) -> None:
-    """modify the arguments passed to robot in-place"""
+    """modify the arguments passed to robot in-place
+
+    :param args: the command line arguments to be passed to robot
+    :param session: the pytest `Session` object
+    :param collect_only: deprecated - use `session.config.option.collectonly` instead
+    """
