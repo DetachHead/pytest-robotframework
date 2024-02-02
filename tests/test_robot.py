@@ -182,7 +182,7 @@ def test_parameterized_tags(pr: PytestRobotTester):
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
     result = pr.run_pytest("--collect-only", subprocess=False)
     result.assert_outcomes()
-    assert not (pr.pytester.path / "log.html").exists()
+    pr.assert_log_file_doesnt_exist()
 
 
 def test_correct_items_collected_when_collect_only(pr: PytestRobotTester):
@@ -215,7 +215,7 @@ def test_run_keyword_and_ignore_error(pr: PytestRobotTester):
 def test_init_file(pr: PytestRobotTester):
     result = pr.run_pytest()
     result.assert_outcomes(passed=1)
-    assert (pr.pytester.path / "log.html").exists()
+    pr.assert_log_file_exists()
     assert cast(
         str,
         cast(List[_Element], pr.output_xml().xpath("/robot/suite"))[0].attrib["name"],
@@ -225,7 +225,7 @@ def test_init_file(pr: PytestRobotTester):
 def test_init_file_nested(pr: PytestRobotTester):
     result = pr.run_pytest("foo")
     result.assert_outcomes(passed=2)
-    assert (pr.pytester.path / "log.html").exists()
+    pr.assert_log_file_exists()
 
 
 def test_setup_with_args(pr: PytestRobotTester):

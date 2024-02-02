@@ -138,18 +138,24 @@ class PytestRobotTester:
             "skip": str(skipped),
         }
 
+    def _log_file_exists(self):
+        return (self.pytester.path / "log.html").exists()
+
     def assert_log_file_exists(self, *, check_xdist: bool = True):
         """asserts that robot generated a log file, and ensures that it did/didn't use xdist.
 
         set `check_xdist` to `False` if you expect no tests to have been run (in which case most
         of the xdist-specific logic won't get hit so the xdist check would fail)"""
-        assert (self.pytester.path / "log.html").exists()
+        assert self._log_file_exists()
         # far from perfect but we can be reasonably confident that the xdist stuff ran if this
         # folder exists
         if check_xdist or not self.xdist:
             assert self.xdist == bool(
                 list(self.pytester.path.glob("**/robot_xdist_outputs"))
             )
+
+    def assert_log_file_doesnt_exist(self):
+        assert not self._log_file_exists()
 
     def run_and_assert_assert_pytest_result(
         self,
