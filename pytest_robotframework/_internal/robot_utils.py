@@ -18,8 +18,7 @@ ModelTestCase = model.TestCase[model.Keyword]
 ModelTestSuite = model.TestSuite[model.Keyword, ModelTestCase]
 """robot `model.TestSuite` with the default generic values"""
 
-
-RobotArgs = Dict[str, object]
+RobotOptions = Dict[str, object]
 
 
 class Cloaked(Generic[T]):
@@ -101,9 +100,9 @@ def escape_robot_str(value: str) -> str:
     return value.replace("\\", "\\\\")
 
 
-def merge_robot_options(obj1: RobotArgs, obj2: RobotArgs) -> RobotArgs:
+def merge_robot_options(obj1: RobotOptions, obj2: RobotOptions) -> RobotOptions:
     """this assumes there are no nested dicts (as far as i can tell no robot args be like that)"""
-    result: RobotArgs = {}
+    result: RobotOptions = {}
     for key, value in obj1.items():
         if isinstance(value, list):
             new_value = cast(

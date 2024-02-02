@@ -100,6 +100,11 @@ def test_robot_options_variable_merge_listeners(pr: PytestRobotTester):
     pr.assert_log_file_exists()
 
 
+def test_robot_modify_options_hook(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=1)
+    pr.assert_log_file_exists()
+
+
 def test_robot_modify_args_hook(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
