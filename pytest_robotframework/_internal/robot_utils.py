@@ -47,14 +47,26 @@ def execution_context() -> _ExecutionContext | None:
 running_test_case_key = StashKey[running.TestCase]()
 
 
-def get_item_from_robot_test(session: Session, test: running.TestCase) -> Item | None:
-    try:
-        return next(
-            item for item in session.items if item.stash[running_test_case_key] == test
+def get_item_from_robot_test(
+    session: Session,
+    test: running.TestCase,
+    *,
+    all_items_should_have_tests: bool = True,
+) -> Item | None:
+    """set `all_items_should_have_tests` to `False` if working with xdist, where not all items have
+    `running_test_case_key` stashed on them because they were run in different workers
+    """
+    for item in session.items:
+        found_test = (
+            item.stash[running_test_case_key]
+            if all_items_should_have_tests
+            else item.stash.get(running_test_case_key, None)
         )
-    except StopIteration:
-        # the robot test was found but got filtered out by pytest
-        return None
+        if found_test == test:
+            return item
+    # the robot test was found but got filtered out by pytest, or if
+    # all_items_should_have_tests=False then it was in a different worker
+    return None
 
 
 robot_errors_key = StashKey[List[str]]()
