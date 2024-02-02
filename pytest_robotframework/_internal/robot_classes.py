@@ -248,8 +248,9 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     `PythonParser`) and the hook functions already have the actual contents of the tests, because
     they are just plain pytest tests
 
-    since the real life `pytest_runtest_protocol` no longer gets called, none of its hooks get
-    called either. calling those hooks is handled by the `PytestRuntestProtocolHooks` listener
+    unless running with xdist, the real life `pytest_runtest_protocol` no longer gets called, so
+    none of its hooks get called either. calling those hooks is handled by the
+    `PytestRuntestProtocolHooks` listener
     """
 
     def __init__(self, *, session: Session, item: Item | None = None):
@@ -313,12 +314,14 @@ class PytestRuntestProtocolHooks(ListenerV3):
     re-implemented in `PytestRuntestProtocolInjector`.
 
     also handles the execution of all other `pytest_runtest_protocol` hooks.
+
+    NOT used if running with xdist - in this case `pytest_runtest_protocol` hooks are called
+    normally so this listener is not required.
     """
 
-    def __init__(self, *, session: Session, item: Item | None):
+    def __init__(self, session: Session):
         super().__init__()
         self.session = session
-        self.item = item
         self.stop_running_hooks = False
         self.hookwrappers: dict[HookImpl, _HookWrapper] = {}
         """hookwrappers that are in the middle of running"""
@@ -326,8 +329,6 @@ class PytestRuntestProtocolHooks(ListenerV3):
         self.end_test_hooks: list[HookImpl] = []
 
     def _get_item(self, data: running.TestCase) -> Item:
-        if self.item:
-            return self.item
         item = get_item_from_robot_test(self.session, data)
         if not item:
             raise InternalError(

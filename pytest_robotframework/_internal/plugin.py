@@ -118,10 +118,19 @@ def _collect_or_run(
     collect_only: bool,
     xdist_item: Item | None = None,
 ):
-    """this is called either by `pytest_collection` or `pytest_runtestloop` depending on whether
+    """
+    if not running with xdist:
+    --------------------------
+    this is called either by `pytest_collection` or `pytest_runtestloop` depending on whether
     `collect_only` is `True`, because to avoid having to run robot multiple times for both the
     collection and running, it's more efficient to just have `pytest_runtestloop` handle the
     collection as well if possible.
+
+    if running with xdist:
+    ----------------------
+    this is called by `pytest_collection` to collect all the tests, then by
+    `pytest_runtest_protocol` for each item individually. this means a separate robot session
+    is started for every test.
     """
     # when running with xdist, collect/run gets called multiple times
     if not collect_only and not is_xdist(session) and _RobotClassRegistry.too_late:
@@ -163,9 +172,7 @@ def _collect_or_run(
                 "output": _log_path(xdist_item),
             }
         else:
-            listeners.append(
-                PytestRuntestProtocolHooks(session=session, item=xdist_item)
-            )
+            listeners.append(PytestRuntestProtocolHooks(session=session))
         listeners.append(ErrorDetector(session=session, item=xdist_item))
         robot_args = merge_robot_options(
             robot_args,
