@@ -231,8 +231,6 @@ class PytestCollector(SuiteVisitor):
 
         # delete any suites that are now empty:
         suite.suites = [s for s in suite.suites if s.test_count > 0]
-        if not suite.parent:
-            pass
         # if collection failed, raise the exception now:
         if not suite.parent and self.collection_error:
             raise self.collection_error
