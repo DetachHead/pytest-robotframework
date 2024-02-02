@@ -70,6 +70,10 @@ def get_item_from_robot_test(
     return None
 
 
+def full_test_name(test: ModelTestCase) -> str:
+    return test.name if robot_6 else test.full_name
+
+
 robot_errors_key = StashKey[List[str]]()
 
 

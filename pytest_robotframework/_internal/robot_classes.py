@@ -31,6 +31,7 @@ from pytest_robotframework._internal.robot_utils import (
     Cloaked,
     ModelTestSuite,
     add_robot_error,
+    full_test_name,
     get_item_from_robot_test,
     running_test_case_key,
 )
@@ -144,7 +145,8 @@ class PytestCollector(SuiteVisitor):
         self, test: running.TestCase
     ):
         for item in self.items():
-            if isinstance(item, RobotItem) and test.full_name == item.robot_full_name:
+            robot_test_name = full_test_name(test)
+            if isinstance(item, RobotItem) and robot_test_name == item.robot_full_name:
                 # associate .robot test with its pytest item
                 item.stash[running_test_case_key] = test
 
