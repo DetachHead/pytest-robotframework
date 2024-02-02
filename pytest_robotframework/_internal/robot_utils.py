@@ -54,8 +54,7 @@ def get_item_from_robot_test(
     all_items_should_have_tests: bool = True,
 ) -> Item | None:
     """set `all_items_should_have_tests` to `False` if the assigning of the `running_test_case_key`
-    stashes is still in progress, or if working with xdist where not all items have the stashed test
-    because they were run in different workers
+    stashes is still in progress
     """
     for item in session.items:
         found_test = (
