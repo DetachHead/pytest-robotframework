@@ -221,7 +221,7 @@ class PytestCollector(SuiteVisitor):
         # running_test_case_keys should be populated:
         for test in suite.tests[:]:
             if not get_item_from_robot_test(
-                self.session, test, all_items_should_have_tests=not self.xdist_run
+                self.session, test, all_items_should_have_tests=False
             ):
                 suite.tests.remove(test)
 
