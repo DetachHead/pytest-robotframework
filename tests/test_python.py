@@ -534,14 +534,17 @@ def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
     if not pr.xdist:
         pr.assert_robot_total_stats()
         pr.assert_log_file_exists()
-    assert any(
-        line.endswith(
-            f" {UserError.__module__}.{UserError.__qualname__}: Listener cannot be"
-            " registered because robot has already started running. make sure it's defined"
-            " in a `conftest.py` file"
-        )
-        for line in result.outlines
+    expected_message = (
+        f" {UserError.__module__}.{UserError.__qualname__}: Listener cannot be"
+        " registered because robot has already started running. make sure it's defined"
+        " in a `conftest.py` file"
     )
+    # not using an assert here because this intermittently fails for some reason and the assert
+    # description from pytest is useless
+    if not any(line.endswith(expected_message) for line in result.outlines):
+        raise AssertionError(
+            f"{expected_message=} did not appear in the result: {result.outlines=}"
+        )
 
 
 def test_catch_errors_decorator(pr: PytestRobotTester):
