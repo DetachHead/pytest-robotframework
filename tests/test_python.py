@@ -108,7 +108,7 @@ def test_robot_modify_args_hook(pr: PytestRobotTester):
 def test_robot_modify_args_hook_collect_only(pr: PytestRobotTester):
     result = pr.run_pytest("--collect-only", subprocess=True)
     assert result.parseoutcomes() == {"test": 1}
-    assert not (pr.pytester.path / "log.html").exists()
+    pr.assert_log_file_doesnt_exist()
 
 
 def test_listener_calls_log_file(pr: PytestRobotTester):
@@ -125,7 +125,7 @@ def test_listener_calls_log_file(pr: PytestRobotTester):
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
     result = pr.run_pytest("--collect-only", subprocess=True)
     result.assert_outcomes()
-    assert not (pr.pytester.path / "log.html").exists()
+    pr.assert_log_file_doesnt_exist()
 
 
 # TODO: this test doesnt actually test anything
