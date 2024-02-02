@@ -35,7 +35,7 @@ lint = [
     "black>=23",
     "basedpyright>=1.0.0",
     "pylint>=3.0.0a7",
-    "ruff>=0.0.290",
+    "ruff>=0.2.0",
     "robotframework-robocop>=4.1.0",
     "robotframework-tidy>=4.5.0",
 ]
@@ -267,6 +267,13 @@ enableTypeIgnoreComments = false          # https://github.com/DetachHead/basedp
 
 [tool.ruff]
 unsafe-fixes = true
+target-version = "py38"
+respect-gitignore = true
+line-length = 100
+preview = true
+extend-exclude = ["pw"]
+
+[tool.ruff.lint]
 extend-select = ["ALL"]
 ignore = [
     "ANN",     # flake8-annotations (covered by pyright)
@@ -313,24 +320,19 @@ ignore = [
     "SLF001",  # private-member-access (covered by pyright)
     "PLC2701", # import-private-name (covered by pyright)
 ]
-target-version = "py38"
-respect-gitignore = true
-line-length = 100
-preview = true
-extend-exclude = ["pw"]
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
 
-[tool.ruff.flake8-pytest-style]
+[tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "*.pyi" = ["A001", "A002", "N"] # we don't control names in 3rd party modules
 "tests/**/*.py" = [
     "S101", # Use of assert detected (pytest uses assert statements)
 ]
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
 
