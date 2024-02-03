@@ -17,7 +17,6 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.rebot import Rebot
 from robot.run import RobotFramework, RobotSettings
-from robot.utils import abspath  # pyright:ignore[reportUnknownVariableType]
 
 from pytest_robotframework import (
     Listener,
@@ -89,16 +88,6 @@ def _get_robot_args(session: Session) -> RobotOptions:
     if result is not None:
         return result
     result = {}
-
-    # need to reset outputdir because if anything from robot gets imported before pytest runs, then
-    # the cwd gets updated, robot will still run with the outdated cwd.
-    # we set it in this wacky way to make sure it never overrides user preferences
-    _BaseSettings._cli_opts[  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage]
-        "OutputDir"
-    ] = (
-        "outputdir",
-        abspath("."),
-    )
 
     # set any robot options that were set in the pytest cli args:
     for arg_name, default_value in cli_defaults(RobotSettings).items():

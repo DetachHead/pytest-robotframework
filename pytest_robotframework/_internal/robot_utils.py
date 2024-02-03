@@ -1,28 +1,16 @@
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Dict,
-    Final,
-    Generic,
-    List,
-    Optional,
-    Union,
-    cast,
-)
+from typing import Callable, Dict, Final, Generic, List, Optional, Union, cast
 
 from basedtyping import T
 from pytest import Item, Session, StashKey
 from robot import model, running
+from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsage]
 from robot.running.context import (
     _ExecutionContext,  # pyright:ignore[reportPrivateUsage]
 )
 from robot.version import VERSION
 from typing_extensions import override
-
-if TYPE_CHECKING:
-    from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsage]
 
 ModelTestCase = model.TestCase[model.Keyword]
 """robot `model.TestSuite` with the default generic value"""
@@ -136,6 +124,16 @@ def merge_robot_options(obj1: RobotOptions, obj2: RobotOptions) -> RobotOptions:
 def cli_defaults(
     settings_class: Callable[[dict[str, object]], _BaseSettings],
 ) -> RobotOptions:
+    # need to reset outputdir because if anything from robot gets imported before pytest runs, then
+    # the cwd gets updated, robot will still run with the outdated cwd.
+    # we set it in this wacky way to make sure it never overrides user preferences
+    _BaseSettings._cli_opts[  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage]
+        "OutputDir"
+    ] = (
+        "outputdir",
+        ".",
+    )
+
     return dict(
         # instantiate the class because _BaseSettings.__init__ adds any additional opts
         # that the subclass may have defined (using _extra_cli_opts)
