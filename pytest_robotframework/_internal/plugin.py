@@ -3,19 +3,16 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Generator, Mapping, cast
+from typing import TYPE_CHECKING, Generator, cast
 
 import pytest
 from pluggy import Result
 from pytest import StashKey, TempPathFactory, TestReport, hookimpl
 from robot.api import logger
-from robot.conf.settings import (
-    RebotSettings,
-    _BaseSettings,  # pyright:ignore[reportPrivateUsage]
-)
+from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsage]
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
-from robot.rebot import Rebot
+from robot.rebot import Rebot, RebotSettings
 from robot.run import RobotFramework
 from robot.utils import abspath  # pyright:ignore[reportUnknownVariableType]
 
@@ -43,6 +40,7 @@ from pytest_robotframework._internal.robot_classes import (
 )
 from pytest_robotframework._internal.robot_utils import (
     RobotArgs,
+    cli_defaults,
     escape_robot_str,
     merge_robot_options,
     report_robot_errors,
@@ -260,14 +258,11 @@ def pytest_sessionstart(session: Session):
 def pytest_sessionfinish(session: Session) -> HookWrapperResult:
     if not session.config.option.collectonly and is_xdist_master(session):
         robot_args = _get_robot_args(session=session)
-
-        def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
-            return [value[0] for value in settings.values()]
-
         outputs = list(_xdist_temp_dir(session).glob("*/robot_xdist_outputs/*.xml"))
         # if there were no outputs there were probably no tests run or some other error occured, so
         # silently skip this
         if outputs:
+            valid_rebot_arg_names = cli_defaults(RebotSettings)
             Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
                 outputs,
                 # merge is deliberately specified here instead of in the merged dict because it
@@ -283,16 +278,10 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                         "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
                     },
                     {
+                        # need to filter out any options that aren't valid for rebot
                         key: value
                         for key, value in robot_args.items()
-                        if key
-                        in option_names(
-                            RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
-                        )
-                        or key
-                        in option_names(
-                            _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
-                        )
+                        if key in valid_rebot_arg_names
                     },
                 ),
             )

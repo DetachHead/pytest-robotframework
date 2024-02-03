@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Final, Generic, List, Union, cast
+from typing import TYPE_CHECKING, Callable, Dict, Final, Generic, List, Union, cast
 
 from basedtyping import T
 from pytest import Item, Session, StashKey
@@ -10,6 +10,9 @@ from robot.running.context import (
 )
 from robot.version import VERSION
 from typing_extensions import override
+
+if TYPE_CHECKING:
+    from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsage]
 
 ModelTestCase = model.TestCase[model.Keyword]
 """robot `model.TestSuite` with the default generic value"""
@@ -119,6 +122,18 @@ def merge_robot_options(obj1: RobotArgs, obj2: RobotArgs) -> RobotArgs:
         if key not in obj1:
             result[key] = value
     return result
+
+
+def cli_defaults(
+    settings_class: Callable[[dict[str, object]], _BaseSettings],
+) -> RobotArgs:
+    return dict(
+        # instantiate the class because _BaseSettings.__init__ adds any additional opts
+        # that the subclass may have defined (using _extra_cli_opts)
+        settings_class(  # pyright:ignore[reportUnknownArgumentType,reportUnknownMemberType]
+            {}
+        )._cli_opts.values()  # pyright:ignore[reportPrivateUsage]
+    )
 
 
 robot_6: Final = VERSION.startswith("6.")
