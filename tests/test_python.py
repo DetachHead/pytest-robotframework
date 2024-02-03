@@ -523,16 +523,17 @@ def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
     result.assert_outcomes(errors=pr.xdist_count * 2 if pr.xdist else 1)
     # pytest failed before test was collected so nothing in the robot run. if xdist then it failed
     # before robot started so there'll be no robot files at all
-    if not pr.xdist:
-        pr.assert_robot_total_stats()
-        pr.assert_log_file_exists()
+    if pr.xdist:
+        return
+    pr.assert_robot_total_stats()
+    pr.assert_log_file_exists()
+    # TODO: why does this intermittently fail when running with xdist
+    # https://github.com/DetachHead/pytest-robotframework/issues/184
     expected_message = (
         f" {UserError.__module__}.{UserError.__qualname__}: Listener cannot be"
         " registered because robot has already started running. make sure it's defined"
         " in a `conftest.py` file"
     )
-    # not using an assert here because this intermittently fails for some reason and the assert
-    # description from pytest is useless
     if not any(line.endswith(expected_message) for line in result.outlines):
         raise AssertionError(
             f"{expected_message=} did not appear in the result: {result.outlines=}"
