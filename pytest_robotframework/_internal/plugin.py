@@ -80,6 +80,20 @@ def _log_path(item: Item) -> Path:
     )
 
 
+_banned_options = {
+    "include",
+    "exclude",
+    "skip",
+    "test",
+    "dryrun",
+    "exitonfailure",
+    "rerunfailed",
+    "suite",
+    "runemptysuite",
+    "help",
+}
+"""robot arguments that are not allowed because they conflict with pytest and/or this plugin"""
+
 _robot_args_key = StashKey[RobotOptions]()
 
 
@@ -91,6 +105,8 @@ def _get_robot_args(session: Session) -> RobotOptions:
 
     # set any robot options that were set in the pytest cli args:
     for arg_name, default_value in cli_defaults(RobotSettings).items():
+        if arg_name in _banned_options:
+            continue
         value = getattr(
             session.config.option,
             (
@@ -230,12 +246,13 @@ def pytest_addhooks(pluginmanager: PluginManager):
 def pytest_addoption(parser: Parser):
     group = parser.getgroup(
         "robot",
-        "robotframework arguments (if an option is missing, it means"
+        "robotframework (if an option is missing, it means"
         " there's a pytest equivalent you should use instead. see"
         " https://github.com/DetachHead/pytest-robotframework#config)",
     )
-
     for arg_name, default_value in cli_defaults(RobotSettings).items():
+        if arg_name in _banned_options:
+            continue
         arg_name_with_prefix = f"--robot-{arg_name}"
         if isinstance(default_value, bool):
             if default_value:
