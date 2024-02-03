@@ -57,6 +57,9 @@ def _create_running_keyword(
     )
 
 
+_fake_test_tag = "_pytest_robotframework_fake_test"
+
+
 class PythonParser(Parser):
     """custom robot "parser" for python files. doesn't actually do any parsing, but instead creates
     empty test suites for each python file found by robot. this is required for the prerunmodifiers.
@@ -84,8 +87,7 @@ class PythonParser(Parser):
         # this fake test is required to prevent the suite from being deleted before the
         # prerunmodifiers are called
         test_case = running.TestCase(
-            name="fake test you shoud NEVER see this!!!!!!!",
-            tags="_pytest_robotframework_fake_test",
+            name="fake test you shoud NEVER see this!!!!!!!", tags=(_fake_test_tag,)
         )
         test_case.body = [
             _create_running_keyword(
@@ -199,11 +201,7 @@ class PytestCollector(SuiteVisitor):
             if item.path == suite.source:
                 _ = suite.tests.append(test_case)
         # remove the fake placeholder test (there should only ever be 1 fake test):
-        fake_tests = [
-            test
-            for test in suite.tests
-            if "_pytest_robotframework_fake_test" in test.tags
-        ]
+        fake_tests = [test for test in suite.tests if _fake_test_tag in test.tags]
         if fake_tests:
             # there should never be more than 1 fake test per suite
             (test,) = fake_tests
