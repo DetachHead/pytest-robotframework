@@ -16,7 +16,7 @@ from robot.conf.settings import (
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.rebot import Rebot
-from robot.run import RobotFramework
+from robot.run import RobotFramework, RobotSettings
 from robot.utils import abspath  # pyright:ignore[reportUnknownVariableType]
 
 from pytest_robotframework import (
@@ -44,6 +44,7 @@ from pytest_robotframework._internal.robot_classes import (
     PythonParser,
 )
 from pytest_robotframework._internal.robot_utils import (
+    cli_defaults,
     escape_robot_str,
     merge_robot_options,
     report_robot_errors,
@@ -84,9 +85,11 @@ _robot_args_key = StashKey[RobotOptions]()
 
 
 def _get_robot_args(session: Session) -> RobotOptions:
-    result = session.stash.get(_robot_args_key, None)
+    result: RobotOptions | None = session.stash.get(_robot_args_key, None)
     if result is not None:
         return result
+    result = {}
+
     # need to reset outputdir because if anything from robot gets imported before pytest runs, then
     # the cwd gets updated, robot will still run with the outdated cwd.
     # we set it in this wacky way to make sure it never overrides user preferences
@@ -96,19 +99,31 @@ def _get_robot_args(session: Session) -> RobotOptions:
         "outputdir",
         abspath("."),
     )
-    robot_arg_list: list[str] = []
-    session.config.hook.pytest_robot_modify_args(
-        args=robot_arg_list,
-        session=session,
-        collect_only=session.config.option.collectonly,
-    )
-    result = cast(
-        RobotOptions,
-        RobotFramework().parse_arguments([  # pyright:ignore[reportUnknownMemberType]
-            *robot_arg_list,
-            # not actually used here, but the argument parser requires at least one path
-            session.startpath,
-        ])[0],
+
+    # set any robot options that were set in the pytest cli args:
+    for arg_name, default_value in cli_defaults(RobotSettings).items():
+        value = getattr(
+            session.config.option,
+            (
+                arg_name.replace("robot_no", "robot")
+                if isinstance(default_value, bool) and default_value
+                else f"robot_{arg_name}"
+            ),
+        )
+        result[arg_name] = value
+
+    # parse any options from the ROBOT_OPTIONS variable:
+    result = merge_robot_options(
+        result,
+        cast(
+            RobotOptions,
+            RobotFramework().parse_arguments([  # pyright:ignore[reportUnknownMemberType]
+                # not actually used here, but the argument parser requires at least one path
+                session.startpath
+            ])[
+                0
+            ],
+        ),
     )
     session.config.hook.pytest_robot_modify_options(options=result, session=session)
     session.stash[_robot_args_key] = result
@@ -223,34 +238,40 @@ def pytest_addhooks(pluginmanager: PluginManager):
     pluginmanager.add_hookspecs(hooks)
 
 
-_robotargs_deprecation_msg = (
-    "use a `pytest_robot_modify_options` hook or set the `ROBOT_OPTIONS` environment"
-    " variable instead"
-)
-
-
 def pytest_addoption(parser: Parser):
-    parser.addoption(
-        "--robotargs",
-        default="",
-        help=(
-            "additional arguments to be passed to robotframework (deprecated:"
-            f" {_robotargs_deprecation_msg})"
-        ),
+    group = parser.getgroup(
+        "robot",
+        "robotframework arguments (if an option is missing, it means"
+        " there's a pytest equivalent you should use instead. see"
+        " https://github.com/DetachHead/pytest-robotframework#config)",
     )
 
-
-def pytest_robot_modify_args(args: list[str], session: Session):
-    result = cast(str, session.config.getoption("--robotargs"))
-    if result:
-        # i saw some code that uses session.config.issue_config_time_warning but that doesnt work
-        # who knows why
-        print(  # noqa: T201
-            f"\n`--robotargs` is deprecated (received {result!r}). specifying arguments"
-            " via the command line is unreliable because CLIs suck."
-            f" {_robotargs_deprecation_msg}"
-        )
-    args.extend(result.split(" "))
+    for arg_name, default_value in cli_defaults(RobotSettings).items():
+        arg_name_with_prefix = f"--robot-{arg_name}"
+        if isinstance(default_value, bool):
+            if default_value:
+                group.addoption(
+                    f"--robot-no{arg_name}",
+                    dest=arg_name,
+                    default=default_value,
+                    action="store_false",
+                )
+            else:
+                group.addoption(
+                    arg_name_with_prefix, default=default_value, action="store_true"
+                )
+        else:
+            group.addoption(
+                arg_name_with_prefix,
+                default=default_value,
+                action="append" if isinstance(default_value, list) else None,
+                help=(
+                    None
+                    if default_value is None
+                    or (isinstance(default_value, list) and not default_value)
+                    else f"default: {default_value}"
+                ),
+            )
 
 
 @hookimpl(tryfirst=True)

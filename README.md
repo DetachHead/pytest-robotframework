@@ -226,16 +226,16 @@ running tests in parallel using [pytest-xdist](https://pytest-xdist.readthedocs.
 
 since this is a pytest plugin, you should avoid using robot options that have pytest equivalents:
 
-| instead of...                                 | use...                                                                                                                                                                            |
-| :-------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `robot --include tag_name`                    | `pytest -m tag_name`                                                                                                                                                              |
-| `robot --skip tag_name`                       | `pytest -m "not tag_name"`                                                                                                                                                        |
-| `robot --test "test name" path/to/test.robot` | `pytest path/to/test.robot::"Test Name"`                                                                                                                                          |
-| `robot --listener Foo`                        | [`@listener` decorator](#listeners)                                                                                                                                               |
-| `robot --prerebotmodifier Foo`                | [`@pre_rebot_modifier` decorator](#pre-rebot-modifiers)                                                                                                                           |
-| `robot --dryrun`                              | `pytest --collect-only` (not exactly the same. you should use [a type checker](https://github.com/kotlinisland/basedmypy) on your python tests as a replacement for robot dryrun) |
-| `robot --exitonfailure`                       | `pytest --maxfail=1`                                                                                                                                                              |
-| `robot --rerunfailed`                         | `pytest --lf`                                                                                                                                                                     |
+| instead of...                                 | use...                                                  | notes                                                                                                                                                                    |
+| :-------------------------------------------- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `robot --include tag_name`                    | `pytest -m tag_name`                                    |                                                                                                                                                                          |
+| `robot --skip tag_name`                       | `pytest -m "not tag_name"`                              |                                                                                                                                                                          |
+| `robot --test "test name" path/to/test.robot` | `pytest path/to/test.robot::"Test Name"`                |                                                                                                                                                                          |
+| `robot --listener Foo`                        | [`@listener` decorator](#listeners)                     | listeners can still be specified via the command line with `pytest --robot-listener`, which is useful if you need to pass arguments to its constructor                   |
+| `robot --prerebotmodifier Foo`                | [`@pre_rebot_modifier` decorator](#pre-rebot-modifiers) | pre-rebot-modifiers can still be specified via the command line with `pytest --robot-prerebotmodifier`, which is useful if you need to pass arguments to its constructor |
+| `robot --dryrun`                              | `pytest --collect-only`                                 | not exactly the same. you should use [a type checker](https://github.com/kotlinisland/basedmypy) on your python tests as a replacement for robot dryrun                  |
+| `robot --exitonfailure`                       | `pytest --maxfail=1`                                    |                                                                                                                                                                          |
+| `robot --rerunfailed`                         | `pytest --lf`                                           |                                                                                                                                                                          |
 
 if the robot option you want to use isn't mentioned here, check the pytest [command line options](https://docs.pytest.org/en/latest/reference/reference.html#command-line-flags) and [ini options](https://docs.pytest.org/en/latest/reference/reference.html#configuration-options) for a complete list of pytest settings as there are probably many missing from this list.
 
@@ -243,14 +243,34 @@ if the robot option you want to use isn't mentioned here, check the pytest [comm
 
 there are multiple ways you can specify the robot arguments directly. however, arguments that have pytest equivalents should not be set with robot as they will probably cause the plugin to behave incorrectly.
 
+### pytest cli arguments
+
+most robot cli arguments can be passed to pytest by prefixing the argument names with `--robot-`. for example, here's how to change the log level:
+
+#### before
+
+```
+robot --loglevel DEBUG:INFO foo.robot
+```
+
+#### after
+
+```
+pytest --robot-loglevel DEBUG:INFO test_foo.py
+```
+
+you can see a complete list of the available arguments using the `pytest --help` command. any robot arguments not present in that list are not supported because they are replaced by a pytest equivalent ([see above](#config)).
+
 ### `pytest_robot_modify_options` hook
 
 you can specify a `pytest_robot_modify_options` hook in your `conftest.py` to programmatically modify the arguments. see the [pytest_robotframework.hooks](http://detachhead.github.io/pytest-robotframework/pytest_robotframework/hooks.html#pytest_robot_modify_options) documentation for more information.
 
 ```py
-def pytest_robot_modify_args(args: list[str], collect_only: bool, session: Session) -> None:
-    if not collect_only:
-        args.extend(["--listener", "Foo"])
+from pytest_robotframework import RobotOptions
+
+def pytest_robot_modify_options(options: RobotOptions, session: Session) -> None:
+    if not session.config.option.collectonly:
+        options["listener"].append("Foo")
 ```
 
 note that not all arguments that the plugin passes to robot will be present in the `args` list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook

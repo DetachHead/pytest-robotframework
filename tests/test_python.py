@@ -83,7 +83,7 @@ def test_robot_options_variable(pr: PytestRobotTester):
 
 def test_robot_options_merge_listeners(pr: PytestRobotTester):
     result = pr.run_pytest(
-        "--robotargs", f"--listener {pr.pytester.path / 'Listener.py'}", subprocess=True
+        "--robot-listener", str(pr.pytester.path / "Listener.py"), subprocess=True
     )
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
@@ -105,20 +105,9 @@ def test_robot_modify_options_hook(pr: PytestRobotTester):
     pr.assert_log_file_exists()
 
 
-def test_robot_modify_args_hook(pr: PytestRobotTester):
-    pr.run_and_assert_result(passed=1)
-    pr.assert_log_file_exists()
-
-
-def test_robot_modify_args_hook_collect_only(pr: PytestRobotTester):
-    result = pr.run_pytest("--collect-only", subprocess=True)
-    assert result.parseoutcomes() == {"test": 1}
-    pr.assert_log_file_doesnt_exist()
-
-
 def test_listener_calls_log_file(pr: PytestRobotTester):
     result = pr.run_pytest(
-        "--robotargs", f"--listener {pr.pytester.path / 'Listener.py'}", subprocess=True
+        "--robot-listener", str(pr.pytester.path / "Listener.py"), subprocess=True
     )
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
@@ -245,7 +234,7 @@ def test_error_moment_and_second_test(pr: PytestRobotTester):
 
 
 def test_error_moment_exitonerror(pr: PytestRobotTester):
-    pr.run_and_assert_result(failed=1, pytest_args=["--robotargs=--exitonerror"])
+    pr.run_and_assert_result(failed=1, pytest_args=["--robot-exitonerror"])
     pr.assert_log_file_exists()
     xml = pr.output_xml()
     assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='ERROR' and .='foo']")
@@ -260,7 +249,7 @@ def test_error_moment_exitonerror_multiple_tests(pr: PytestRobotTester):
         pr.run_and_assert_result(failed=1, passed=1)
     else:
         pr.run_and_assert_assert_pytest_result(
-            failed=1, pytest_args=["--robotargs=--exitonerror"]
+            failed=1, pytest_args=["--robot-exitonerror"]
         )
         # they run in separate workers so exitonerror won't work here
         pr.assert_robot_total_stats(failed=2)
@@ -364,9 +353,7 @@ def test_keyword_decorator_context_manager_that_raises_in_exit(pr: PytestRobotTe
 def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(
     pr: PytestRobotTester,
 ):
-    pr.run_and_assert_result(
-        pytest_args=["--robotargs", "--loglevel DEBUG:INFO"], failed=1
-    )
+    pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
     pr.assert_log_file_exists()
     xml = pr.output_xml()
     assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='start']")
@@ -587,8 +574,8 @@ def test_assertion_passes(pr: PytestRobotTester):
         pytest_args=[
             "-o",
             "enable_assertion_pass_hook=true",
-            "--robotargs",
-            "--loglevel DEBUG:INFO",
+            "--robot-loglevel",
+            "DEBUG:INFO",
         ],
         subprocess=True,
         passed=1,
@@ -605,8 +592,8 @@ def test_assertion_pass_hook_multiple_tests(pr: PytestRobotTester):
         pytest_args=[
             "-o",
             "enable_assertion_pass_hook=true",
-            "--robotargs",
-            "--loglevel DEBUG:INFO",
+            "--robot-loglevel",
+            "DEBUG:INFO",
         ],
         subprocess=True,
         passed=2,
@@ -681,9 +668,7 @@ def test_pytest_runtest_protocol_hook_in_different_suite(pr: PytestRobotTester):
 
 
 def test_traceback(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["--robotargs", "--loglevel DEBUG:INFO"], failed=1
-    )
+    pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
     pr.assert_log_file_exists()
     xml = pr.output_xml()
     assert xml.xpath(

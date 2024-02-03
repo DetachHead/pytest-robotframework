@@ -33,15 +33,3 @@ def pytest_robot_modify_options(options: RobotOptions, session: Session):
     `{"listener": ["Foo", "Bar"]}`means `--listener Foo --listener Bar`)
     :param session: the pytest `Session` object
     """
-
-
-@hookspec(
-    warn_on_impl=DeprecationWarning(
-        "`pytest_robot_modify_args` is deprecated. use `pytest_robot_modify_options`"
-        " instead. (to check for collect-only, use `session.config.option.collectonly`)"
-    )
-)
-def pytest_robot_modify_args(
-    args: list[str], collect_only: bool, session: Session
-) -> None:
-    """modify the arguments passed to robot in-place"""
