@@ -36,9 +36,7 @@ def test_two_tests_one_fail_one_pass(pr: PytestRobotTester):
 
 
 def test_listener_calls_log_file(pr: PytestRobotTester):
-    result = pr.run_pytest(
-        "--robotargs", f"--listener {pr.pytester.path / 'Listener.py'}"
-    )
+    result = pr.run_pytest("--robot-listener", str(pr.pytester.path / "Listener.py"))
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
     # the log file does not get created by robot when running in xdist mode, instead it gets created
