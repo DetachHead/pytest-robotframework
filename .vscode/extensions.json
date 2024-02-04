@@ -10,7 +10,8 @@
     "mhutchie.git-graph",
     "tamasfe.even-better-toml",
     "redhat.vscode-yaml",
-    "robocorp.robotframework-lsp"
+    "robocorp.robotframework-lsp",
+    "github.vscode-github-actions"
   ],
   "unwantedRecommendations": ["ms-python.vscode-pylance"]
 }
