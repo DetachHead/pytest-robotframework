@@ -33,7 +33,7 @@ test = "pdm run pytest -n auto"
 [tool.pdm.dev-dependencies]
 lint = [
     "black>=24",
-    "basedpyright>=1.0.0",
+    "basedpyright@git+https://github.com/detachhead/basedpyright@3c5ac6a2cc3ee65871212673da5f33483c5bfd31",
     "pylint>=3.0.0a7",
     "ruff>=0.2.0",
     "robotframework-robocop>=4.1.0",
@@ -320,6 +320,9 @@ ignore = [
     "C901",    # max-complexity
     "SLF001",  # private-member-access (covered by pyright)
     "PLC2701", # import-private-name (covered by pyright)
+    "UP006",   # non-pep585-annotation (covered by pyright)
+    "UP007",   # non-pep604-annotation (covered by pyright)
+    "UP035",   # deprecated-import (covered by pyright)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
