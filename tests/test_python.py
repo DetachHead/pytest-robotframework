@@ -522,6 +522,14 @@ def test_listener_decorator(pr: PytestRobotTester):
     pr.assert_log_file_exists()
 
 
+def test_listener_decorator_stays_active_on_second_test(pr: PytestRobotTester):
+    # when testing with xdist we want them both to run on the same node
+    if pr.xdist:
+        pr.xdist_count = 1
+    pr.run_and_assert_result(passed=2)
+    pr.assert_log_file_exists()
+
+
 def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
     # all the other tests run pytest in subprocess mode but we keep this one as inprocess to check
     # for https://github.com/DetachHead/pytest-robotframework/issues/38

@@ -207,9 +207,6 @@ def _collect_or_run(
         # we don't want to clear listeners/pre_rebot_modifiers that were registered before
         # collection
         if not collect_only:
-            _RobotClassRegistry.listeners.clear()
-            if not xdist_item:
-                _RobotClassRegistry.pre_rebot_modifiers.clear()
             _RobotClassRegistry.too_late = False
 
     robot_errors = report_robot_errors(session)
@@ -258,46 +255,50 @@ def pytest_sessionstart(session: Session):
 
 @hookimpl(wrapper=True, tryfirst=True)
 def pytest_sessionfinish(session: Session) -> HookWrapperResult:
-    if not session.config.option.collectonly and is_xdist_master(session):
-        robot_args = _get_robot_args(session=session)
+    try:
+        if not session.config.option.collectonly and is_xdist_master(session):
+            robot_args = _get_robot_args(session=session)
 
-        def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
-            return [value[0] for value in settings.values()]
+            def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
+                return [value[0] for value in settings.values()]
 
-        outputs = list(_xdist_temp_dir(session).glob("*/robot_xdist_outputs/*.xml"))
-        # if there were no outputs there were probably no tests run or some other error occured, so
-        # silently skip this
-        if outputs:
-            Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
-                outputs,
-                # merge is deliberately specified here instead of in the merged dict because it
-                # should never be overwritten
-                merge=True,
-                **merge_robot_options(
-                    {
-                        # rebot doesn't recreate the output.xml unless you sepecify it explicitly.
-                        # we want to do this because our usage of rebot is an implementation detail
-                        # and we want the output to appear the same regardless of whether the user
-                        # is running with xdist
-                        "output": "output.xml",
-                        "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
-                    },
-                    {
-                        key: value
-                        for key, value in robot_args.items()
-                        if key
-                        in option_names(
-                            RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
-                        )
-                        or key
-                        in option_names(
-                            _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
-                        )
-                    },
-                ),
-            )
-    yield
-    cringe_globals._current_session = None  # pyright:ignore[reportPrivateUsage]
+            outputs = list(_xdist_temp_dir(session).glob("*/robot_xdist_outputs/*.xml"))
+            # if there were no outputs there were probably no tests run or some other error occured,
+            # so silently skip this
+            if outputs:
+                Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
+                    outputs,
+                    # merge is deliberately specified here instead of in the merged dict because it
+                    # should never be overwritten
+                    merge=True,
+                    **merge_robot_options(
+                        {
+                            # rebot doesn't recreate the output.xml unless you sepecify it
+                            # explicitly. we want to do this because our usage of rebot is an
+                            # implementation detail and we want the output to appear the same
+                            # regardless of whether the user is running with xdist
+                            "output": "output.xml",
+                            "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
+                        },
+                        {
+                            key: value
+                            for key, value in robot_args.items()
+                            if key
+                            in option_names(
+                                RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
+                            )
+                            or key
+                            in option_names(
+                                _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
+                            )
+                        },
+                    ),
+                )
+        yield
+    finally:
+        _RobotClassRegistry.listeners.clear()
+        _RobotClassRegistry.pre_rebot_modifiers.clear()
+        cringe_globals._current_session = None  # pyright:ignore[reportPrivateUsage]
 
 
 def pytest_assertion_pass(orig: str, expl: str):
