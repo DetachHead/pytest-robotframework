@@ -559,17 +559,9 @@ def test_catch_errors_decorator_with_non_instance_method(pr: PytestRobotTester):
 
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
-    if pr.xdist:
-        # when running with xdist, the error occurs before robot starts running so theres no log
-        # file
-        pr.run_and_assert_assert_pytest_result(
-            pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
-        )
-    else:
-        pr.run_and_assert_result(
-            pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
-        )
-        pr.assert_log_file_exists()
+    pr.run_and_assert_assert_pytest_result(
+        pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
+    )
 
 
 def test_assertion_fails(pr: PytestRobotTester):
@@ -688,4 +680,13 @@ def test_traceback(pr: PytestRobotTester):
 
 def test_config_file_in_different_location(pr: PytestRobotTester):
     pr.run_and_assert_result(pytest_args=["-c", "asdf/tox.ini"], passed=1)
+    pr.assert_log_file_exists()
+
+
+def test_config_file_and_cwd_in_different_location(pr: PytestRobotTester):
+    pr.pytester._path = pr.pytester.path / "foo"  # pyright:ignore[reportPrivateUsage]
+    pr.pytester.chdir()
+    pr.run_and_assert_result(
+        pytest_args=["-c", "../config/tox.ini", "../tests"], passed=1
+    )
     pr.assert_log_file_exists()

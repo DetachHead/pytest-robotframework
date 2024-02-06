@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Generator, Mapping, cast
 
 import pytest
+from _pytest.main import resolve_collection_argument
 from pluggy import Result
 from pytest import StashKey, TempPathFactory, TestReport, hookimpl
 from robot.api import logger
@@ -97,6 +98,22 @@ _banned_options = {
 _robot_args_key = StashKey[RobotOptions]()
 
 
+def _get_pytest_collection_paths(session: Session) -> list[Path]:
+    """this is usually done during collection inside `perform_collect`, but since robot does the
+    collection during `pytest_runtestloop we need to know these paths ahead of time."""
+    # TODO: maybe refactor this so that collection always happens during the actual collection hooks
+    # so this isn't needed.
+    # https://github.com/DetachHead/pytest-robotframework/issues/189
+    return [
+        resolve_collection_argument(
+            session.config.invocation_params.dir,
+            arg,
+            as_pypath=session.config.option.pyargs,
+        )[0]
+        for arg in session.config.args
+    ]
+
+
 def _get_robot_args(session: Session) -> RobotOptions:
     result: RobotOptions | None = session.stash.get(_robot_args_key, None)
     if result is not None:
@@ -122,12 +139,11 @@ def _get_robot_args(session: Session) -> RobotOptions:
         result,
         cast(
             RobotOptions,
-            RobotFramework().parse_arguments([  # pyright:ignore[reportUnknownMemberType]
-                # not actually used here, but the argument parser requires at least one path
-                session.startpath
-            ])[
-                0
-            ],
+            RobotFramework().parse_arguments(  # pyright:ignore[reportUnknownMemberType]
+                # i don't think this is actually used here, but we send it the correct paths just to
+                # be safe
+                _get_pytest_collection_paths(session)
+            )[0],
         ),
     )
     session.config.hook.pytest_robot_modify_options(options=result, session=session)
@@ -221,7 +237,7 @@ def _collect_or_run(
         # the test is over
         with LOGGER:
             _ = robot.main(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
-                [session.startpath],
+                _get_pytest_collection_paths(session),
                 # needed because PythonParser.visit_init creates an empty suite
                 **robot_args,
             )

@@ -175,7 +175,11 @@ class PytestCollector(SuiteVisitor):
                     self.collection_error = e
         for item in self.items():
             # only include items that are part of this current suite
-            if item.path != suite.source or not isinstance(item, Function):
+            if (
+                not suite.source
+                or item.path.resolve() != suite.source.resolve()
+                or not isinstance(item, Function)
+            ):
                 continue
             # create robot test case for .py test:
             test_case = running.TestCase(
@@ -198,8 +202,7 @@ class PytestCollector(SuiteVisitor):
             module = cast(ModuleType, item.module)
             if module.__doc__ and not suite.doc:
                 suite.doc = module.__doc__
-            if item.path == suite.source:
-                _ = suite.tests.append(test_case)
+            _ = suite.tests.append(test_case)
         # remove the fake placeholder test (there should only ever be 1 fake test):
         fake_tests = [test for test in suite.tests if _fake_test_tag in test.tags]
         if fake_tests:
