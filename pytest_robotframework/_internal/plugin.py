@@ -414,7 +414,8 @@ def pytest_runtest_teardown(item: Item) -> HookWrapperResult:
 
 
 def _keywordify():
-    # TODO: should probably keywordify skip as well, but it messes with the handling in robot_library
+    # TODO: should probably keywordify skip as well, but it messes with the handling in
+    # robot_library
     # https://github.com/DetachHead/pytest-robotframework/issues/51
     for method in ("fail", "xfail"):
         keywordify(pytest, method)
