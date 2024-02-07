@@ -170,7 +170,6 @@ since this is a pytest plugin, you should avoid using robot options that have py
 | `robot --exitonfailure`                 | `pytest --maxfail=1`                  |                                                                                                                                                         |
 | `robot --rerunfailed`                   | `pytest --lf`                         |                                                                                                                                                         |
 | `robot --runemptysuite`                 | `pytest --suppress-no-test-exit-code` | requires the [pytest-custom-exit-code](https://pypi.org/project/pytest-custom-exit-code/) plugin                                                        |
-| `robot --exitonerror`                   | `pytest`                              | this is the default behavior. disabling `exitonerror` is not supported as these are often internal robot errors that are dangerous to suppress.         |
 | `robot --help`                          | `pytest --help`                       | all supported robot options will be listed in the `robotframework` section                                                                              |
 
 ## specifying robot options directlty

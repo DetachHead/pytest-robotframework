@@ -89,6 +89,7 @@ class RobotOptions(TypedDict):
     parseinclude: list[str]
     stdout: object  # no idea what this is, it's not in the robot docs
     stderr: object  # no idea what this is, it's not in the robot docs
+    exitonerror: bool
 
 
 banned_options = {
