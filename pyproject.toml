@@ -322,9 +322,6 @@ ignore = [
     "PLC2701", # import-private-name (covered by pyright)
 ]
 
-[tool.ruff.lint.pycodestyle]
-ignore-overlong-task-comments = true
-
 [tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false
 
