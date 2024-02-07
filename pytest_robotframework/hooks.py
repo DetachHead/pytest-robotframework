@@ -33,4 +33,11 @@ def pytest_robot_modify_options(options: RobotOptions, session: Session):
     `{"listener": ["Foo", "Bar"]}`means `--listener Foo --listener Bar`). you can also specify
     instances of classes to `listener` and `prerebotmodifier`
     :param session: the pytest `Session` object
+
+    example:
+    -------
+    >>> def pytest_robot_modify_options(options: RobotOptions, session: Session) -> None:
+    ... if not session.config.option.collectonly:
+    ...     options["loglevel"] = "DEBUG:INFO"
+    ...     options["listener"].append(Foo())
     """

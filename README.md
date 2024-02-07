@@ -208,7 +208,8 @@ class Foo(ListenerV3):
 
 def pytest_robot_modify_options(options: RobotOptions, session: Session) -> None:
     if not session.config.option.collectonly:
-        options["listener"].append(Foo())
+        options["loglevel"] = "DEBUG:INFO"
+        options["listener"].append(Foo()) # you can specify instances as listeners, prerebotmodifiers, etc.
 ```
 
 note that not all arguments that the plugin passes to robot will be present in the `args` list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook
