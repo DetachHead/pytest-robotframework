@@ -130,73 +130,6 @@ def test_eval(test_input: int, expected: int):
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/4361295b-5e44-4c9d-b2f3-839e3901b1eb)
 
-## listeners and suite visitors
-
-### listeners
-
-you can define listeners in your `conftest.py` and decorate them with `@listener` to register them as global listeners:
-
-```py
-# conftest.py
-from pytest_robotframework import listener
-from robot import model, result
-from robot.api.interfaces import ListenerV3
-from typing_extensions import override
-
-@listener
-class Listener(ListenerV3):
-    @override
-    def start_test(self, data: model.TestCase result: result.TestCase):
-        ...
-```
-
-or if your listener takes arguments in its constructor, you can call it on the instance instead:
-
-```py
-# conftest.py
-def pytest_sessionstart():
-    listener(Listener("foo"))
-```
-
-### pre-rebot modifiers
-
-just like listeners, you can define [pre-rebot modifiers](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#programmatic-modification-of-results) using the `pre_rebot_modifier` decorator:
-
-```py
-# conftest.py
-
-from pytest_robotframework import pre_rebot_modifier
-from robot import model
-from robot.api import SuiteVisitor
-from robot.utils.misc import printable_name
-from typing_extensions import override
-
-
-@pre_rebot_modifier
-class PytestNameChanger(SuiteVisitor):
-    """makes pytest test names look like robot test names (eg. `test_do_thing` -> `Do Thing`)"""
-
-    @override
-    def start_test(self, test: model.TestCase):
-        pytest_prefix = "test_"
-        if test.name.startswith(pytest_prefix):
-            test.name = printable_name(
-                test.name.removeprefix(pytest_prefix), code_style=True
-            )
-```
-
-or on an instance:
-
-```py
-# conftest.py
-def pytest_sessionstart():
-    listener(PytestNameChanger())
-```
-
-### pre-run modifiers
-
-there is currently no decorator for pre-run modifiers, since they may interfere with the pytest plugin. if you know what you're doing and would like to use a pre-run modifier anyway, you can always [define it in the robot arguments](#specifying-robot-options-directlty).
-
 ## robot suite variables
 
 to set suite-level robot variables, call the `set_variables` function at the top of the test suite:
@@ -226,21 +159,19 @@ running tests in parallel using [pytest-xdist](https://pytest-xdist.readthedocs.
 
 since this is a pytest plugin, you should avoid using robot options that have pytest equivalents:
 
-| instead of...                           | use...                                                  | notes                                                                                                                                                                    |
-| :-------------------------------------- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `robot --include tag_name`              | `pytest -m tag_name`                                    |                                                                                                                                                                          |
-| `robot --exclude tag_name`              | `pytest -m not tag_name`                                |                                                                                                                                                                          |
-| `robot --skip tag_name`                 | `pytest -m "not tag_name"`                              |                                                                                                                                                                          |
-| `robot --test "test name" ./test.robot` | `pytest ./test.robot::"Test Name"`                      |                                                                                                                                                                          |
-| `robot --suite "suite name" ./folder`   | `pytest ./folder`                                       |                                                                                                                                                                          |
-| `robot --listener Foo`                  | [`@listener` decorator](#listeners)                     | listeners can still be specified via the command line with `pytest --robot-listener`, which is useful if you need to pass arguments to its constructor                   |
-| `robot --prerebotmodifier Foo`          | [`@pre_rebot_modifier` decorator](#pre-rebot-modifiers) | pre-rebot-modifiers can still be specified via the command line with `pytest --robot-prerebotmodifier`, which is useful if you need to pass arguments to its constructor |
-| `robot --dryrun`                        | `pytest --collect-only`                                 | not exactly the same. you should use [a type checker](https://github.com/kotlinisland/basedmypy) on your python tests as a replacement for robot dryrun                  |
-| `robot --exitonfailure`                 | `pytest --maxfail=1`                                    |                                                                                                                                                                          |
-| `robot --rerunfailed`                   | `pytest --lf`                                           |                                                                                                                                                                          |
-| `robot --runemptysuite`                 | `pytest --suppress-no-test-exit-code`                   | requires the [pytest-custom-exit-code](https://pypi.org/project/pytest-custom-exit-code/) plugin                                                                         |
-| `robot --exitonerror`                   | `pytest`                                                | this is the default behavior. disabling `exitonerror` is not supported as these are often internal robot errors that are dangerous to suppress.                          |
-| `robot --help`                          | `pytest --help`                                         | all supported robot options will be listed in the `robotframework` section                                                                                               |
+| instead of...                           | use...                                | notes                                                                                                                                                   |
+| :-------------------------------------- | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `robot --include tag_name`              | `pytest -m tag_name`                  |                                                                                                                                                         |
+| `robot --exclude tag_name`              | `pytest -m not tag_name`              |                                                                                                                                                         |
+| `robot --skip tag_name`                 | `pytest -m "not tag_name"`            |                                                                                                                                                         |
+| `robot --test "test name" ./test.robot` | `pytest ./test.robot::"Test Name"`    |                                                                                                                                                         |
+| `robot --suite "suite name" ./folder`   | `pytest ./folder`                     |                                                                                                                                                         |
+| `robot --dryrun`                        | `pytest --collect-only`               | not exactly the same. you should use [a type checker](https://github.com/kotlinisland/basedmypy) on your python tests as a replacement for robot dryrun |
+| `robot --exitonfailure`                 | `pytest --maxfail=1`                  |                                                                                                                                                         |
+| `robot --rerunfailed`                   | `pytest --lf`                         |                                                                                                                                                         |
+| `robot --runemptysuite`                 | `pytest --suppress-no-test-exit-code` | requires the [pytest-custom-exit-code](https://pypi.org/project/pytest-custom-exit-code/) plugin                                                        |
+| `robot --exitonerror`                   | `pytest`                              | this is the default behavior. disabling `exitonerror` is not supported as these are often internal robot errors that are dangerous to suppress.         |
+| `robot --help`                          | `pytest --help`                       | all supported robot options will be listed in the `robotframework` section                                                                              |
 
 ## specifying robot options directlty
 
@@ -270,10 +201,14 @@ you can specify a `pytest_robot_modify_options` hook in your `conftest.py` to pr
 
 ```py
 from pytest_robotframework import RobotOptions
+from robot.api.interfaces import ListenerV3
+
+class Foo(ListenerV3):
+    ...
 
 def pytest_robot_modify_options(options: RobotOptions, session: Session) -> None:
     if not session.config.option.collectonly:
-        options["listener"].append("Foo")
+        options["listener"].append(Foo())
 ```
 
 note that not all arguments that the plugin passes to robot will be present in the `args` list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook
