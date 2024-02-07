@@ -560,7 +560,7 @@ def test_catch_errors_decorator_with_non_instance_method(pr: PytestRobotTester):
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
     pr.run_and_assert_assert_pytest_result(
-        pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
+        pytest_args=["asdfdsf"], exit_code=ExitCode.USAGE_ERROR
     )
 
 

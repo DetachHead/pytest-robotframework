@@ -170,13 +170,6 @@ class PytestRobotTester:
     ):
         result = self.run_pytest(*pytest_args or [], subprocess=subprocess)
 
-        result.assert_outcomes(
-            passed=passed,
-            skipped=skipped,
-            failed=failed,
-            errors=errors,
-            xfailed=xfailed,
-        )
         if not exit_code:
             if errors:
                 exit_code = ExitCode.INTERNAL_ERROR
@@ -184,6 +177,21 @@ class PytestRobotTester:
                 exit_code = ExitCode.TESTS_FAILED
             else:
                 exit_code = ExitCode.OK
+        if exit_code == ExitCode.USAGE_ERROR:
+            # i dont think results are always generated if theres a pytest usage error
+            if passed or skipped or failed or errors or xfailed:
+                raise Exception(
+                    "cannot specify expected pytest outcomes when expected exit code is"
+                    " USAGE_ERROR"
+                )
+        else:
+            result.assert_outcomes(
+                passed=passed,
+                skipped=skipped,
+                failed=failed,
+                errors=errors,
+                xfailed=xfailed,
+            )
         try:
             assert result.ret == exit_code
         except AssertionError:
