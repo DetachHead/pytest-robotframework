@@ -638,6 +638,10 @@ class _RobotClassRegistry:
 _T_Listener = TypeVar("_T_Listener", bound=ClassOrInstance[Listener])
 
 
+@deprecated(
+    "add listeners using the `pytest_robot_modify_options` hook instead. see"
+    " https://github.com/DetachHead/pytest-robotframework#pytest_robot_modify_options-hook"
+)
 def listener(obj: _T_Listener) -> _T_Listener:
     """registers a class or instance as a global robot listener. listeners using this decorator are
     always enabled and do not need to be registered with the `--listener` robot option.
@@ -655,6 +659,10 @@ def listener(obj: _T_Listener) -> _T_Listener:
 _T_SuiteVisitor = TypeVar("_T_SuiteVisitor", bound=ClassOrInstance[SuiteVisitor])
 
 
+@deprecated(
+    "add pre-rebot modifiers using the `pytest_robot_modify_options` hook instead. see"
+    " https://github.com/DetachHead/pytest-robotframework#pytest_robot_modify_options-hook"
+)
 def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
     """registers a suite visitor as a pre-rebot modifier. classes using this decorator are always
     enabled and do not need to be registered with the `--prerebotmodifier` robot option.

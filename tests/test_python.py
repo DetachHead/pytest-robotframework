@@ -105,6 +105,11 @@ def test_robot_modify_options_hook(pr: PytestRobotTester):
     pr.assert_log_file_exists()
 
 
+def test_robot_modify_options_hook_listener_instance(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=1)
+    pr.assert_log_file_exists()
+
+
 def test_listener_calls_log_file(pr: PytestRobotTester):
     result = pr.run_pytest(
         "--robot-listener", str(pr.pytester.path / "Listener.py"), subprocess=True

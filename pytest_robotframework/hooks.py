@@ -30,6 +30,7 @@ def pytest_robot_modify_options(options: RobotOptions, session: Session):
     """modify the arguments passed to robot in-place
 
     :param options: the arguments to be passed to robot in dict format. for example,
-    `{"listener": ["Foo", "Bar"]}`means `--listener Foo --listener Bar`)
+    `{"listener": ["Foo", "Bar"]}`means `--listener Foo --listener Bar`). you can also specify
+    instances of classes to `listener` and `prerebotmodifier`
     :param session: the pytest `Session` object
     """
