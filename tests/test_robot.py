@@ -251,17 +251,9 @@ def test_keyword_with_conflicting_name(pr: PytestRobotTester):
 
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
-    if pr.xdist:
-        # when running with xdist, the error occurs before robot starts running so theres no log
-        # file
-        pr.run_and_assert_assert_pytest_result(
-            pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
-        )
-    else:
-        pr.run_and_assert_result(
-            pytest_args=["asdfdsf"], exit_code=ExitCode.INTERNAL_ERROR
-        )
-        pr.assert_log_file_exists()
+    pr.run_and_assert_assert_pytest_result(
+        pytest_args=["asdfdsf"], exit_code=ExitCode.USAGE_ERROR
+    )
 
 
 def test_keyword_decorator(pr: PytestRobotTester):
