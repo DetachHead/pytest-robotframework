@@ -1,10 +1,22 @@
 from __future__ import annotations
 
-from typing import Callable, Dict, Final, Generic, List, Optional, Union, cast
+from typing import (
+    Callable,
+    Final,
+    Generic,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    TypedDict,
+    Union,
+    cast,
+)
 
 from basedtyping import T
 from pytest import Item, Session, StashKey
 from robot import model, running
+from robot.api.interfaces import ListenerV2, ListenerV3, Parser
 from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsage]
 from robot.running.context import (
     _ExecutionContext,  # pyright:ignore[reportPrivateUsage]
@@ -19,7 +31,80 @@ ModelTestCase = model.TestCase[model.Keyword]
 ModelTestSuite = model.TestSuite[model.Keyword, ModelTestCase]
 """robot `model.TestSuite` with the default generic values"""
 
-RobotOptions = Dict[str, object]
+Listener = Union[ListenerV2, ListenerV3]
+
+
+class RobotOptions(TypedDict):
+    rpa: bool | None
+    language: str | None
+    extension: str
+    name: str | None
+    doc: str | None
+    metadata: list[str]
+    settag: list[str]
+    rerunfailedsuites: list[str] | None
+    skiponfailure: list[str]
+    variable: list[str]
+    variablefile: list[str]
+    outputdir: str
+    output: str | None
+    log: str | None
+    report: str | None
+    xunit: str | None
+    debugfile: str | None
+    timestampoutputs: bool
+    splitlog: bool
+    logtitle: str | None
+    reporttitle: str | None
+    reportbackground: tuple[str, str] | tuple[str, str, str]
+    maxerrorlines: int | None
+    maxassignlength: int
+    loglevel: str
+    suitestatlevel: int
+    tagstatinclude: list[str]
+    tagstatexclude: list[str]
+    tagstatcombine: list[str]
+    tagdoc: list[str]
+    tagstatlink: list[str]
+    expandkeywords: list[str]
+    removekeywords: list[str]
+    flattenkeywords: list[str]
+    listener: list[str | Listener]
+    statusrc: bool
+    skipteardownonexit: bool
+    prerunmodifier: list[str | model.SuiteVisitor]
+    prerebotmodifier: list[str | model.SuiteVisitor]
+    randomize: Literal["ALL", "SUITES", "TESTS", "NONE"]
+    console: Literal["verbose", "dotted", "quiet", "none"]
+    dotted: bool
+    quiet: bool
+    consolewidth: int
+    consolecolors: Literal["AUTO", "ON", "ANSI", "OFF"]
+    consolemarkers: Literal["AUTO", "ON", "OFF"]
+    pythonpath: list[str]
+    # argumentfile is not supported because it's not in the _cli_opts dict for some reason
+    # argumentfile: str | None  # noqa: ERA001
+    parser: list[str | Parser]
+    legacyoutput: bool
+    parseinclude: list[str]
+    stdout: object  # no idea what this is, it's not in the robot docs
+    stderr: object  # no idea what this is, it's not in the robot docs
+
+
+banned_options = {
+    "include",
+    "exclude",
+    "skip",
+    "test",
+    "task",
+    "dryrun",
+    "exitonfailure",
+    "rerunfailed",
+    "suite",
+    "runemptysuite",
+    "help",
+}
+"""robot arguments that are not allowed because they conflict with pytest and/or this plugin"""
 
 
 class Cloaked(Generic[T]):
@@ -101,9 +186,12 @@ def escape_robot_str(value: str) -> str:
     return value.replace("\\", "\\\\")
 
 
-def merge_robot_options(obj1: RobotOptions, obj2: RobotOptions) -> RobotOptions:
+# not using RobotOptions type since we use it to set banned options that we don't expose to the user
+def merge_robot_options(
+    obj1: Mapping[str, object], obj2: Mapping[str, object]
+) -> dict[str, object]:
     """this assumes there are no nested dicts (as far as i can tell no robot args be like that)"""
-    result: RobotOptions = {}
+    result: dict[str, object] = {}
     for key, value in obj1.items():
         if isinstance(value, list):
             other_value = cast(Optional[List[object]], obj2.get(key, []))
@@ -115,9 +203,7 @@ def merge_robot_options(obj1: RobotOptions, obj2: RobotOptions) -> RobotOptions:
         else:
             new_value = value
         result[key] = new_value
-    for key, value in obj2.items():
-        if key not in obj1:
-            result[key] = value
+    result.update({key: value for key, value in obj2.items() if key not in obj1})
     return result
 
 
@@ -134,12 +220,15 @@ def cli_defaults(
         ".",
     )
 
-    return dict(
-        # instantiate the class because _BaseSettings.__init__ adds any additional opts
-        # that the subclass may have defined (using _extra_cli_opts)
-        settings_class(  # pyright:ignore[reportUnknownArgumentType,reportUnknownMemberType]
-            {}
-        )._cli_opts.values()  # pyright:ignore[reportPrivateUsage]
+    return cast(
+        RobotOptions,
+        dict(
+            # instantiate the class because _BaseSettings.__init__ adds any additional opts
+            # that the subclass may have defined (using _extra_cli_opts)
+            settings_class(  # pyright:ignore[reportUnknownArgumentType,reportUnknownMemberType]
+                {}
+            )._cli_opts.values()  # pyright:ignore[reportPrivateUsage]
+        ),
     )
 
 

@@ -44,6 +44,7 @@ from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
 from pytest_robotframework._internal.robot_utils import (
+    Listener as _Listener,
     RobotOptions as _RobotOptions,
     add_robot_error,
     escape_robot_str,
@@ -63,23 +64,6 @@ if TYPE_CHECKING:
         _ExecutionContext,  # pyright:ignore[reportPrivateUsage]
     )
 
-
-Listener: TypeAlias = Union[ListenerV2, ListenerV3]
-
-# ideally this would just use an explicit re-export
-# https://github.com/mitmproxy/pdoc/issues/667
-RobotOptions: TypeAlias = _RobotOptions
-"""robot command-line arguments after being parsed by robot into a `dict`.
-
-for example, the following robot options:
-
-```dotenv
-ROBOT_OPTIONS="--listener Foo --listener Bar -d baz"
-```
-
-will be converted to a `dict` like so:
->>> {"listener": ["Foo", "Bar"], "outputdir": "baz"}
-"""
 
 RobotVariables: TypeAlias = Dict[str, object]
 """variable names and values to be set on the suite level. see the `set_variables` function"""
@@ -564,7 +548,7 @@ def keywordify(
 
 
 _T_ListenerOrSuiteVisitor = TypeVar(
-    "_T_ListenerOrSuiteVisitor", bound=Type[Union[Listener, SuiteVisitor]]
+    "_T_ListenerOrSuiteVisitor", bound=Type[Union["Listener", SuiteVisitor]]
 )
 
 
@@ -635,7 +619,7 @@ class _RobotClassRegistry:
             )
 
 
-_T_Listener = TypeVar("_T_Listener", bound=ClassOrInstance[Listener])
+_T_Listener = TypeVar("_T_Listener", bound=ClassOrInstance["Listener"])
 
 
 @deprecated(
@@ -675,3 +659,25 @@ def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
         obj if isinstance(obj, SuiteVisitor) else catch_errors(obj)()
     )
     return obj
+
+
+# ideally these would just use an explicit re-export
+# https://github.com/mitmproxy/pdoc/issues/667
+Listener: TypeAlias = _Listener
+
+RobotOptions: TypeAlias = _RobotOptions
+"""robot command-line arguments after being parsed by robot into a `dict`.
+
+for example, the following robot options:
+
+```dotenv
+ROBOT_OPTIONS="--listener Foo --listener Bar -d baz"
+```
+
+will be converted to a `dict` like so:
+>>> {"listener": ["Foo", "Bar"], "outputdir": "baz"}
+
+any options missing from this `TypedDict` are not allowed to be modified as they interfere with the
+functionality of this plugin. see https://github.com/detachhead/pytest-robotframework#config for
+alternatives
+"""
