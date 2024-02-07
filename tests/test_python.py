@@ -684,6 +684,7 @@ def test_config_file_in_different_location(pr: PytestRobotTester):
 
 
 def test_config_file_and_cwd_in_different_location(pr: PytestRobotTester):
+    # https://github.com/pytest-dev/pytest/issues/11942
     pr.pytester._path = pr.pytester.path / "foo"  # pyright:ignore[reportPrivateUsage]
     pr.pytester.chdir()
     pr.run_and_assert_result(
