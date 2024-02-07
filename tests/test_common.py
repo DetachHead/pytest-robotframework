@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from pytest import ExitCode
+from robot.conf.settings import RobotSettings
+
+from pytest_robotframework import RobotOptions
+from pytest_robotframework._internal.robot_utils import banned_options, cli_defaults
 
 if TYPE_CHECKING:
     from conftest import PytestRobotTester
@@ -11,3 +15,9 @@ if TYPE_CHECKING:
 def test_no_tests_found_no_files(pr: PytestRobotTester):
     pr.run_and_assert_result(exit_code=ExitCode.NO_TESTS_COLLECTED)
     pr.assert_log_file_exists(check_xdist=False)
+
+
+def test_robot_options_type_is_up_to_date():
+    assert {
+        key for key in cli_defaults(RobotSettings) if key not in banned_options
+    } == set(RobotOptions.__annotations__.keys())

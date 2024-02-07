@@ -44,6 +44,7 @@ from pytest_robotframework._internal.robot_classes import (
     PythonParser,
 )
 from pytest_robotframework._internal.robot_utils import (
+    banned_options,
     cli_defaults,
     escape_robot_str,
     merge_robot_options,
@@ -81,20 +82,6 @@ def _log_path(item: Item) -> Path:
     )
 
 
-_banned_options = {
-    "include",
-    "exclude",
-    "skip",
-    "test",
-    "dryrun",
-    "exitonfailure",
-    "rerunfailed",
-    "suite",
-    "runemptysuite",
-    "help",
-}
-"""robot arguments that are not allowed because they conflict with pytest and/or this plugin"""
-
 _robot_args_key = StashKey[RobotOptions]()
 
 
@@ -118,11 +105,11 @@ def _get_robot_args(session: Session) -> RobotOptions:
     result: RobotOptions | None = session.stash.get(_robot_args_key, None)
     if result is not None:
         return result
-    result = {}
+    options: dict[str, object] = {}
 
     # set any robot options that were set in the pytest cli args:
     for arg_name, default_value in cli_defaults(RobotSettings).items():
-        if arg_name in _banned_options:
+        if arg_name in banned_options:
             continue
         value = getattr(
             session.config.option,
@@ -132,18 +119,23 @@ def _get_robot_args(session: Session) -> RobotOptions:
                 else f"robot_{arg_name}"
             ),
         )
-        result[arg_name] = value
+        options[arg_name] = value
 
     # parse any options from the ROBOT_OPTIONS variable:
-    result = merge_robot_options(
-        result,
-        cast(
-            RobotOptions,
-            RobotFramework().parse_arguments(  # pyright:ignore[reportUnknownMemberType]
-                # i don't think this is actually used here, but we send it the correct paths just to
-                # be safe
-                _get_pytest_collection_paths(session)
-            )[0],
+    result = cast(
+        RobotOptions,
+        merge_robot_options(
+            options,
+            cast(
+                RobotOptions,
+                RobotFramework().parse_arguments(  # pyright:ignore[reportUnknownMemberType]
+                    # i don't think this is actually used here, but we send it the correct paths
+                    # just to be safe
+                    _get_pytest_collection_paths(session)
+                )[
+                    0
+                ],
+            ),
         ),
     )
     session.config.hook.pytest_robot_modify_options(options=result, session=session)
@@ -154,7 +146,7 @@ def _get_robot_args(session: Session) -> RobotOptions:
 def _collect_or_run(
     session: Session,
     *,
-    robot_args: RobotOptions,
+    robot_options: RobotOptions,
     collect_only: bool,
     xdist_item: Item | None = None,
 ):
@@ -177,8 +169,8 @@ def _collect_or_run(
         raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()
 
-    robot_args = merge_robot_options(
-        robot_args,
+    robot_args: Mapping[str, object] = merge_robot_options(
+        robot_options,
         {
             "extension": "py:robot",
             "runemptysuite": True,
@@ -264,7 +256,7 @@ def pytest_addoption(parser: Parser):
         " https://github.com/DetachHead/pytest-robotframework#config)",
     )
     for arg_name, default_value in cli_defaults(RobotSettings).items():
-        if arg_name in _banned_options:
+        if arg_name in banned_options:
             continue
         arg_name_with_prefix = f"--robot-{arg_name}"
         if isinstance(default_value, bool):
@@ -370,7 +362,7 @@ def pytest_collection(session: Session) -> object:
     collect_only = session.config.option.collectonly
     robot_args = _get_robot_args(session=session)
     if collect_only or is_xdist_worker(session):
-        _collect_or_run(session, collect_only=True, robot_args=robot_args)
+        _collect_or_run(session, collect_only=True, robot_options=robot_args)
     return True
 
 
@@ -440,7 +432,7 @@ def pytest_runtestloop(session: Session) -> object:
     ):
         return None
     robot_args = _get_robot_args(session=session)
-    _collect_or_run(session, collect_only=False, robot_args=robot_args)
+    _collect_or_run(session, collect_only=False, robot_options=robot_args)
     return None if is_xdist(session) else True
 
 
@@ -451,7 +443,7 @@ def pytest_runtest_protocol(item: Item):
             item.session,
             collect_only=False,
             xdist_item=item,
-            robot_args=_get_robot_args(session=item.session),
+            robot_options=_get_robot_args(session=item.session),
         )
         return True
     return None
