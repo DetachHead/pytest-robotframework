@@ -1,6 +1,6 @@
 [project]
 name = "pytest_robotframework"
-version = "3.0.1"
+version = "3.1.0"
 description = "a pytest plugin that can run both python and robotframework tests while generating robot reports for them"
 authors = [
     { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
