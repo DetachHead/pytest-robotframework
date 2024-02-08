@@ -173,13 +173,16 @@ class PytestCollector(SuiteVisitor):
                     # if collection fails we still need to clean up the suite (ie. delete all the
                     # fake tests), so we defer the error to `end_suite` for the top level suite
                     self.collection_error = e
+        if not suite.source:
+            return
+        # saved the resolved paths for performance reasons
+        if not suite.source.is_absolute():
+            suite.source = suite.source.resolve()
         for item in self.items():
+            if not item.path.is_absolute():
+                item.path = item.path.resolve()
             # only include items that are part of this current suite
-            if (
-                not suite.source
-                or item.path.resolve() != suite.source.resolve()
-                or not isinstance(item, Function)
-            ):
+            if item.path != suite.source or not isinstance(item, Function):
                 continue
             # create robot test case for .py test:
             test_case = running.TestCase(
