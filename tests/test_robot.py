@@ -154,7 +154,7 @@ def test_warning_on_unknown_tag(pr: PytestRobotTester):
     # TODO: figure out why the error message is wack
     #  https://github.com/DetachHead/pytest-robotframework/issues/37
     result = pr.run_pytest("--strict-markers", "-m", "m1")
-    result.assert_outcomes(errors=pr.xdist_count * 2 if pr.xdist else 1)
+    result.assert_outcomes(errors=pr.xdist * 2 if pr.xdist else 1)
 
 
 def test_parameterized_tags(pr: PytestRobotTester):

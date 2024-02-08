@@ -7,9 +7,10 @@ from typing import TYPE_CHECKING
 from pytest import ExitCode
 
 from pytest_robotframework._internal.errors import UserError
+from tests.conftest import PytestRobotTester
 
 if TYPE_CHECKING:
-    from conftest import PytestRobotTester
+    from tests.conftest import PytesterDir
 
 
 def test_one_test_passes(pr: PytestRobotTester):
@@ -522,7 +523,7 @@ def test_listener_decorator(pr: PytestRobotTester):
 def test_listener_decorator_stays_active_on_second_test(pr: PytestRobotTester):
     # when testing with xdist we want them both to run on the same node
     if pr.xdist:
-        pr.xdist_count = 1
+        pr.xdist = 1
     pr.run_and_assert_result(passed=2)
     pr.assert_log_file_exists()
 
@@ -533,7 +534,7 @@ def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
     result = pr.run_pytest(subprocess=False)
     # the error gets duplicated when running with xdist, i guess because the module where the
     # listener is defined gets imported multiple times, who knows
-    result.assert_outcomes(errors=pr.xdist_count * 2 if pr.xdist else 1)
+    result.assert_outcomes(errors=pr.xdist * 2 if pr.xdist else 1)
     # pytest failed before test was collected so nothing in the robot run. if xdist then it failed
     # before robot started so there'll be no robot files at all
     if pr.xdist:
@@ -695,4 +696,10 @@ def test_config_file_and_cwd_in_different_location(pr: PytestRobotTester):
     pr.run_and_assert_result(
         pytest_args=["-c", "../config/tox.ini", "../tests"], passed=1
     )
+    pr.assert_log_file_exists()
+
+
+def test_xdist_n_0(pytester_dir: PytesterDir):
+    pr = PytestRobotTester(pytester=pytester_dir, xdist=0)
+    pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
