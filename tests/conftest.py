@@ -109,15 +109,14 @@ else:
 
 @fixture(params=[True, False], ids=["xdist_on", "xdist_off"])
 def pr(pytester_dir: PytesterDir, request: FixtureRequest) -> PytestRobotTester:
-    return PytestRobotTester(pytester=pytester_dir, xdist=request.param)
+    return PytestRobotTester(pytester=pytester_dir, xdist=2 if request.param else None)
 
 
 class PytestRobotTester:
-    def __init__(self, *, pytester: PytesterDir, xdist: bool):
+    def __init__(self, *, pytester: PytesterDir, xdist: int | None):
         super().__init__()
         self.pytester = pytester
-        self.xdist: bool = xdist
-        self.xdist_count = 2
+        self.xdist = xdist
 
     def output_xml(self) -> _Element:
         return XML((self.pytester.path / "output.xml").read_bytes())
@@ -149,7 +148,7 @@ class PytestRobotTester:
         # far from perfect but we can be reasonably confident that the xdist stuff ran if this
         # folder exists
         if check_xdist or not self.xdist:
-            assert self.xdist == bool(
+            assert bool(self.xdist) == bool(
                 list(self.pytester.path.glob("**/robot_xdist_outputs"))
             )
 
@@ -219,8 +218,8 @@ class PytestRobotTester:
     def run_pytest(
         self, *args: str, subprocess: bool = True, plugins: list[object] | None = None
     ) -> RunResult:
-        if self.xdist:
-            args += ("-n", str(self.xdist_count))
+        if self.xdist is not None:
+            args += ("-n", str(self.xdist))
         pytester = cast(Pytester, self.pytester)
         return (
             pytester.runpytest_subprocess(*args)

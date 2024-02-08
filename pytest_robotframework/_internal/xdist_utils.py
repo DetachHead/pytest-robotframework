@@ -16,7 +16,7 @@ def get_xdist():
 
 
 def is_xdist_master(session: Session):
-    return get_xdist() is not None and session.config.option.numprocesses is not None
+    return get_xdist() is not None and session.config.option.numprocesses
 
 
 def worker_id(session: Session) -> str | None:
