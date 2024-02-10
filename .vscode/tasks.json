@@ -93,6 +93,16 @@
       },
       "problemMatcher": [],
       "isBackground": true
+    },
+    {
+      "label": "run all tests",
+      "type": "shell",
+      "command": "./pw",
+      "args": ["test"],
+      "presentation": {
+        "clear": true
+      },
+      "problemMatcher": []
     }
   ]
 }
