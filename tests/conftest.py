@@ -112,48 +112,44 @@ def pr(pytester_dir: PytesterDir, request: FixtureRequest) -> PytestRobotTester:
     return PytestRobotTester(pytester=pytester_dir, xdist=2 if request.param else None)
 
 
+def _log_file_exists():
+    return Path("log.html").exists()
+
+
+def output_xml() -> _Element:
+    return XML(Path("output.xml").read_bytes())
+
+
+def assert_robot_total_stats(*, passed: int = 0, skipped: int = 0, failed: int = 0):
+    root = output_xml()
+    statistics = next(child for child in root if child.tag == "statistics")
+    total = next(child for child in statistics if child.tag == "total")
+    result = copy_object(next(child for child in total if child.tag == "stat").attrib)
+    assert result == {"pass": str(passed), "fail": str(failed), "skip": str(skipped)}
+
+
+def assert_log_file_doesnt_exist():
+    assert not _log_file_exists()
+
+
 class PytestRobotTester:
     def __init__(self, *, pytester: PytesterDir, xdist: int | None):
         super().__init__()
         self.pytester = pytester
         self.xdist = xdist
 
-    def output_xml(self) -> _Element:
-        return XML((self.pytester.path / "output.xml").read_bytes())
-
-    def assert_robot_total_stats(
-        self, *, passed: int = 0, skipped: int = 0, failed: int = 0
-    ):
-        root = self.output_xml()
-        statistics = next(child for child in root if child.tag == "statistics")
-        total = next(child for child in statistics if child.tag == "total")
-        result = copy_object(
-            next(child for child in total if child.tag == "stat").attrib
-        )
-        assert result == {
-            "pass": str(passed),
-            "fail": str(failed),
-            "skip": str(skipped),
-        }
-
-    def _log_file_exists(self):
-        return (self.pytester.path / "log.html").exists()
-
     def assert_log_file_exists(self, *, check_xdist: bool = True):
         """asserts that robot generated a log file, and ensures that it did/didn't use xdist.
 
         set `check_xdist` to `False` if you expect no tests to have been run (in which case most
         of the xdist-specific logic won't get hit so the xdist check would fail)"""
-        assert self._log_file_exists()
+        assert _log_file_exists()
         # far from perfect but we can be reasonably confident that the xdist stuff ran if this
         # folder exists
         if check_xdist or not self.xdist:
             assert bool(self.xdist) == bool(
                 list(self.pytester.path.glob("**/robot_xdist_outputs"))
             )
-
-    def assert_log_file_doesnt_exist(self):
-        assert not self._log_file_exists()
 
     def run_and_assert_assert_pytest_result(
         self,
@@ -251,7 +247,7 @@ class PytestRobotTester:
             xfailed=xfailed,
             exit_code=exit_code,
         )
-        self.assert_robot_total_stats(
+        assert_robot_total_stats(
             passed=passed,
             # most things that are errors in pytest are failures in robot. also robot doesn't store
             #  errors here

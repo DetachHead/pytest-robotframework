@@ -6,6 +6,13 @@ from typing import TYPE_CHECKING, List, Optional, cast
 from lxml.etree import _Element  # pyright:ignore[reportPrivateUsage]
 from pytest import ExitCode, Item, Mark
 
+from tests.conftest import (
+    PytestRobotTester,
+    assert_log_file_doesnt_exist,
+    assert_robot_total_stats,
+    output_xml,
+)
+
 if TYPE_CHECKING:
     from conftest import PytestRobotTester
     from pytest import Session
@@ -24,13 +31,13 @@ def test_one_test_fails(pr: PytestRobotTester):
 def test_one_test_skipped(pr: PytestRobotTester):
     pr.run_and_assert_result(skipped=1)
     pr.assert_log_file_exists()
-    assert pr.output_xml().xpath("./suite//test[@name='Foo']/kw/msg[@level='SKIP']")
+    assert output_xml().xpath("./suite//test[@name='Foo']/kw/msg[@level='SKIP']")
 
 
 def test_two_tests_one_fail_one_pass(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1, failed=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath("./suite//test[@name='Foo']//kw/msg[@level='INFO' and .='1']")
     assert xml.xpath("./suite//test[@name='Bar']//kw/msg[@level='FAIL' and .='2']")
 
@@ -47,7 +54,7 @@ def test_listener_calls_log_file(pr: PytestRobotTester):
 def test_setup_passes(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
-    assert pr.output_xml().xpath(
+    assert output_xml().xpath(
         "./suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar']/kw[@name='Log']/arg[.='2']"
     )
 
@@ -55,7 +62,7 @@ def test_setup_passes(pr: PytestRobotTester):
 def test_setup_fails(pr: PytestRobotTester):
     pr.run_and_assert_result(errors=1, exit_code=ExitCode.TESTS_FAILED)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and"
         " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
@@ -67,7 +74,7 @@ def test_setup_fails(pr: PytestRobotTester):
 def test_setup_skipped(pr: PytestRobotTester):
     pr.run_and_assert_result(skipped=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and"
         " .//msg[@level='SKIP']]"
@@ -79,7 +86,7 @@ def test_setup_skipped(pr: PytestRobotTester):
 def test_teardown_passes(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
-    assert pr.output_xml().xpath(
+    assert output_xml().xpath(
         "./suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar']/kw[@name='Log']/arg[.='2']"
     )
 
@@ -88,9 +95,9 @@ def test_teardown_fails(pr: PytestRobotTester):
     result = pr.run_pytest()
     result.assert_outcomes(passed=1, errors=1)
     # unlike pytest, teardown failures in robot count as a test failure
-    pr.assert_robot_total_stats(failed=1)
+    assert_robot_total_stats(failed=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and"
         " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
@@ -102,9 +109,9 @@ def test_teardown_skipped(pr: PytestRobotTester):
     result = pr.run_pytest()
     result.assert_outcomes(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
-    pr.assert_robot_total_stats(skipped=1)
+    assert_robot_total_stats(skipped=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and"
         " .//msg[@level='SKIP']]"
@@ -115,7 +122,7 @@ def test_teardown_skipped(pr: PytestRobotTester):
 def test_two_files_run_one_test(pr: PytestRobotTester):
     pr.run_and_assert_result(pytest_args=["foo.robot::Foo"], passed=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath("./suite//test[@name='Foo']/status[@status='PASS']")
     assert xml.xpath("./suite//test[@name='Foo']/kw/status[@status='PASS']")
     assert not xml.xpath("./suite//test[@name='Bar']")
@@ -127,7 +134,7 @@ def test_two_files_run_test_from_second_suite(pr: PytestRobotTester):
     as it iterates over it"""
     pr.run_and_assert_result(pytest_args=["fdsa/bar.robot::Baz"], passed=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath("./suite//test[@name='Baz']/status[@status='PASS']")
     assert xml.xpath("./suite//test[@name='Baz']/kw/status[@status='PASS']")
     assert not xml.xpath("./suite//test[@name='Foo']")
@@ -137,7 +144,7 @@ def test_two_files_run_test_from_second_suite(pr: PytestRobotTester):
 def test_tags(pr: PytestRobotTester):
     pr.run_and_assert_result(pytest_args=["-m", "m1"], passed=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(".//test[@name='Foo']/tag[.='m1']")
     assert not xml.xpath(".//test[@name='Bar']")
 
@@ -145,7 +152,7 @@ def test_tags(pr: PytestRobotTester):
 def test_tags_in_settings(pr: PytestRobotTester):
     pr.run_and_assert_result(pytest_args=["-m", "m1"], passed=2)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(".//test[@name='Foo']/tag[.='m1']")
     assert xml.xpath(".//test[@name='Bar']/tag[.='m1']")
 
@@ -180,7 +187,7 @@ def test_parameterized_tags(pr: PytestRobotTester):
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
     result = pr.run_pytest("--collect-only", subprocess=False)
     result.assert_outcomes()
-    pr.assert_log_file_doesnt_exist()
+    assert_log_file_doesnt_exist()
 
 
 def test_correct_items_collected_when_collect_only(pr: PytestRobotTester):
@@ -200,7 +207,7 @@ def test_collect_only_nested_suites(pr: PytestRobotTester):
 def test_doesnt_run_tests_outside_path(pr: PytestRobotTester):
     pr.run_and_assert_result(pytest_args=["foo"], passed=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(".//test[@name='Foo']")
     assert not xml.xpath(".//test[@name='Bar']")
 
@@ -215,8 +222,7 @@ def test_init_file(pr: PytestRobotTester):
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
     assert cast(
-        str,
-        cast(List[_Element], pr.output_xml().xpath("/robot/suite"))[0].attrib["name"],
+        str, cast(List[_Element], output_xml().xpath("/robot/suite"))[0].attrib["name"]
     ).startswith("Test Init File")
 
 
@@ -230,7 +236,7 @@ def test_setup_with_args(pr: PytestRobotTester):
     result = pr.run_pytest()
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(
         "//kw[@type='SETUP']/kw[@name='Run Keywords' and ./arg[.='Bar'] and"
         " ./arg[.='AND'] and ./arg[.='Baz']]"
@@ -240,7 +246,7 @@ def test_setup_with_args(pr: PytestRobotTester):
 def test_keyword_with_conflicting_name(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
-    xml = pr.output_xml()
+    xml = output_xml()
     assert xml.xpath(
         "//kw[@name='Run Test']/kw[@name='Teardown' and"
         " not(@type)]/kw[@name='Log']/msg[.='1']"
@@ -260,14 +266,14 @@ def test_keyword_decorator(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     # make sure it doesn't get double keyworded
-    assert pr.output_xml().xpath("//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']")
+    assert output_xml().xpath("//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']")
 
 
 def test_keyword_decorator_and_other_decorator(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     # make sure it doesn't get double keyworded
-    assert pr.output_xml().xpath("//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']")
+    assert output_xml().xpath("//kw[@name='Run Test']/kw[@name='Bar']/msg[.='1']")
 
 
 def test_line_number(pr: PytestRobotTester):
