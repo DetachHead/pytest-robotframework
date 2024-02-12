@@ -19,8 +19,10 @@ from typing import (
     Dict,
     Iterable,
     Iterator,
+    List,
     Mapping,
     Optional,
+    Tuple,
     Type,
     TypeVar,
     Union,
@@ -587,19 +589,22 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
 
         return inner
 
-    for name, method in inspect.getmembers(
-        cls,
-        predicate=lambda attr: inspect.isfunction(attr)
-        # the wrapper breaks static methods idk why, but we shouldn't need to wrap them anyway
-        # because robot listeners/suite visitors don't call any static/class methods
-        and not isinstance(
-            inspect.getattr_static(cls, attr.__name__), (staticmethod, classmethod)
-        )
-        # only wrap methods that are overwritten on the subclass
-        and attr.__name__ in vars(cls)
-        # don't wrap private/dunder methods since they'll get called by the public ones and we don't
-        # want to duplicate errors
-        and not attr.__name__.startswith("_"),
+    for name, method in cast(
+        List[Tuple[str, Function]],
+        inspect.getmembers(
+            cls,
+            predicate=lambda attr: inspect.isfunction(attr)  # pyright:ignore[reportAny]
+            # the wrapper breaks static methods idk why, but we shouldn't need to wrap them anyway
+            # because robot listeners/suite visitors don't call any static/class methods
+            and not isinstance(
+                inspect.getattr_static(cls, attr.__name__), (staticmethod, classmethod)
+            )
+            # only wrap methods that are overwritten on the subclass
+            and attr.__name__ in vars(cls)
+            # don't wrap private/dunder methods since they'll get called by the public ones and we
+            # don't want to duplicate errors
+            and not attr.__name__.startswith("_"),
+        ),
     ):
         setattr(cls, name, wrapped(method))
     setattr(cls, marker, True)
