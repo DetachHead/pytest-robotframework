@@ -257,9 +257,9 @@ ignore = ["pw"]
 pythonVersion = "3.8"
 pythonPlatform = "All"
 typeCheckingMode = "all"
-reportMissingTypeStubs = false            # https://github.com/robotframework/robotframework/issues/4822
-reportImplicitStringConcatenation = false # conflicts with ruff formatter
-enableTypeIgnoreComments = false          # https://github.com/DetachHead/basedpyright/issues/55
+reportMissingTypeStubs = false           # https://github.com/robotframework/robotframework/issues/4822
+reportImplicitStringConcatenation = true # ideally this should be off and handled by the ruff formatter https://github.com/astral-sh/ruff/issues/9965
+enableTypeIgnoreComments = false         # https://github.com/DetachHead/basedpyright/issues/55
 
 [tool.ruff]
 unsafe-fixes = true
@@ -316,6 +316,7 @@ ignore = [
     "UP035",   # deprecated-import (covered by pyright)
     "ISC001",  # single-line-implicit-string-concatenation (conflicts with formatter)
     "COM812",  # missing-trailing-comma (conflicts with formatter)
+    "ISC003",  # explicit-string-concatenation (https://github.com/astral-sh/ruff/issues/9965)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]

@@ -173,8 +173,7 @@ class PytestRobotTester:
             # i dont think results are always generated if theres a pytest usage error
             if passed or skipped or failed or errors or xfailed:
                 raise Exception(
-                    "cannot specify expected pytest outcomes when expected exit code is"
-                    " USAGE_ERROR"
+                    "cannot specify expected pytest outcomes when expected exit code is USAGE_ERROR"
                 )
         else:
             result.assert_outcomes(
