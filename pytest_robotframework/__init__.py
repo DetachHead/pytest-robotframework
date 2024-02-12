@@ -268,7 +268,7 @@ class _FunctionKeywordDecorator(_KeywordDecorator):
 
     @deprecated(
         "you must explicitly pass `wrap_context_manager` when using `keyword` with a"
-        " context manager"
+        + " context manager"
     )
     @overload
     def __call__(self, fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
@@ -354,7 +354,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
         fn_result = fn(*args, **kwargs)
         if not isinstance(fn_result, AbstractContextManager):
             raise TypeError(
-                "keyword decorator expected a context manager but instead got" f" {fn_result!r}"
+                f"keyword decorator expected a context manager but instead got {fn_result!r}"
             )
         # 🚀 independently verified for safety by the overloads
         return WrappedContextManager(  # pyright:ignore[reportReturnType]
@@ -406,7 +406,7 @@ def keyword(  # pyright:ignore[reportOverlappingOverload]
 
 
 @deprecated(
-    "you must explicitly pass `wrap_context_manager` when using `keyword` with a" " context manager"
+    "you must explicitly pass `wrap_context_manager` when using `keyword` with a context manager"
 )
 @overload
 def keyword(fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
@@ -555,7 +555,7 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
                         # stack trace isn't showsn so we neewd to include the original error in the
                         # message as well
                         f"an error occurred inside {cls.__name__} and failed to get the"
-                        f" current pytest item/session: {e}"
+                        + f" current pytest item/session: {e}"
                     ) from e
                 add_robot_error(item_or_session, str(e))
                 raise
@@ -594,8 +594,8 @@ class _RobotClassRegistry:
         if cls.too_late:
             raise UserError(
                 f"{(obj if isinstance(obj, type) else type(obj)).__name__} cannot be"
-                " registered because robot has already started running. make sure it's"
-                " defined in a `conftest.py` file"
+                + " registered because robot has already started running. make sure it's"
+                + " defined in a `conftest.py` file"
             )
 
 
@@ -604,7 +604,7 @@ _T_Listener = TypeVar("_T_Listener", bound=ClassOrInstance["Listener"])
 
 @deprecated(
     "add listeners using the `pytest_robot_modify_options` hook instead. see"
-    " https://github.com/DetachHead/pytest-robotframework#pytest_robot_modify_options-hook"
+    + " https://github.com/DetachHead/pytest-robotframework#pytest_robot_modify_options-hook"
 )
 def listener(obj: _T_Listener) -> _T_Listener:
     """registers a class or instance as a global robot listener. listeners using this decorator are
@@ -625,7 +625,7 @@ _T_SuiteVisitor = TypeVar("_T_SuiteVisitor", bound=ClassOrInstance[SuiteVisitor]
 
 @deprecated(
     "add pre-rebot modifiers using the `pytest_robot_modify_options` hook instead. see"
-    " https://github.com/DetachHead/pytest-robotframework#pytest_robot_modify_options-hook"
+    + " https://github.com/DetachHead/pytest-robotframework#pytest_robot_modify_options-hook"
 )
 def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
     """registers a suite visitor as a pre-rebot modifier. classes using this decorator are always

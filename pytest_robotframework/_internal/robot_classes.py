@@ -103,8 +103,7 @@ class PythonParser(Parser):
 class _NotRunningTestSuiteError(InternalError):
     def __init__(self) -> None:
         super().__init__(
-            "SuiteVisitor should have had a `running.TestSuite` but had a"
-            " `model.TestSuite` instead"
+            "SuiteVisitor should have had a `running.TestSuite` but had a `model.TestSuite` instead"
         )
 
 
@@ -268,8 +267,8 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                 item = get_item_from_robot_test(self.session, test)
                 if not item:
                     raise InternalError(
-                        "this should NEVER happen, `PytestCollector` failed to filter"
-                        f" out {test.name}"
+                        "this should NEVER happen, `PytestCollector` failed to filter out "
+                        + test.name
                     )
                 # need to set nextitem on all the items, because for some reason the attribute
                 # exists on the class but is never used
@@ -504,8 +503,8 @@ class ErrorDetector(ListenerV3):
             item_or_session = self.item
         elif not self.current_test:
             raise InternalError(
-                "a robot error occurred and ErrorDetector failed to figure out what"
-                f" test it came from: {message.message}"
+                "a robot error occurred and ErrorDetector failed to figure out what test it came"
+                + f"from: {message.message}"
             )
         else:
             item_or_session = (

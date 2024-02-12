@@ -65,7 +65,7 @@ def test_setup_fails(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and"
-        " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
+        + " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
     )
     # make sure the test didnt run when setup failed
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
@@ -76,7 +76,7 @@ def test_setup_skipped(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and" " .//msg[@level='SKIP']]"
+        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and .//msg[@level='SKIP']]"
     )
     # make sure the test didnt run when setup was skipped
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
@@ -99,7 +99,7 @@ def test_teardown_fails(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and"
-        " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
+        + " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
     )
     assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
@@ -113,7 +113,7 @@ def test_teardown_skipped(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and"
-        " .//msg[@level='SKIP']]"
+        + " .//msg[@level='SKIP']]"
     )
     assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
@@ -238,7 +238,7 @@ def test_setup_with_args(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//kw[@type='SETUP']/kw[@name='Run Keywords' and ./arg[.='Bar'] and"
-        " ./arg[.='AND'] and ./arg[.='Baz']]"
+        + " ./arg[.='AND'] and ./arg[.='Baz']]"
     )
 
 
@@ -247,7 +247,7 @@ def test_keyword_with_conflicting_name(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='Teardown' and" " not(@type)]/kw[@name='Log']/msg[.='1']"
+        "//kw[@name='Run Test']/kw[@name='Teardown' and not(@type)]/kw[@name='Log']/msg[.='1']"
     )
     assert xml.xpath(
         "//kw[@type='TEARDOWN']/kw[@name='Actual Teardown']/kw[@name='Log']/msg[.='2']"

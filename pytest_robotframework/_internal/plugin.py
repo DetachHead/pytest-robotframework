@@ -246,9 +246,8 @@ def pytest_addhooks(pluginmanager: PluginManager):
 def pytest_addoption(parser: Parser):
     group = parser.getgroup(
         "robot",
-        "robotframework (if an option is missing, it means"
-        " there's a pytest equivalent you should use instead. see"
-        " https://github.com/DetachHead/pytest-robotframework#config)",
+        "robotframework (if an option is missing, it means there's a pytest equivalent you should"
+        + "use instead. see https://github.com/DetachHead/pytest-robotframework#config)",
     )
     for arg_name, default_value in cli_defaults(RobotSettings).items():
         if arg_name in banned_options:
