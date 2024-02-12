@@ -109,7 +109,10 @@ else:
 
 @fixture(params=[True, False], ids=["xdist_on", "xdist_off"])
 def pr(pytester_dir: PytesterDir, request: FixtureRequest) -> PytestRobotTester:
-    return PytestRobotTester(pytester=pytester_dir, xdist=2 if request.param else None)
+    return PytestRobotTester(
+        pytester=pytester_dir,
+        xdist=2 if request.param else None,  # pyright:ignore[reportAny]
+    )
 
 
 def _log_file_exists():

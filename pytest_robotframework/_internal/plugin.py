@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Generator, Mapping, cast
 import pytest
 from _pytest.main import resolve_collection_argument
 from pluggy import Result
-from pytest import StashKey, TempPathFactory, TestReport, hookimpl
+from pytest import Collector, StashKey, TempPathFactory, TestReport, hookimpl
 from robot.api import logger
 from robot.conf.settings import (
     RebotSettings,
@@ -60,7 +60,7 @@ from pytest_robotframework._internal.xdist_utils import (
 if TYPE_CHECKING:
 
     from pluggy import PluginManager
-    from pytest import CallInfo, Collector, Item, Parser, Session
+    from pytest import CallInfo, Item, Parser, Session
 
 HookWrapperResult = Generator[None, Result[object], None]
 
@@ -95,7 +95,7 @@ def _get_pytest_collection_paths(session: Session) -> list[Path]:
         resolve_collection_argument(
             session.config.invocation_params.dir,
             arg,
-            as_pypath=session.config.option.pyargs,
+            as_pypath=session.config.option.pyargs,  # pyright:ignore[reportAny]
         )[0]
         for arg in session.config.args
     ]
@@ -111,15 +111,17 @@ def _get_robot_args(session: Session) -> RobotOptions:
     for arg_name, default_value in cli_defaults(RobotSettings).items():
         if arg_name in banned_options:
             continue
-        value = getattr(
-            session.config.option,
-            (
-                arg_name.replace("robot_no", "robot")
-                if isinstance(default_value, bool) and default_value
-                else f"robot_{arg_name}"
+        options[arg_name] = cast(
+            object,
+            getattr(
+                session.config.option,
+                (
+                    arg_name.replace("robot_no", "robot")
+                    if isinstance(default_value, bool) and default_value
+                    else f"robot_{arg_name}"
+                ),
             ),
         )
-        options[arg_name] = value
 
     # parse any options from the ROBOT_OPTIONS variable:
     result = cast(
@@ -293,7 +295,12 @@ def pytest_sessionstart(session: Session):
 @hookimpl(wrapper=True, tryfirst=True)
 def pytest_sessionfinish(session: Session) -> HookWrapperResult:
     try:
-        if not session.config.option.collectonly and is_xdist_master(session):
+        # https://github.com/psf/black/issues/3946
+        # fmt: off
+        if not session.config.option.collectonly and is_xdist_master(  # pyright:ignore[reportAny]
+            session
+        ):
+            # fmt: on
             robot_args = _get_robot_args(session=session)
 
             def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
@@ -359,17 +366,24 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
 
 
 def pytest_collection(session: Session) -> object:
-    collect_only = session.config.option.collectonly
     robot_args = _get_robot_args(session=session)
-    if collect_only or is_xdist_worker(session):
+    # https://github.com/psf/black/issues/3946
+    # fmt: off
+    if session.config.option.collectonly or is_xdist_worker(  # pyright:ignore[reportAny]
+        session
+    ):
         _collect_or_run(session, collect_only=True, robot_options=robot_args)
+    # fmt: on
     return True
 
 
 def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
     if file_path.suffix == ".robot":
-        return RobotFile.from_parent(  # pyright:ignore[reportUnknownMemberType]
-            parent, path=file_path
+        return cast(
+            Collector,
+            RobotFile.from_parent(  # pyright:ignore[reportUnknownMemberType]
+                parent, path=file_path
+            ),
         )
     return None
 
@@ -418,7 +432,7 @@ def _keywordify():
 @hookimpl(tryfirst=True)
 def pytest_runtestloop(session: Session) -> object:
     if (
-        session.config.option.collectonly
+        session.config.option.collectonly  # pyright:ignore[reportAny]
         # if we're running with xdist, we can't replace the runtestloop with our own because it
         # conflicts with xdist's one. instead we need to run robot individually on each test (in
         # pytest_runtest_protocol) since we can't know which tests we need to run ahead of time (i
