@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, cast
 
+from lxml.etree import _Element  # pyright:ignore[reportPrivateUsage]
 from pytest import ExitCode
 
 from pytest_robotframework._internal.errors import UserError
@@ -703,3 +704,19 @@ def test_xdist_n_0(pytester_dir: PytesterDir):
     pr = PytestRobotTester(pytester=pytester_dir, xdist=0)
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
+
+
+def test_trace_ricing(pr: PytestRobotTester):
+    pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
+    pr.assert_log_file_exists()
+    xml = pr.output_xml()
+    result = cast(
+        List[_Element],
+        xml.xpath(
+            "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
+        ),
+    )[0].text
+
+    assert result
+    assert "Exception: THIS!" in result
+    assert len(result.splitlines()) == 4

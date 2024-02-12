@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ExternalDependencies">
     <plugin id="com.intellij.plugins.watcher" />
-    <plugin id="com.leinardi.pycharm.pylint" />
+    <plugin id="com.koxudaxi.ruff" />
     <plugin id="zielu.gittoolbox" />
   </component>
 </project>
