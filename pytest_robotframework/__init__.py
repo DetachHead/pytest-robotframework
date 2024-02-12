@@ -20,6 +20,7 @@ from typing import (
     Iterable,
     Iterator,
     Mapping,
+    Optional,
     Type,
     TypeVar,
     Union,
@@ -39,6 +40,7 @@ from robot.utils import (
     getshortdoc,  # pyright:ignore[reportUnknownVariableType]
     printable_name,  # pyright:ignore[reportUnknownVariableType]
 )
+from robot.utils.error import ErrorDetails
 from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
@@ -681,3 +683,16 @@ any options missing from this `TypedDict` are not allowed to be modified as they
 functionality of this plugin. see https://github.com/detachhead/pytest-robotframework#config for
 alternatives
 """
+
+
+@patch_method(ErrorDetails)
+def _is_robot_traceback(  # pyright: ignore[reportUnusedFunction]
+    old_method: object, self: ErrorDetails, tb: TracebackType  # noqa: ARG001
+) -> bool | str | None:
+    """Consider all the extended framework as 'robot'"""
+    module = cast(
+        Optional[str], cast(Dict[str, object], tb.tb_frame.f_globals).get("__name__")
+    )
+    return module and module.startswith(
+        ("robot.", "pytest.", "_pytest.", "pytest_robotframework.", "pluggy.")
+    )
