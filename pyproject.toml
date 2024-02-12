@@ -32,7 +32,6 @@ test = "pdm run pytest -n auto"
 
 [tool.pdm.dev-dependencies]
 lint = [
-    "black>=24",
     "basedpyright>=1.2.0",
     "pylint>=3.0.0a7",
     "ruff>=0.2.0",
@@ -47,12 +46,8 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 
-[tool.black]
-target-version = ["py38"]
+[tool.ruff.format]
 skip-magic-trailing-comma = true
-preview = true
-enable-unstable-feature = ['string_processing']
-force-exclude = "pw"
 
 [tool.pylint.MASTER]
 fail-on = "I"
@@ -263,7 +258,7 @@ pythonVersion = "3.8"
 pythonPlatform = "All"
 typeCheckingMode = "all"
 reportMissingTypeStubs = false            # https://github.com/robotframework/robotframework/issues/4822
-reportImplicitStringConcatenation = false # conflicts with black
+reportImplicitStringConcatenation = false # conflicts with ruff formatter
 enableTypeIgnoreComments = false          # https://github.com/DetachHead/basedpyright/issues/55
 
 [tool.ruff]
@@ -278,7 +273,6 @@ extend-exclude = ["pw"]
 extend-select = ["ALL"]
 ignore = [
     "ANN",     # flake8-annotations (covered by pyright)
-    "COM",     # flake8-commas (covered by black)
     "EM",      # flake8-errmsg
     "FIX",     # flake8-fixme
     "PLR0913", # Too many arguments to function call
@@ -298,10 +292,8 @@ ignore = [
     "TRY003",  # Avoid specifying long messages outside the exception class
     "D10",     # Missing docstring
     "D203",    # 1 blank line required before class docstring
-    "D204",    # 1 blank line required after class docstring (handled by black)
     "D205",    # 1 blank line required between summary line and description
     "D209",    # Multi-line docstring closing quotes should be on a separate line
-    "D210",    # No whitespaces allowed surrounding docstring text (conflicts with black when docstring ends with quote (eg. """this is a "quote" """))
     "D212",    # Multi-line docstring summary should start at the first line
     "D213",    # Multi-line docstring summary should start at the second line
     "D400",    # First line should end with a period
@@ -315,7 +307,6 @@ ignore = [
     "D413",    # blank-line-after-last-section
     "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
     "TD002",   # Missing author in TODO
-    "E701",    # Multiple statements on one line (sometimes conflicts with black)
     "CPY001",  # missing-copyright-notice
     "C901",    # max-complexity
     "SLF001",  # private-member-access (covered by pyright)
@@ -323,6 +314,8 @@ ignore = [
     "UP006",   # non-pep585-annotation (covered by pyright)
     "UP007",   # non-pep604-annotation (covered by pyright)
     "UP035",   # deprecated-import (covered by pyright)
+    "ISC001",  # single-line-implicit-string-concatenation (conflicts with formatter)
+    "COM812",  # missing-trailing-comma (conflicts with formatter)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
@@ -336,6 +329,7 @@ fixture-parentheses = false
 [tool.ruff.lint.isort]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
+split-on-trailing-comma = false
 
 [tool.robotidy]
 configure = [

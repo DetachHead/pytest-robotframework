@@ -40,7 +40,7 @@ jobs:
       - run: ./pw pdm lock --check
       - run: ./pw pdm install
       - run: ./pw run basedpyright
-      - run: ./pw run black --check --diff .
+      - run: ./pw run ruff format --check --diff .
       - run: ./pw run ruff .
       - run: ./pw run pylint pytest_robotframework tests
       - run: ./pw run robocop

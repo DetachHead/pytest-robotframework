@@ -52,9 +52,7 @@ def _create_running_keyword(
     """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
     if kwargs:
         raise InternalError(f"kwargs not supported: {kwargs}")
-    return running.Keyword(
-        name=f"{fn.__module__}.{fn.__name__}", args=args, type=keyword_type
-    )
+    return running.Keyword(name=f"{fn.__module__}.{fn.__name__}", args=args, type=keyword_type)
 
 
 _fake_test_tag = "_pytest_robotframework_fake_test"
@@ -77,9 +75,7 @@ class PythonParser(Parser):
 
     @staticmethod
     def _create_suite(source: Path) -> running.TestSuite:
-        return running.TestSuite(
-            running.TestSuite.name_from_source(source), source=source
-        )
+        return running.TestSuite(running.TestSuite.name_from_source(source), source=source)
 
     @override
     def parse(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
@@ -93,9 +89,7 @@ class PythonParser(Parser):
             _create_running_keyword(
                 "KEYWORD",
                 robot_library.internal_error,
-                Cloaked[str](
-                    "fake placeholder test appeared. this should never happen :(("
-                ),
+                Cloaked[str]("fake placeholder test appeared. this should never happen :(("),
             )
         ]
         _ = suite.tests.append(test_case)
@@ -128,9 +122,7 @@ class PytestCollector(SuiteVisitor):
     added later by `PytestRuntestProtocolInjector`)
     """
 
-    def __init__(
-        self, session: Session, *, collect_only: bool, item: Item | None = None
-    ):
+    def __init__(self, session: Session, *, collect_only: bool, item: Item | None = None):
         super().__init__()
         self.session = session
         self.collect_only = collect_only
@@ -188,7 +180,8 @@ class PytestCollector(SuiteVisitor):
             test_case = running.TestCase(
                 name=item.name,
                 doc=cast(
-                    Function, item.function  # pyright:ignore[reportUnknownMemberType]
+                    Function,
+                    item.function,  # pyright:ignore[reportUnknownMemberType]
                 ).__doc__
                 or "",
                 tags=[
@@ -227,9 +220,7 @@ class PytestCollector(SuiteVisitor):
         # `PythonParser`). we do this in end_suite because that's when all the
         # running_test_case_keys should be populated:
         for test in suite.tests[:]:
-            if not get_item_from_robot_test(
-                self.session, test, all_items_should_have_tests=False
-            ):
+            if not get_item_from_robot_test(self.session, test, all_items_should_have_tests=False):
                 suite.tests.remove(test)
 
         # delete any suites that are now empty:
@@ -267,9 +258,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     def start_suite(self, suite: ModelTestSuite):
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
-        _ = suite.resource.imports.library(
-            robot_library.__name__, alias=robot_library.__name__
-        )
+        _ = suite.resource.imports.library(robot_library.__name__, alias=robot_library.__name__)
         item: Item | None = None
         for test in suite.tests:
             if self.item:
@@ -290,17 +279,11 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                     )
             cloaked_item = Cloaked(item)
             item.stash[original_setup_key] = test.setup
-            test.setup = _create_running_keyword(
-                "SETUP", robot_library.setup, cloaked_item
-            )
+            test.setup = _create_running_keyword("SETUP", robot_library.setup, cloaked_item)
 
             item.stash[original_body_key] = test.body
             test.body = Body(
-                items=[
-                    _create_running_keyword(
-                        "KEYWORD", robot_library.run_test, cloaked_item
-                    )
-                ]
+                items=[_create_running_keyword("KEYWORD", robot_library.run_test, cloaked_item)]
             )
 
             item.stash[original_teardown_key] = test.teardown
@@ -336,9 +319,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
     def _get_item(self, data: running.TestCase) -> Item:
         item = get_item_from_robot_test(self.session, data)
         if not item:
-            raise InternalError(
-                f"failed to find pytest item for robot test: {data.name}"
-            )
+            raise InternalError(f"failed to find pytest item for robot test: {data.name}")
         return item
 
     @staticmethod
@@ -349,19 +330,15 @@ class PytestRuntestProtocolHooks(ListenerV3):
             # can't use the public get_hookimpls method because it returns a copy and we need to
             # mutate the original
             # https://github.com/microsoft/pyright/issues/6994
-            # https://github.com/psf/black/issues/3946
-            # fmt: off
             hook_caller._hookimpls[:] = (  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType]
                 []
             )
-            # fmt: on
             for hookimpl in hookimpls:
                 hook_caller._add_hookimpl(  # pyright:ignore[reportPrivateUsage]
                     hookimpl
                 )
             hook_result = cast(
-                object,
-                hook_caller(item=item, nextitem=cast(Optional[Item], item.nextitem)),
+                object, hook_caller(item=item, nextitem=cast(Optional[Item], item.nextitem))
             )
         finally:
             hook_caller._hookimpls[:] = (  # pyright:ignore[reportPrivateUsage]
@@ -396,10 +373,9 @@ class PytestRuntestProtocolHooks(ListenerV3):
             """calls the first half of a hookwrapper"""
             wrapper_generator = cast(
                 _HookWrapper,
-                hook.function(*(
-                    {"item": item, "nextitem": nextitem}[argname]
-                    for argname in hook.argnames
-                )),
+                hook.function(
+                    *({"item": item, "nextitem": nextitem}[argname] for argname in hook.argnames)
+                ),
             )
             self.hookwrappers[hook] = wrapper_generator
             # pretty sure these only ever return `None` but we return it either way just to be safe
@@ -533,7 +509,6 @@ class ErrorDetector(ListenerV3):
             )
         else:
             item_or_session = (
-                get_item_from_robot_test(self.session, self.current_test)
-                or self.session
+                get_item_from_robot_test(self.session, self.current_test) or self.session
             )
         add_robot_error(item_or_session, message.message)

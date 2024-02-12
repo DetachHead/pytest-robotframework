@@ -56,8 +56,7 @@ def test_suites(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     assert output_xml().xpath(
-        "./suite/suite[@name='Suite1']/suite[@name='Test"
-        " Asdf']/test[@name='test_func1']"
+        "./suite/suite[@name='Suite1']/suite[@name='Test" " Asdf']/test[@name='test_func1']"
     )
 
 
@@ -181,9 +180,7 @@ def test_teardown_passes(pr: PytestRobotTester):
 
 
 def test_teardown_fails(pr: PytestRobotTester):
-    pr.run_and_assert_assert_pytest_result(
-        passed=1, errors=1, exit_code=ExitCode.TESTS_FAILED
-    )
+    pr.run_and_assert_assert_pytest_result(passed=1, errors=1, exit_code=ExitCode.TESTS_FAILED)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(".//test/kw[@name='Run Test']")
@@ -218,9 +215,7 @@ def test_error_moment_setup(pr: PytestRobotTester):
 
 
 def test_error_moment_teardown(pr: PytestRobotTester):
-    pr.run_and_assert_assert_pytest_result(
-        passed=1, errors=1, exit_code=ExitCode.TESTS_FAILED
-    )
+    pr.run_and_assert_assert_pytest_result(passed=1, errors=1, exit_code=ExitCode.TESTS_FAILED)
     # unlike pytest, teardown failures in robot count as a test failure
     assert_robot_total_stats(failed=1)
     pr.assert_log_file_exists()
@@ -255,14 +250,11 @@ def test_error_moment_exitonerror(pr: PytestRobotTester):
 
 
 def test_error_moment_exitonerror_multiple_tests(pr: PytestRobotTester):
-
     # robot marks the remaining tests as failed but pytest never gets to actually run them
     if pr.xdist:
         pr.run_and_assert_result(failed=1, passed=1)
     else:
-        pr.run_and_assert_assert_pytest_result(
-            failed=1, pytest_args=["--robot-exitonerror"]
-        )
+        pr.run_and_assert_assert_pytest_result(failed=1, pytest_args=["--robot-exitonerror"])
         # they run in separate workers so exitonerror won't work here
         assert_robot_total_stats(failed=2)
     pr.assert_log_file_exists()
@@ -326,8 +318,7 @@ def test_keyword_decorator_args(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     assert output_xml().xpath(
-        ".//kw[@name='Run Test']/kw[@name='Foo' and ./arg[.='1'] and"
-        " ./arg[.='bar=True']]"
+        ".//kw[@name='Run Test']/kw[@name='Foo' and ./arg[.='1'] and" " ./arg[.='bar=True']]"
     )
 
 
@@ -346,9 +337,7 @@ def test_keyword_decorator_context_manager_that_doesnt_suppress(pr: PytestRobotT
     assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='start']")
     assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='0']")
     assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='end']")
-    assert xml.xpath(
-        "//kw[@name='Asdf' and ./status[@status='FAIL'] and ./msg[.='Exception']]"
-    )
+    assert xml.xpath("//kw[@name='Asdf' and ./status[@status='FAIL'] and ./msg[.='Exception']]")
     assert not xml.xpath("//msg[.='1']")
 
 
@@ -362,9 +351,7 @@ def test_keyword_decorator_context_manager_that_raises_in_exit(pr: PytestRobotTe
     assert not xml.xpath("//msg[.='1']")
 
 
-def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(
-    pr: PytestRobotTester,
-):
+def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(pr: PytestRobotTester):
     pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
@@ -378,9 +365,7 @@ def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(
     assert not xml.xpath("//msg[.='1']")
 
 
-def test_keyword_decorator_returns_context_manager_that_isnt_used(
-    pr: PytestRobotTester,
-):
+def test_keyword_decorator_returns_context_manager_that_isnt_used(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
 
@@ -401,8 +386,7 @@ def test_keywordify_keyword_inside_context_manager(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//kw[@name='Raises' and ./arg[.=\"<class"
-        " 'ZeroDivisionError'>\"]]/kw[@name='Asdf']"
+        "//kw[@name='Raises' and ./arg[.=\"<class" " 'ZeroDivisionError'>\"]]/kw[@name='Asdf']"
     )
 
 
@@ -440,15 +424,9 @@ def test_keyword_names(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     for index in range(2):
-        assert xml.xpath(
-            f".//test[@name='test_{index}']/kw[@name='Setup' and not(./arg)]"
-        )
-        assert xml.xpath(
-            f".//test[@name='test_{index}']/kw[@name='Run Test' and not(./arg)]"
-        )
-        assert xml.xpath(
-            f".//test[@name='test_{index}']/kw[@name='Teardown' and not(./arg)]"
-        )
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Setup' and not(./arg)]")
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Run Test' and not(./arg)]")
+        assert xml.xpath(f".//test[@name='test_{index}']/kw[@name='Teardown' and not(./arg)]")
 
 
 def test_suite_variables(pr: PytestRobotTester):
@@ -492,9 +470,7 @@ def test_robot_keyword_in_python_test(pr: PytestRobotTester):
 def test_xfail_fails(pr: PytestRobotTester):
     pr.run_and_assert_result(xfailed=1)
     pr.assert_log_file_exists()
-    assert output_xml().xpath(
-        "//kw[@name='Run Test' and ./msg[@level='SKIP' and .='xfail: asdf']]"
-    )
+    assert output_xml().xpath("//kw[@name='Run Test' and ./msg[@level='SKIP' and .='xfail: asdf']]")
 
 
 def test_xfail_passes(pr: PytestRobotTester):
@@ -508,9 +484,7 @@ def test_xfail_passes(pr: PytestRobotTester):
 def test_xfail_fails_no_reason(pr: PytestRobotTester):
     pr.run_and_assert_result(xfailed=1)
     pr.assert_log_file_exists()
-    assert output_xml().xpath(
-        "//kw[@name='Run Test' and ./msg[@level='SKIP' and .='xfail']]"
-    )
+    assert output_xml().xpath("//kw[@name='Run Test' and ./msg[@level='SKIP' and .='xfail']]")
 
 
 def test_xfail_passes_no_reason(pr: PytestRobotTester):
@@ -571,9 +545,7 @@ def test_catch_errors_decorator_with_non_instance_method(pr: PytestRobotTester):
 
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
-    pr.run_and_assert_assert_pytest_result(
-        pytest_args=["asdfdsf"], exit_code=ExitCode.USAGE_ERROR
-    )
+    pr.run_and_assert_assert_pytest_result(pytest_args=["asdfdsf"], exit_code=ExitCode.USAGE_ERROR)
 
 
 def test_assertion_fails(pr: PytestRobotTester):
@@ -584,51 +556,36 @@ def test_assertion_fails(pr: PytestRobotTester):
 
 def test_assertion_passes(pr: PytestRobotTester):
     pr.run_and_assert_result(
-        pytest_args=[
-            "-o",
-            "enable_assertion_pass_hook=true",
-            "--robot-loglevel",
-            "DEBUG:INFO",
-        ],
+        pytest_args=["-o", "enable_assertion_pass_hook=true", "--robot-loglevel", "DEBUG:INFO"],
         subprocess=True,
         passed=1,
     )
     pr.assert_log_file_exists()
     assert output_xml().xpath(
-        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and"
-        " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and" " .='1 == 1']"
     )
 
 
 def test_assertion_pass_hook_multiple_tests(pr: PytestRobotTester):
     pr.run_and_assert_result(
-        pytest_args=[
-            "-o",
-            "enable_assertion_pass_hook=true",
-            "--robot-loglevel",
-            "DEBUG:INFO",
-        ],
+        pytest_args=["-o", "enable_assertion_pass_hook=true", "--robot-loglevel", "DEBUG:INFO"],
         subprocess=True,
         passed=2,
     )
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and"
-        " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and" " .='1 == 1']"
     )
     assert xml.xpath(
-        "//kw[@name='assert' and ./arg['right == left']]/msg[@level='INFO' and"
-        " .='1 == 1']"
+        "//kw[@name='assert' and ./arg['right == left']]/msg[@level='INFO' and" " .='1 == 1']"
     )
 
 
 def test_keyword_and_pytest_raises(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
-    assert output_xml().xpath(
-        "//kw[@name='Raises']/kw[@name='Bar']/status[@status='FAIL']"
-    )
+    assert output_xml().xpath("//kw[@name='Raises']/kw[@name='Bar']/status[@status='FAIL']")
 
 
 def test_keyword_raises(pr: PytestRobotTester):
@@ -683,8 +640,7 @@ def test_traceback(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//msg[@level='DEBUG' and contains(., 'in test_foo') and contains(., 'in"
-        " asdf')]"
+        "//msg[@level='DEBUG' and contains(., 'in test_foo') and contains(., 'in" " asdf')]"
     )
 
 
@@ -693,13 +649,9 @@ def test_config_file_in_different_location(pr: PytestRobotTester):
     pr.assert_log_file_exists()
 
 
-def test_config_file_and_cwd_in_different_location(
-    pr: PytestRobotTester, monkeypatch: MonkeyPatch
-):
+def test_config_file_and_cwd_in_different_location(pr: PytestRobotTester, monkeypatch: MonkeyPatch):
     monkeypatch.chdir(pr.pytester.path / "foo")
-    pr.run_and_assert_result(
-        pytest_args=["-c", "../config/tox.ini", "../tests"], passed=1
-    )
+    pr.run_and_assert_result(pytest_args=["-c", "../config/tox.ini", "../tests"], passed=1)
     pr.assert_log_file_exists()
 
 
@@ -715,9 +667,7 @@ def test_trace_ricing(pr: PytestRobotTester):
     xml = output_xml()
     result = cast(
         List[_Element],
-        xml.xpath(
-            "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
-        ),
+        xml.xpath("//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"),
     )[0].text
 
     assert result
