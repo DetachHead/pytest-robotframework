@@ -55,18 +55,12 @@ from pytest_robotframework._internal.robot_utils import (
     execution_context,
     robot_6,
 )
-from pytest_robotframework._internal.utils import (
-    ClassOrInstance,
-    ContextManager,
-    patch_method,
-)
+from pytest_robotframework._internal.utils import ClassOrInstance, ContextManager, patch_method
 
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from robot.running.context import (
-        _ExecutionContext,  # pyright:ignore[reportPrivateUsage]
-    )
+    from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 
 
 RobotVariables: TypeAlias = Dict[str, object]
@@ -107,13 +101,7 @@ if robot_6:
     @patch_method(LibraryKeywordRunner)
     def _runner_for(  # pyright:ignore[reportUnusedFunction] # noqa: PLR0917
         old_method: Callable[
-            [
-                LibraryKeywordRunner,
-                _ExecutionContext,
-                Function,
-                list[object],
-                dict[str, object],
-            ],
+            [LibraryKeywordRunner, _ExecutionContext, Function, list[object], dict[str, object]],
             Function,
         ],
         self: LibraryKeywordRunner,
@@ -198,9 +186,7 @@ class _KeywordDecorator:
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
             return fn
-        keyword_name = self.name or cast(
-            str, printable_name(fn.__name__, code_style=True)
-        )
+        keyword_name = self.name or cast(str, printable_name(fn.__name__, code_style=True))
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
         deco.keyword(  # pyright:ignore[reportUnknownMemberType]
@@ -217,11 +203,7 @@ class _KeywordDecorator:
             )
             context = execution_context()
             data = running.Keyword(name=keyword_name, args=log_args)
-            doc: str = (
-                (getshortdoc(inspect.getdoc(fn)) or "")
-                if self.doc is None
-                else self.doc
-            )
+            doc: str = (getshortdoc(inspect.getdoc(fn)) or "") if self.doc is None else self.doc
             # we suppress the error in the status reporter because we raise it ourselves
             # afterwards, so that context managers like `pytest.raises` can see the actual
             # exception instead of `robot.errors.HandlerExecutionFailed`
@@ -306,9 +288,7 @@ class _NonWrappedContextManagerKeywordDecorator(_KeywordDecorator):
     but not the body of the context manager it returns. to do that, pass `wrap_context_manager=True`
     """
 
-    def __call__(
-        self, fn: Callable[P, _T_ContextManager]
-    ) -> Callable[P, _T_ContextManager]:
+    def __call__(self, fn: Callable[P, _T_ContextManager]) -> Callable[P, _T_ContextManager]:
         return self.call(fn)
 
 
@@ -368,20 +348,18 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                     if error is None:
                         _ = self.status_reporter.__exit__(None, None, None)
                     else:
-                        _ = self.status_reporter.__exit__(
-                            type(error), error, error.__traceback__
-                        )
+                        _ = self.status_reporter.__exit__(type(error), error, error.__traceback__)
                 return suppress or False
 
         fn_result = fn(*args, **kwargs)
         if not isinstance(fn_result, AbstractContextManager):
             raise TypeError(
-                "keyword decorator expected a context manager but instead got"
-                f" {fn_result!r}"
+                "keyword decorator expected a context manager but instead got" f" {fn_result!r}"
             )
         # 🚀 independently verified for safety by the overloads
         return WrappedContextManager(  # pyright:ignore[reportReturnType]
-            fn_result, status_reporter  # pyright:ignore[reportUnknownArgumentType]
+            fn_result,  # pyright:ignore[reportUnknownArgumentType]
+            status_reporter,
         )
 
     def __call__(
@@ -428,8 +406,7 @@ def keyword(  # pyright:ignore[reportOverlappingOverload]
 
 
 @deprecated(
-    "you must explicitly pass `wrap_context_manager` when using `keyword` with a"
-    " context manager"
+    "you must explicitly pass `wrap_context_manager` when using `keyword` with a" " context manager"
 )
 @overload
 def keyword(fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
@@ -468,12 +445,8 @@ def keyword(  # pylint:disable=missing-param-doc
         if wrap_context_manager is None:
             return _FunctionKeywordDecorator(name=name, tags=tags, module=module)
         if wrap_context_manager:
-            return _WrappedContextManagerKeywordDecorator(
-                name=name, tags=tags, module=module
-            )
-        return _NonWrappedContextManagerKeywordDecorator(
-            name=name, tags=tags, module=module
-        )
+            return _WrappedContextManagerKeywordDecorator(name=name, tags=tags, module=module)
+        return _NonWrappedContextManagerKeywordDecorator(name=name, tags=tags, module=module)
     return keyword(  # pyright:ignore[reportCallIssue,reportUnknownVariableType]
         name=name,
         tags=tags,
@@ -692,12 +665,14 @@ alternatives
 
 @patch_method(ErrorDetails)
 def _is_robot_traceback(  # pyright: ignore[reportUnusedFunction]
-    old_method: object, self: ErrorDetails, tb: TracebackType  # noqa: ARG001
+    _old_method: object, _self: ErrorDetails, tb: TracebackType
 ) -> bool | str | None:
     """Consider all the extended framework as 'robot'"""
-    module = cast(
-        Optional[str], cast(Dict[str, object], tb.tb_frame.f_globals).get("__name__")
-    )
-    return module and module.startswith(
-        ("robot.", "pytest.", "_pytest.", "pytest_robotframework.", "pluggy.")
-    )
+    module = cast(Optional[str], cast(Dict[str, object], tb.tb_frame.f_globals).get("__name__"))
+    return module and module.startswith((
+        "robot.",
+        "pytest.",
+        "_pytest.",
+        "pytest_robotframework.",
+        "pluggy.",
+    ))

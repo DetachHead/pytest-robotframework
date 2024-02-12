@@ -11,9 +11,7 @@ if TYPE_CHECKING:
 
 
 def init_stash(  # pylint:disable=missing-param-doc
-    key: StashKey[T],
-    initializer: Callable[[], T],
-    session_or_item: Session | Item | None = None,
+    key: StashKey[T], initializer: Callable[[], T], session_or_item: Session | Item | None = None
 ) -> T:
     """gets the value for a pytest stashed key, or initializes it with a value if it's not there
 

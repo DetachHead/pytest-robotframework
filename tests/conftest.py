@@ -55,9 +55,7 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
             copy_function=try_symlink,
         )
     elif test_file_fixture_dir.exists():
-        for file in (
-            test_file_fixture_dir / f"{test_name}.{ext}" for ext in ("py", "robot")
-        ):
+        for file in (test_file_fixture_dir / f"{test_name}.{ext}" for ext in ("py", "robot")):
             if file.exists():
                 try_symlink(file, pytester.path / file.name)
                 break
@@ -94,9 +92,7 @@ if TYPE_CHECKING:
         def runpytest(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...
 
         @override
-        def runpytest_inprocess(
-            self, *args: str | PathLike[str], **kwargs: Never
-        ) -> Never: ...
+        def runpytest_inprocess(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...
 
         @override
         def runpytest_subprocess(
@@ -150,9 +146,7 @@ class PytestRobotTester:
         # far from perfect but we can be reasonably confident that the xdist stuff ran if this
         # folder exists
         if check_xdist or not self.xdist:
-            assert bool(self.xdist) == bool(
-                list(self.pytester.path.glob("**/robot_xdist_outputs"))
-            )
+            assert bool(self.xdist) == bool(list(self.pytester.path.glob("**/robot_xdist_outputs")))
 
     def run_and_assert_assert_pytest_result(
         self,
@@ -184,11 +178,7 @@ class PytestRobotTester:
                 )
         else:
             result.assert_outcomes(
-                passed=passed,
-                skipped=skipped,
-                failed=failed,
-                errors=errors,
-                xfailed=xfailed,
+                passed=passed, skipped=skipped, failed=failed, errors=errors, xfailed=xfailed
             )
         try:
             assert result.ret == exit_code
@@ -196,19 +186,14 @@ class PytestRobotTester:
             if self.xdist:
                 # workaround for https://github.com/pytest-dev/pytest-xdist/issues/1017
                 assert (exit_code != ExitCode.OK) == any(
-                    line
-                    for line in result.outlines
-                    if line.startswith("INTERNALERROR>")
+                    line for line in result.outlines if line.startswith("INTERNALERROR>")
                 )
             else:
                 raise
 
     @overload
     def run_pytest(
-        self,
-        *args: str,
-        subprocess: Literal[False],
-        plugins: list[object] | None = None,
+        self, *args: str, subprocess: Literal[False], plugins: list[object] | None = None
     ) -> RunResult: ...
 
     @overload

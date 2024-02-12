@@ -39,9 +39,7 @@ class RobotFile(File):
         for test in cast(
             Iterator[ModelTestCase],
             # https://github.com/robotframework/robotframework/issues/4940#issuecomment-1817683893
-            self.session.stash[  # pyright:ignore[reportUnknownMemberType]
-                collected_robot_suite_key
-            ].all_tests,
+            self.session.stash[collected_robot_suite_key].all_tests,  # pyright:ignore[reportUnknownMemberType]
         ):
             if self.path == test.source:
                 yield RobotItem.from_parent(  # pyright:ignore[reportUnknownMemberType]
@@ -62,12 +60,7 @@ class RobotItem(Item):
         **kwargs: object,
     ):
         super().__init__(  # pyright:ignore[reportUnknownMemberType]
-            name=name,
-            parent=parent,
-            config=config,
-            session=session,
-            nodeid=nodeid,
-            **kwargs,
+            name=name, parent=parent, config=config, session=session, nodeid=nodeid, **kwargs
         )
         self.collected_robot_test: ModelTestCase = robot_test
         """this should only be used to get metadata from the test and not during the runtestloop
@@ -148,8 +141,4 @@ class RobotItem(Item):
 
     @override
     def reportinfo(self) -> tuple[PathLike[str] | str, int | None, str]:
-        return (
-            self.path,
-            None if self.line_number is None else self.line_number - 1,
-            self.name,
-        )
+        return (self.path, None if self.line_number is None else self.line_number - 1, self.name)

@@ -32,9 +32,7 @@ from pytest_robotframework import (
 )
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.pytest_exception_getter import (
-    save_exception_to_item,
-)
+from pytest_robotframework._internal.pytest_exception_getter import save_exception_to_item
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
 from pytest_robotframework._internal.robot_classes import (
     ErrorDetector,
@@ -58,7 +56,6 @@ from pytest_robotframework._internal.xdist_utils import (
 )
 
 if TYPE_CHECKING:
-
     from pluggy import PluginManager
     from pytest import CallInfo, Item, Parser, Session
 
@@ -134,9 +131,7 @@ def _get_robot_args(session: Session) -> RobotOptions:
                     # i don't think this is actually used here, but we send it the correct paths
                     # just to be safe
                     _get_pytest_collection_paths(session)
-                )[
-                    0
-                ],
+                )[0],
             ),
         ),
     )
@@ -211,9 +206,7 @@ def _collect_or_run(
         robot_args = merge_robot_options(
             robot_args,
             {
-                "prerunmodifier": [
-                    PytestRuntestProtocolInjector(session=session, item=xdist_item)
-                ],
+                "prerunmodifier": [PytestRuntestProtocolInjector(session=session, item=xdist_item)],
                 "listener": [*_RobotClassRegistry.listeners, *listeners],
                 # we don't want prerebotmodifiers to run multiple times so we defer them to the end
                 # of the test if we're running with xdist
@@ -270,9 +263,7 @@ def pytest_addoption(parser: Parser):
                     action="store_false",
                 )
             else:
-                group.addoption(
-                    arg_name_with_prefix, default=default_value, action="store_true"
-                )
+                group.addoption(arg_name_with_prefix, default=default_value, action="store_true")
         else:
             group.addoption(
                 arg_name_with_prefix,
@@ -295,12 +286,9 @@ def pytest_sessionstart(session: Session):
 @hookimpl(wrapper=True, tryfirst=True)
 def pytest_sessionfinish(session: Session) -> HookWrapperResult:
     try:
-        # https://github.com/psf/black/issues/3946
-        # fmt: off
         if not session.config.option.collectonly and is_xdist_master(  # pyright:ignore[reportAny]
             session
         ):
-            # fmt: on
             robot_args = _get_robot_args(session=session)
 
             def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
@@ -358,22 +346,17 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
     if late_failures:
         result = TestReport.from_item_and_call(item, call)
         result.outcome = "failed"
-        result.longrepr = (
-            f"{result.longrepr}\n\n" if result.longrepr else ""
-        ) + late_failures
+        result.longrepr = (f"{result.longrepr}\n\n" if result.longrepr else "") + late_failures
         return result
     return None
 
 
 def pytest_collection(session: Session) -> object:
     robot_args = _get_robot_args(session=session)
-    # https://github.com/psf/black/issues/3946
-    # fmt: off
     if session.config.option.collectonly or is_xdist_worker(  # pyright:ignore[reportAny]
         session
     ):
         _collect_or_run(session, collect_only=True, robot_options=robot_args)
-    # fmt: on
     return True
 
 
@@ -397,8 +380,7 @@ def pytest_runtest_setup(item: Item) -> HookWrapperResult:
         builtin = BuiltIn()
         for key, value in _suite_variables[item.path].items():
             builtin.set_suite_variable(  # pyright:ignore[reportUnknownMemberType]
-                r"${" + key + "}",
-                escape_robot_str(value) if isinstance(value, str) else value,
+                r"${" + key + "}", escape_robot_str(value) if isinstance(value, str) else value
             )
         del _suite_variables[item.path]
         for resource in _resources:

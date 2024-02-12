@@ -68,8 +68,7 @@ def setup(arg: Cloaked[Item]):
     cringe_globals._current_item = item  # pyright:ignore[reportPrivateUsage]
     # mostly copied from the start of `_pytest.runner.runtestprotocol`:
     if (
-        hasattr(item, "_request")
-        and not item._request  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType]
+        hasattr(item, "_request") and not item._request  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType]
     ):
         # This only happens if the item is re-run, as is done by
         # pytest-rerunfailures.
@@ -84,11 +83,13 @@ def run_test(arg: Cloaked[Item]):
     reports = item.stash[_report_key]
     if reports[0].passed:
         if item.config.getoption(
-            "setupshow", default=False  # pyright:ignore[reportArgumentType]
+            "setupshow",
+            default=False,  # pyright:ignore[reportArgumentType]
         ):
             show_test_item(item)
         if not item.config.getoption(
-            "setuponly", default=False  # pyright:ignore[reportArgumentType]
+            "setuponly",
+            default=False,  # pyright:ignore[reportArgumentType]
         ):
             _call_and_report_robot_edition(item, "call")
 

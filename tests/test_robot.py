@@ -76,8 +76,7 @@ def test_setup_skipped(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and"
-        " .//msg[@level='SKIP']]"
+        "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and" " .//msg[@level='SKIP']]"
     )
     # make sure the test didnt run when setup was skipped
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
@@ -248,8 +247,7 @@ def test_keyword_with_conflicting_name(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//kw[@name='Run Test']/kw[@name='Teardown' and"
-        " not(@type)]/kw[@name='Log']/msg[.='1']"
+        "//kw[@name='Run Test']/kw[@name='Teardown' and" " not(@type)]/kw[@name='Log']/msg[.='1']"
     )
     assert xml.xpath(
         "//kw[@type='TEARDOWN']/kw[@name='Actual Teardown']/kw[@name='Log']/msg[.='2']"
@@ -257,9 +255,7 @@ def test_keyword_with_conflicting_name(pr: PytestRobotTester):
 
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
-    pr.run_and_assert_assert_pytest_result(
-        pytest_args=["asdfdsf"], exit_code=ExitCode.USAGE_ERROR
-    )
+    pr.run_and_assert_assert_pytest_result(pytest_args=["asdfdsf"], exit_code=ExitCode.USAGE_ERROR)
 
 
 def test_keyword_decorator(pr: PytestRobotTester):
@@ -285,9 +281,7 @@ def test_line_number(pr: PytestRobotTester):
             nonlocal items
             items = session.items
 
-    _ = pr.run_pytest(
-        "--collectonly", "--strict-markers", plugins=[ItemGetter()], subprocess=False
-    )
+    _ = pr.run_pytest("--collectonly", "--strict-markers", plugins=[ItemGetter()], subprocess=False)
     assert items
     assert items[0].reportinfo()[1] == 1
     assert items[1].reportinfo()[1] == 4

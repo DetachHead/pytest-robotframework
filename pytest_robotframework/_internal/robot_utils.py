@@ -18,9 +18,7 @@ from pytest import Item, Session, StashKey
 from robot import model, running
 from robot.api.interfaces import ListenerV2, ListenerV3, Parser
 from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsage]
-from robot.running.context import (
-    _ExecutionContext,  # pyright:ignore[reportPrivateUsage]
-)
+from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 from robot.version import VERSION
 from typing_extensions import override
 
@@ -134,10 +132,7 @@ running_test_case_key = StashKey[running.TestCase]()
 
 
 def get_item_from_robot_test(
-    session: Session,
-    test: running.TestCase,
-    *,
-    all_items_should_have_tests: bool = True,
+    session: Session, test: running.TestCase, *, all_items_should_have_tests: bool = True
 ) -> Item | None:
     """set `all_items_should_have_tests` to `False` if the assigning of the `running_test_case_key`
     stashes is still in progress
@@ -173,9 +168,8 @@ def report_robot_errors(item_or_session: Item | Session) -> str | None:
     errors = item_or_session.stash.get(robot_errors_key, None)
     if not errors:
         return None
-    result = (
-        "robot errors occurred and were caught by pytest-robotframework:\n\n- "
-        + "\n- ".join(errors)
+    result = "robot errors occurred and were caught by pytest-robotframework:\n\n- " + "\n- ".join(
+        errors
     )
     del item_or_session.stash[robot_errors_key]
     return result
@@ -196,9 +190,7 @@ def merge_robot_options(
     for key, value in obj1.items():
         if isinstance(value, list):
             other_value = cast(Optional[List[object]], obj2.get(key, []))
-            new_value = cast(
-                List[object], value if other_value is None else [*value, *other_value]
-            )
+            new_value = cast(List[object], value if other_value is None else [*value, *other_value])
         elif key in obj2:
             new_value = obj2[key]
         else:
@@ -208,18 +200,11 @@ def merge_robot_options(
     return result
 
 
-def cli_defaults(
-    settings_class: Callable[[dict[str, object]], _BaseSettings],
-) -> RobotOptions:
+def cli_defaults(settings_class: Callable[[dict[str, object]], _BaseSettings]) -> RobotOptions:
     # need to reset outputdir because if anything from robot gets imported before pytest runs, then
     # the cwd gets updated, robot will still run with the outdated cwd.
     # we set it in this wacky way to make sure it never overrides user preferences
-    _BaseSettings._cli_opts[  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage]
-        "OutputDir"
-    ] = (
-        "outputdir",
-        ".",
-    )
+    _BaseSettings._cli_opts["OutputDir"] = ("outputdir", ".")  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage]
 
     return cast(
         RobotOptions,

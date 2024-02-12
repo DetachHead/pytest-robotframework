@@ -28,9 +28,8 @@
     "warning": "Warning",
     "info": "Warning"
   },
-  "black-formatter.importStrategy": "fromEnvironment",
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "robot.lint.robocop.enabled": true,
   "robot.codeFormatter": "robotidy",
