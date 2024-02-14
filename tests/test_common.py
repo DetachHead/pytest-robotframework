@@ -9,7 +9,7 @@ from pytest_robotframework import RobotOptions
 from pytest_robotframework._internal.robot_utils import banned_options, cli_defaults, robot_6
 
 if TYPE_CHECKING:
-    from conftest import PytestRobotTester
+    from tests.conftest import PytestRobotTester
 
 
 def test_no_tests_found_no_files(pr: PytestRobotTester):

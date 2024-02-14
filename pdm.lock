@@ -5,7 +5,7 @@
 groups = ["default", "lint", "test", "docs"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:d6effcced2b55aae3c03d84e18717fc22253fac4235f13387f67337b26d1dd56"
+content_hash = "sha256:84742166a02f8e8d649e2740cf38841274d77eeb8ba11d01c9c623b4eef5fc49"
 
 [[package]]
 name = "astroid"
@@ -35,15 +35,15 @@ files = [
 
 [[package]]
 name = "basedpyright"
-version = "1.2.0"
+version = "1.3.0"
 requires_python = ">=3.8"
 summary = "static type checking for Python (but based)"
 dependencies = [
     "nodejs-bin>=18.4.0a4",
 ]
 files = [
-    {file = "basedpyright-1.2.0-py3-none-any.whl", hash = "sha256:733b509eb42a5212b78ef1783d3f0799ebb093da4e870031bee33b1e762d33e0"},
-    {file = "basedpyright-1.2.0.tar.gz", hash = "sha256:bc5d88c65ad67f64925f4620028a65a192ee6fc02da3a68c046ad26883e8935b"},
+    {file = "basedpyright-1.3.0-py3-none-any.whl", hash = "sha256:d79622fc169cf13c5ca034e529c523732d77e96ed9cf540eecaae215b7dcb27f"},
+    {file = "basedpyright-1.3.0.tar.gz", hash = "sha256:8c45070f32e8a37845b14b4c5f150799d877068dbd9ed3d2272b44c6b85a74e9"},
 ]
 
 [[package]]
