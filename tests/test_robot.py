@@ -14,7 +14,6 @@ from tests.conftest import (
 )
 
 if TYPE_CHECKING:
-    from conftest import PytestRobotTester
     from pytest import Session
 
 
