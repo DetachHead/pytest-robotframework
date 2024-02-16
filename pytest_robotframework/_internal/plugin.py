@@ -438,10 +438,12 @@ def visit_Assert(  # noqa: N802
     - https://github.com/pytest-dev/pytest/issues/11984
     - https://github.com/pytest-dev/pytest/issues/11975
     """
+    result = og(self, assert_)
+    if not self.enable_assertion_pass_hook:
+        return result
     assert_msg = assert_.msg or Constant(None)
     if not self.config:
         raise InternalError("failed to rewrite assertion because config was somehow `None`")
-    result = og(self, assert_)
     try:
         main_test = next(statement for statement in result if isinstance(statement, If))
     except StopIteration:
