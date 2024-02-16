@@ -231,6 +231,33 @@ enable_assertion_pass_hook = true
 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/c2525ccf-c1c6-4c06-be79-c36fefd3bed4)
 
+### hiding non-user facing assertions
+
+you may have existing `assert` statements in your codebase that are not intended to be part of your tests (eg. for narrowing types/validating input data) and don't want them to show up in the robot log. there are two ways you can can hide individual `assert` statements from the log:
+
+```py
+from pytest_robotframework import robot_log, hide_asserts_from_robot_log
+
+def test_foo():
+    # hide a single `assert` statement:
+    assert "foo" == "bar", robot_log(False)
+
+    # hide a group of `assert` statements:
+    with hide_asserts_from_robot_log():
+        assert "foo" == "bar"
+        assert "bar" == "baz"
+```
+
+you can also run pytest with the `--no-assertions-in-robot-log` argument to disable `assert` statements in the robot log by default, then use the `robot_log` function to explicitly enable individual `assert` statements:
+
+```py
+from pytest_robotframework import robot_log
+
+def test_foo():
+    assert "foo" == "bar" # hidden from the robot log (when run with --no-assertions-in-robot-log)
+    assert "bar" == "baz", robot_log(True) # not hidden
+```
+
 # limitations with tests written in python
 
 there are some limitations when writing robotframework tests in python. pytest-robotframework includes solutions for these issues.
