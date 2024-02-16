@@ -236,27 +236,57 @@ enable_assertion_pass_hook = true
 you may have existing `assert` statements in your codebase that are not intended to be part of your tests (eg. for narrowing types/validating input data) and don't want them to show up in the robot log. there are two ways you can can hide individual `assert` statements from the log:
 
 ```py
-from pytest_robotframework import robot_log, hide_asserts_from_robot_log
+from pytest_robotframework import AssertOptions, hide_asserts_from_robot_log
 
 def test_foo():
-    # hide a single `assert` statement:
-    assert "foo" == "bar", robot_log(False)
+    # hide a single passing `assert` statement:
+    assert foo == bar, AssertOptions(log_pass=False)
 
-    # hide a group of `assert` statements:
+    # hide a group of passing `assert` statements:
     with hide_asserts_from_robot_log():
-        assert "foo" == "bar"
-        assert "bar" == "baz"
+        assert foo == bar
+        assert bar == baz
 ```
 
-you can also run pytest with the `--no-assertions-in-robot-log` argument to disable `assert` statements in the robot log by default, then use the `robot_log` function to explicitly enable individual `assert` statements:
+note that failing `assert` statements will still show in the log regardless.
+
+you can also run pytest with the `--no-assertions-in-robot-log` argument to disable `assert` statements in the robot log by default, then use `AssertOptions` to explicitly enable individual `assert` statements:
 
 ```py
-from pytest_robotframework import robot_log
+from pytest_robotframework import AssertOptions
 
 def test_foo():
     assert "foo" == "bar" # hidden from the robot log (when run with --no-assertions-in-robot-log)
-    assert "bar" == "baz", robot_log(True) # not hidden
+    assert "bar" == "baz", AssertOptions(log_pass=True) # not hidden
 ```
+
+### customizing assertions
+
+pytest-robotframework allows you to customize the message for the `assert` keyword which appears on both passing and failing assertions:
+
+```py
+assert 1 == 1  # no custom description
+assert 1 == 1, AssertOptions(description="custom description")
+```
+
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/582f3589-0ba2-469d-916d-8945e4feffbb)
+
+you can still pass a custom message to be displayed only when your assertion fails:
+
+```py
+assert 1 == 2, "the values did not match"
+```
+
+however if you want to specify both a custom description and a failure message, you can use the `fail_message` argument:
+
+```py
+assert 1 == 2, "failure message"
+assert 1 == 2, AssertOptions(description="checking values", fail_message="failure message")
+```
+
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/5bae04a0-0545-4df8-9637-59f8f1ef2f04)
+
+note that `enable_assertion_pass_hook` pytest option needs to be enabled for this to work.
 
 # limitations with tests written in python
 

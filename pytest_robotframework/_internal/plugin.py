@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-from ast import Assert, Call, Constant, Expr, If, Name, copy_location, stmt
+from ast import Assert, Call, Constant, Expr, If, Raise, copy_location, stmt
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Generator, Mapping, Optional, cast
+from typing import TYPE_CHECKING, Callable, Generator, Mapping, cast
 
 import pytest
 from _pytest.assertion import rewrite
-from _pytest.assertion.rewrite import AssertionRewriter, traverse_node, util
+from _pytest.assertion.rewrite import (
+    AssertionRewriter,
+    _get_assertion_exprs,  # pyright:ignore[reportPrivateUsage]
+    traverse_node,
+)
 from _pytest.main import resolve_collection_argument
 from pluggy import Result
 from pytest import Collector, StashKey, TempPathFactory, TestReport, hookimpl
@@ -23,6 +27,7 @@ from robot.rebot import Rebot
 from robot.run import RobotFramework, RobotSettings
 
 from pytest_robotframework import (
+    AssertOptions,
     Listener,
     RobotOptions,
     _hide_asserts_context_manager_key,  # pyright:ignore[reportPrivateUsage]
@@ -35,6 +40,7 @@ from pytest_robotframework import (
     keywordify,
 )
 from pytest_robotframework._internal import cringe_globals
+from pytest_robotframework._internal.cringe_globals import current_item
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_exception_getter import save_exception_to_item
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
@@ -265,7 +271,8 @@ def pytest_addoption(parser: Parser):
         action="store_false",
         help="whether to hide passing `assert` statements in the robot log by default. when this is"
         + " disabled, you can make individual `assert` statements show in the log using the"
-        + " `pytest_robotframework.log` function with `show=True`",
+        + " `pytest_robotframework.AssertionOptions` class with `log_pass=True`. see the docs for"
+        + " more information: https://github.com/DetachHead/pytest-robotframework/tree/assertion-ricing#hiding-non-user-facing-assertions",
     )
     for arg_name, default_value in cli_defaults(RobotSettings).items():
         if arg_name in banned_options:
@@ -350,104 +357,132 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
         cringe_globals._current_session = None  # pyright:ignore[reportPrivateUsage]
 
 
-_show_assertions_key = StashKey[Optional[bool]]()
+_explanation_key = StashKey[str]()
 
 
-def _set_show_assertions(show: bool | None = None):  # noqa: FBT001
-    # global state is cringe, but that's how pytest itself does it so whatever
-    config = util._config  # pyright:ignore[reportPrivateUsage]
-    if not config:
-        raise InternalError("config was None")
-    config.stash[_show_assertions_key] = show
+def pytest_assertion_pass(item: Item, expl: str):
+    """getting the explanation from this hook to pass on to the `pytest_robot_assertion` hook"""
+    item.stash[_explanation_key] = expl
 
 
-rewrite._set_show_assertions = _set_show_assertions  # pyright:ignore[reportAttributeAccessIssue]
+def _call_assertion_hook(
+    expression: str,
+    fail_message: object,
+    line_number: int,
+    assertion_error: AssertionError | None,
+    explanation: str | None = None,
+):
+    item = current_item()
+    if not item:
+        raise InternalError("failed to get current item for pytest_robot_assertion hook")
+    if assertion_error and explanation and explanation.startswith("\n"):
+        # pretty gross but we have to remove this trailing \n which means the fail message was None
+        # but the assertion rewriter already wrote the error message thinking it wasn't None because
+        # it was an AssertOptions object
+        explanation = explanation[1:]
+        assertion_error.args = (explanation, *assertion_error.args[1:])
+    item.ihook.pytest_robot_assertion(
+        item=item,
+        expression=expression,
+        fail_message=fail_message,
+        line_number=line_number,
+        assertion_error=assertion_error,
+        explanation=item.stash[_explanation_key] if explanation is None else explanation,
+    )
+
+
+# we aren't patching an existing function here but instead adding a new one to the rewrite module,
+# since the rewritten assert statement needs to call it, and this is the easist way to do that
+rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue]
+
+
+def pytest_robot_assertion(
+    item: Item,
+    expression: str,
+    fail_message: object,
+    explanation: str,
+    assertion_error: AssertionError | None,
+):
+    show_in_log: bool | None = None
+    # we always want to show the assertion if it failed:
+    if assertion_error:
+        show_in_log = True
+    if isinstance(fail_message, AssertOptions):
+        if not assertion_error and fail_message.log_pass is not None:
+            show_in_log = fail_message.log_pass
+        description = fail_message.description
+    else:
+        description = None
+    if show_in_log is None:
+        show_in_log = (
+            item.config.option.assertions_in_robot_log  # pyright:ignore[reportAny]
+            and not item.stash.get(_hide_asserts_context_manager_key, False)
+        )
+    if show_in_log:
+        with as_keyword("assert", args=[expression if description is None else description]):
+            if description is not None:
+                # the original expression was overwritten so we log it here instead
+                logger.info(f"assert {expression}")
+            if assertion_error:
+                raise assertion_error
+            logger.info(explanation)
 
 
 @patch_method(AssertionRewriter)
 def visit_Assert(  # noqa: N802
     og: Callable[[AssertionRewriter, Assert], list[stmt]], self: AssertionRewriter, assert_: Assert
 ) -> list[stmt]:
-    assert_msg = assert_.msg
-    show_assertions: bool | None = None
+    """we patch the assertion rewriter because the hook functions do not give us what we need. see
+    these issues:
+
+    - https://github.com/pytest-dev/pytest/issues/11984
+    - https://github.com/pytest-dev/pytest/issues/11975
+    """
+    assert_msg = assert_.msg or Constant(None)
     if not self.config:
         raise InternalError("failed to rewrite assertion because config was somehow `None`")
-    if (
-        self.enable_assertion_pass_hook
-        and assert_msg
-        and isinstance(assert_msg, Call)
-        and isinstance(assert_msg.func, Name)
-        and assert_msg.func.id == "robot_log"
-    ):
-        args = {keyword.arg: keyword.value for keyword in assert_msg.keywords}
-        if assert_msg.args:
-            # robot_log(False) # noqa: ERA001
-            args["show"] = assert_msg.args[0]
-        if len(assert_msg.args) == 2:
-            args["msg"] = assert_msg.args[1]
-        if "msg" in args:
-            assert_.msg = args["msg"]
-        else:
-            assert_.msg = Constant(value=None)
-        if "show" in args:
-            show = args["show"]
-            if isinstance(show, Constant) and isinstance(show.value, bool):  # pyright:ignore[reportAny]
-                show_assertions = show.value
-            else:
-                raise Exception(
-                    "failed to parse robot_log call in assert statement because `show` argument"
-                    + f"was {show} (expected bool)"
-                )
-        else:
-            # the function was called with invalid arguments, do nothing because it will fail at
-            # runtime anyway
-            pass
-
-        try:
-            # robot_log(False, msg="asdf") # noqa: ERA001
-            # robot_log(show=False, msg="asdf") # noqa: ERA001
-            assert_.msg = next(
-                keyword.value for keyword in assert_msg.keywords if keyword.arg == "msg"
-            )
-        except StopIteration:
-            if len(assert_msg.args) < 2:
-                # robot_log(False) # noqa: ERA001
-                assert_.msg = Constant(value=None)
-            elif len(assert_msg.args) == 2:
-                # robot_log(False, "") # noqa: ERA001
-                assert_.msg = assert_msg.args[1]
-            # if the length is anything else it means the function was called with the wrong
-            # number of arguments. leave it as-is because it will fail at runtime anyway
     result = og(self, assert_)
-    if show_assertions is not None:
-        try:
-            main_test = next(statement for statement in result if isinstance(statement, If))
-        except StopIteration:
-            raise InternalError("failed to find if statement for assertion rewriting") from None
-        main_test.orelse.insert(
-            0, Expr(self.helper("_set_show_assertions", Constant(value=show_assertions)))
+    try:
+        main_test = next(statement for statement in result if isinstance(statement, If))
+    except StopIteration:
+        raise InternalError("failed to find if statement for assertion rewriting") from None
+    expression = _get_assertion_exprs(self.source)[assert_.lineno]
+    # rice the fail statements:
+    raise_statement = cast(Raise, main_test.body.pop())
+    if not raise_statement.exc:
+        raise InternalError("raise statement without exception")
+    main_test.body.append(
+        Expr(
+            self.helper(
+                "_call_assertion_hook",
+                Constant(expression),  # expression
+                assert_msg,  # fail_message
+                Constant(assert_.lineno),  # line_number
+                raise_statement.exc,  # assertion_error
+                cast(Call, raise_statement.exc).args[0],  # explanation
+            )
         )
-        # copied from the end of og, need to rerun this since a new statement was added:
-        for statement in result:
-            for node in traverse_node(statement):
-                _ = copy_location(node, assert_)
+    )
+
+    # rice the pass statements:
+    main_test.orelse.append(
+        Expr(
+            self.helper(
+                "_call_assertion_hook",
+                Constant(expression),  # expression
+                assert_msg,  # fail_message
+                Constant(assert_.lineno),  # line_number
+                Constant(None),  # assertion_error
+                # explanation is handled by the pytest_assertion_pass hook above, since its too
+                # hard to get it from here
+            )
+        )
+    )
+    # copied from the end of og, need to rerun this since a new statement was added:
+    for statement in result:
+        for node in traverse_node(statement):
+            _ = copy_location(node, assert_)
     return result
-
-
-def pytest_assertion_pass(item: Item, orig: str, expl: str):
-    """without this hook, passing assertions won't show up at all in the robot log"""
-    # this matches what's logged if an assertion fails, so we keep it the same here for consistency
-    # (idk why there's no pytest_assertion_fail hook, only reprcompare which is different)
-    show_assertions = item.config.stash.get(_show_assertions_key, None)
-    if show_assertions is None:
-        show_assertions = (
-            item.config.option.assertions_in_robot_log  # pyright:ignore[reportAny]
-            and not item.stash.get(_hide_asserts_context_manager_key, False)
-        )
-    if show_assertions:
-        with as_keyword("assert", args=[orig]):
-            logger.info(expl)
-    item.config.stash[_show_assertions_key] = None
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | None:

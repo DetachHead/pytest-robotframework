@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pytest import hookspec
+from pytest import Item, hookspec
 
 if TYPE_CHECKING:
     from pytest import Session
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 # pyright:reportReturnType=false
 # https://github.com/astral-sh/ruff/issues/7286
 # https://github.com/astral-sh/ruff/issues/9803
-# ruff: noqa: ARG001, FBT001
+# ruff: noqa: ARG001, FBT001, PLR0917
 
 
 @hookspec
@@ -40,4 +40,40 @@ def pytest_robot_modify_options(options: RobotOptions, session: Session):
     ... if not session.config.option.collectonly:
     ...     options["loglevel"] = "DEBUG:INFO"
     ...     options["listener"].append(Foo())
+    """
+
+
+@hookspec
+def pytest_robot_assertion(
+    item: Item,
+    expression: str,
+    fail_message: object,
+    line_number: int,
+    assertion_error: AssertionError | None,
+    explanation: str,
+) -> None:
+    """gets called when an assertion runs. unlike `pytest_assertrepr_compare` and
+    `pytest_assertion_pass`, this hook is executed on both passing and failing assertions, and
+    allows you to see the second argument passed to `assert` statement
+
+    requires the `enable_assertion_pass_hook` pytest option to be enabled
+
+    :param item:
+        the currently running item
+    :param expression:
+        a string containing the the source code of the expression passed to the `assert` statement
+    :param fail_message:
+        the second argument to the `assert` statement, or `None` if there was none provided
+    :param line_number:
+        the line number containing the `assert` statement
+    :param assertion_error:
+        the exception raised if the `assert` statement failed. `None` if the assertion passed
+    :param explanation:
+        pytest's explanation of the result. the format will be different depending on whether the
+        assertion passed or failed
+
+    warning:
+    -------
+    this hook is experimental and relies heavily on patching the internals of pytest. it may break,
+    change or be removed at any time.
     """
