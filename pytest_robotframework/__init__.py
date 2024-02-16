@@ -31,6 +31,7 @@ from typing import (
 )
 
 from basedtyping import Function, P, T
+from pytest import StashKey
 from robot import result, running
 from robot.api import deco
 from robot.api.interfaces import ListenerV2, ListenerV3
@@ -639,6 +640,70 @@ def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
         obj if isinstance(obj, SuiteVisitor) else catch_errors(obj)()
     )
     return obj
+
+
+def robot_log(show: bool, msg: str | None = None) -> None:  # noqa: FBT001
+    """pass this as the second argument to an `assert` statement to change whether it shows in the
+    robot log when it passes or fails.
+
+    by default, an `assert` statement will display in the robot log as long as the following conditions are true:
+    - it is not inside a `hide_asserts_from_robot_log` context manager
+    - the `enable_assertion_pass_hook` pytest option is enabled
+      (see [enabling pytest assertions in the robot log](https://github.com/DetachHead/pytest-robotframework/?tab=readme-ov-file#enabling-pytest-assertions-in-the-robot-log)).
+    - pytest is not run with the `--no-asserts-in-robot-log` argument
+
+    :param show: whether to display the assertion as a keyword in the robot log. defaults to `True` unless any of the conditions listed above are false
+    :param msg: optional description for the `assert` statement. equivalent to a normal `assert` statement's second argument
+
+    example:
+    -------
+    .. code-block:: python
+    # never displays in the robot log:
+    assert foo == bar, robot_log(False)
+
+    # always displays in the robot log (as long as the `enable_assertion_pass_hook` pytest option is enabled):
+    assert foo == bar, robot_log(True, "optional message")
+
+    # displays in the robot log as long only if all 3 conditions mentioned above are true:
+    assert foo == bar
+    """  # noqa: E501
+    # param lines aren't wrapped because vscode won't render them properly otherwise
+
+    raise UserError(
+        f"an assertion with `robot_log({show=}, {msg=})` failed and was not rewritten. Ensure that"
+        + " the function is called on the `assert` statement itself and not evaluated dynamically"
+    )
+
+
+_hide_asserts_context_manager_key = StashKey[bool]()
+
+
+@contextmanager
+def hide_asserts_from_robot_log() -> Iterator[None]:
+    """context manager for hiding multiple `assert` statements from the robot log. note that
+    `assert` statements using `robot_log(True)` take precedence.
+
+    when hiding only a single `assert` statement, you should use `robot_log` instead.
+
+    example:
+    -------
+    .. code-block:: python
+    assert True # not hidden
+    with hide_asserts_from_robot_log():
+        assert True # hidden
+        assert True, robot_log(True) # not hidden
+    """
+    item = current_item()
+    if not item:
+        raise InternalError(
+            f"failed to get current pytest item in {hide_asserts_from_robot_log.__name__}"
+        )
+    previous_value = item.stash.get(_hide_asserts_context_manager_key, False)
+    item.stash[_hide_asserts_context_manager_key] = True
+    try:
+        yield
+    finally:
+        item.stash[_hide_asserts_context_manager_key] = previous_value
 
 
 # ideally these would just use an explicit re-export

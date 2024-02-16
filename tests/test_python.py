@@ -556,14 +556,67 @@ def test_assertion_fails(pr: PytestRobotTester):
 
 def test_assertion_passes(pr: PytestRobotTester):
     pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true", "--robot-loglevel", "DEBUG:INFO"],
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
+    )
+    pr.assert_log_file_exists()
+    assert output_xml().xpath(
+        "//kw[@name='assert' and ./arg[.='left == right']]/msg[@level='INFO' and .='1 == 1']"
+    )
+
+
+def test_assertion_passes_hide_assert(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
+    )
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='left == right']]/msg[@level='INFO' and .='1 == 1']"
+    )
+    assert not xml.xpath("//kw[@name='assert']/arg[.='right == left']")
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='right == right  # noqa: PLR0124']]/msg[@level='INFO' and "
+        + ".='1 == 1']"
+    )
+
+
+def test_assertion_passes_show_assert_when_no_assertions_in_robot_log(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true", "--no-assertions-in-robot-log"],
         subprocess=True,
         passed=1,
     )
     pr.assert_log_file_exists()
-    assert output_xml().xpath(
-        "//kw[@name='assert' and ./arg['left == right']]/msg[@level='INFO' and .='1 == 1']"
+    xml = output_xml()
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='left == right']]/msg[@level='INFO' and .='1 == 1']"
     )
+    assert not xml.xpath("//kw[@name='assert']/arg[.='right == left']")
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='right == right']]/msg[@level='INFO' and " + ".='1 == 1']"
+    )
+
+
+def test_assertion_fails_with_message_hide_assert(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
+    )
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xml.xpath("//msg[@level='FAIL' and .=\"asdf\nassert 1 == 'wrong'\"]")
+    assert not xml.xpath("//kw[@name='assert']")
+
+
+def test_assertion_passes_hide_asserts_context_manager(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
+    )
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xml.xpath("//kw[@name='assert']/arg[.='1']")
+    assert xml.xpath("//kw[@name='assert']/arg[.='right == left']")
+    assert xml.xpath("//kw[@name='assert']/arg[.='2']")
+    assert len(cast(List[_Element], xml.xpath("//kw[@name='assert']"))) == 3
 
 
 def test_assertion_pass_hook_multiple_tests(pr: PytestRobotTester):
