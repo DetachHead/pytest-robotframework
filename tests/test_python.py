@@ -560,7 +560,19 @@ def test_assertion_passes(pr: PytestRobotTester):
     )
     pr.assert_log_file_exists()
     assert output_xml().xpath(
-        "//kw[@name='assert' and ./arg[.='left == right']]/msg[@level='INFO' and .='1 == 1']"
+        "//kw[@name='assert' and ./arg[.='left == right'] and ./status[@status='PASS']]"
+        + "/msg[@level='INFO' and .='1 == 1']"
+    )
+
+
+def test_assertion_fails_with_assertion_hook(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
+    )
+    pr.assert_log_file_exists()
+    assert output_xml().xpath(
+        "//kw[@name='assert' and ./arg[.='left == right'] and ./status[@status='FAIL']]"
+        + "/msg[@level='FAIL' and .='assert 1 == 2']"
     )
 
 
@@ -577,6 +589,25 @@ def test_assertion_passes_hide_assert(pr: PytestRobotTester):
     assert xml.xpath(
         "//kw[@name='assert' and ./arg[.='right == right  # noqa: PLR0124']]/msg[@level='INFO' and "
         + ".='1 == 1']"
+    )
+
+
+def test_assertion_passes_custom_messages(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
+    )
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='left == right']]/msg[@level='INFO' and .='1 == 1']"
+    )
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='does appear1'] and ./msg[@level='INFO' and .='assert "
+        + "right == left'] and ./msg[@level='INFO' and .='1 == 1']]"
+    )
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='right == \"wrong\"'] and ./msg[@level='FAIL' and .=\"does"
+        + " appear2\nassert 1 == 'wrong'\"]]"
     )
 
 
@@ -597,14 +628,28 @@ def test_assertion_passes_show_assert_when_no_assertions_in_robot_log(pr: Pytest
     )
 
 
-def test_assertion_fails_with_message_hide_assert(pr: PytestRobotTester):
+def test_assertion_fails_with_fail_message_hide_assert(pr: PytestRobotTester):
     pr.run_and_assert_result(
         pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
     )
     pr.assert_log_file_exists()
     xml = output_xml()
-    assert xml.xpath("//msg[@level='FAIL' and .=\"asdf\nassert 1 == 'wrong'\"]")
-    assert not xml.xpath("//kw[@name='assert']")
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='right == \"wrong\"']]/msg[@level='FAIL' and "
+        + ".=\"asdf\nassert 1 == 'wrong'\"]"
+    )
+
+
+def test_assertion_fails_with_description(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
+    )
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xml.xpath(
+        "//kw[@name='assert' and ./arg[.='asdf']]/msg[@level='FAIL' and "
+        + ".=\"assert 1 == 'wrong'\"]"
+    )
 
 
 def test_assertion_passes_hide_asserts_context_manager(pr: PytestRobotTester):

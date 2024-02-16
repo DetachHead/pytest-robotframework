@@ -642,37 +642,73 @@ def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
     return obj
 
 
-def robot_log(show: bool, msg: str | None = None) -> None:  # noqa: FBT001
-    """pass this as the second argument to an `assert` statement to change whether it shows in the
-    robot log when it passes or fails.
-
-    by default, an `assert` statement will display in the robot log as long as the following conditions are true:
-    - it is not inside a `hide_asserts_from_robot_log` context manager
-    - the `enable_assertion_pass_hook` pytest option is enabled
-      (see [enabling pytest assertions in the robot log](https://github.com/DetachHead/pytest-robotframework/?tab=readme-ov-file#enabling-pytest-assertions-in-the-robot-log)).
-    - pytest is not run with the `--no-asserts-in-robot-log` argument
-
-    :param show: whether to display the assertion as a keyword in the robot log. defaults to `True` unless any of the conditions listed above are false
-    :param msg: optional description for the `assert` statement. equivalent to a normal `assert` statement's second argument
+class AssertOptions:
+    """pass this as the second argument to an `assert` statement to customize how it appears in the
+    robot log.
 
     example:
     -------
     .. code-block:: python
-    # never displays in the robot log:
-    assert foo == bar, robot_log(False)
 
-    # always displays in the robot log (as long as the `enable_assertion_pass_hook` pytest option is enabled):
-    assert foo == bar, robot_log(True, "optional message")
+        assert foo == bar, AssertOptions(
+            log_pass=False, description="checking the value", fail_msg="assertion failed"
+        )
+    """
 
-    # displays in the robot log as long only if all 3 conditions mentioned above are true:
-    assert foo == bar
-    """  # noqa: E501
-    # param lines aren't wrapped because vscode won't render them properly otherwise
+    def __init__(
+        self,
+        *,
+        log_pass: bool | None = None,
+        description: str | None = None,
+        fail_message: str | None = None,
+    ) -> None:
+        super().__init__()
+        self.log_pass = log_pass
+        """whether to display the assertion as a keyword in the robot log when it passes.
 
-    raise UserError(
-        f"an assertion with `robot_log({show=}, {msg=})` failed and was not rewritten. Ensure that"
-        + " the function is called on the `assert` statement itself and not evaluated dynamically"
-    )
+        by default, a passing `assert` statement will display in the robot log as long as the
+        following conditions are met:
+        - the `enable_assertion_pass_hook` pytest option is enabled
+        - it is not inside a `hide_asserts_from_robot_log` context manager
+        (see [enabling pytest assertions in the robot log](https://github.com/DetachHead/pytest-robotframework/#enabling-pytest-assertions-in-the-robot-log)).
+        - pytest is not run with the `--no-asserts-in-robot-log` argument
+
+        failing `assert` statements will show as keywords in the log as long as the
+        `enable_assertion_pass_hook` pytest option is enabled. if it's disabled, the assertion error
+        will be logged, but not within a keyword.
+
+        example:
+        -------
+        .. code-block:: python
+
+            # (assuming all of these assertions pass)
+
+            # never displays in the robot log:
+            assert foo == bar, AssertOptions(log_pass=False)
+
+            # always displays in the robot log (as long as the `enable_assertion_pass_hook` pytest
+            # option is enabled):
+            assert foo == bar, AssertOptions(log_pass=True)
+
+            # displays in the robot log as only if all 3 conditions mentioned above are met:
+            assert foo == bar
+        """
+
+        self.description = description
+        """normally, the asserted expression as it was written is displayed as the argument to the
+        `assert` keyword in the robot log, but setting this value will display a custom message
+        instead. when a custom description is used, the original expression is logged inside the
+        keyword instead."""
+
+        self.fail_message = fail_message
+        """optional description for the `assert` statement that will be included in the
+        `AssertionError` message if the assertion fails. equivalent to a normal `assert` statement's
+        second argument"""
+
+    @override
+    def __repr__(self) -> str:
+        """make the custom fail message appear in the call to `AssertionError`"""
+        return self.fail_message or ""
 
 
 _hide_asserts_context_manager_key = StashKey[bool]()
@@ -680,18 +716,20 @@ _hide_asserts_context_manager_key = StashKey[bool]()
 
 @contextmanager
 def hide_asserts_from_robot_log() -> Iterator[None]:
-    """context manager for hiding multiple `assert` statements from the robot log. note that
-    `assert` statements using `robot_log(True)` take precedence.
+    """context manager for hiding multiple passing `assert` statements from the robot log. note that
+    individual `assert` statements using `AssertOptions(log_pass=True)` take precedence, and that
+    failing assertions will always appear in the log.
 
-    when hiding only a single `assert` statement, you should use `robot_log` instead.
+    when hiding only a single `assert` statement, you should use `AssertOptions(log=False)` instead.
 
     example:
     -------
     .. code-block:: python
-    assert True # not hidden
-    with hide_asserts_from_robot_log():
-        assert True # hidden
-        assert True, robot_log(True) # not hidden
+
+        assert True # not hidden
+        with hide_asserts_from_robot_log():
+            assert True # hidden
+            assert True, AssertOptions(log_pass=True) # not hidden
     """
     item = current_item()
     if not item:
