@@ -152,7 +152,7 @@ class PytestCollector(SuiteVisitor):
         if not suite.parent:  # only do this once, on the top level suite
             self.session.stash[collected_robot_suite_key] = suite
             # on pytest <8, if collection has already happened, collecting again will result in an
-            # empty list so we can only collect once. on pytest >8, the items atrtribute is always
+            # empty list so we can only collect once. on pytest >8, the items attribute is always
             # present. although that makes it safer to double-collect, it will remake all the
             # collected items meaning anything added to their stash will be lost
             if not self.xdist_run and (
@@ -166,7 +166,7 @@ class PytestCollector(SuiteVisitor):
                     self.collection_error = e
         if not suite.source:
             return
-        # saved the resolved paths for performance reasons
+        # save the resolved paths for performance reasons
         if not suite.source.is_absolute():
             suite.source = suite.source.resolve()
         for item in self.items():
