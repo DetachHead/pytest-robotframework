@@ -49,6 +49,15 @@ def _call_and_report_robot_edition(
         # make robot show the exception:
         exception = item.stash.get(exception_key, None)
         if exception:
+            status_reporter_exception = getattr(
+                exception, "_pytest_robot_status_reporter_exception", None
+            )
+            if status_reporter_exception:
+                # the exception was already raised and logged inside a keyword, so raise the
+                # ExecutionFailed which will just tell robot that the test failed without logging
+                # the failure again
+                raise status_reporter_exception
+            # tell robot the test failed and also add the failure to the log
             raise exception
         longrepr = report.longrepr
         if isinstance(longrepr, str):
