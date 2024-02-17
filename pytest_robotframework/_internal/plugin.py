@@ -82,20 +82,24 @@ def _log_path(item: Item) -> Path:
 _robot_args_key = StashKey[RobotOptions]()
 
 
-def _get_pytest_collection_paths(session: Session) -> list[Path]:
+def _get_pytest_collection_paths(session: Session) -> set[Path]:
     """this is usually done during collection inside `perform_collect`, but since robot does the
-    collection during `pytest_runtestloop we need to know these paths ahead of time."""
+    collection during `pytest_runtestloop we need to know these paths ahead of time.
+
+    when pytest does this it returns a `list`, but we return a `set` instead because if there are
+    any duplicates robot will incorrectly run the suite visitors/parsers/etc multiple times on the
+    same suite"""
     # TODO: maybe refactor this so that collection always happens during the actual collection hooks
     # so this isn't needed.
     # https://github.com/DetachHead/pytest-robotframework/issues/189
-    return [
+    return {
         resolve_collection_argument(
             session.config.invocation_params.dir,
             arg,
             as_pypath=session.config.option.pyargs,  # pyright:ignore[reportAny]
         )[0]
         for arg in session.config.args
-    ]
+    }
 
 
 def _get_robot_args(session: Session) -> RobotOptions:

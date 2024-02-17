@@ -673,3 +673,11 @@ def test_trace_ricing(pr: PytestRobotTester):
     assert result
     assert "Exception: THIS!" in result
     assert len(result.splitlines()) == 4
+
+
+def test_two_tests_specified_by_full_path(pr: PytestRobotTester):
+    file_name = f"{test_two_tests_specified_by_full_path.__name__}.py"
+    pr.run_and_assert_result(
+        pytest_args=[f"{file_name}::test_foo", f"{file_name}::test_bar"], passed=2
+    )
+    pr.assert_log_file_exists()
