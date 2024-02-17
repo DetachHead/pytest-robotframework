@@ -193,7 +193,7 @@ def _collect_or_run(
         },
     )
     # needs to happen before collection cuz that's when the modules being keywordified get imported
-    _keywordify()
+    _keywordify_pytest_functions()
     if collect_only:
         robot_args = {
             **robot_args,
@@ -547,14 +547,17 @@ def pytest_runtest_teardown(item: Item) -> HookWrapperResult:
     save_exception_to_item(item, result)
 
 
-def _keywordify():
+def _keywordify_pytest_functions():
+    # we change the module since these methods get re-exported from pytest but are actually defined
+    # in a gross looking internal `_pytest` module
+    module = "pytest"
     # TODO: should probably keywordify skip as well, but it messes with the handling in
     # robot_library
     # https://github.com/DetachHead/pytest-robotframework/issues/51
     for method in ("fail", "xfail"):
-        keywordify(pytest, method)
+        keywordify(pytest, method, module=module)
     for method in ("deprecated_call", "warns", "raises"):
-        keywordify(pytest, method, wrap_context_manager=True)
+        keywordify(pytest, method, wrap_context_manager=True, module=module)
 
 
 @hookimpl(tryfirst=True)
