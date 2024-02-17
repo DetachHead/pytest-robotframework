@@ -38,7 +38,7 @@ from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model.visitor import SuiteVisitor
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
-from robot.running.statusreporter import StatusReporter
+from robot.running.statusreporter import HandlerExecutionFailed, StatusReporter
 from robot.utils import (
     getshortdoc,  # pyright:ignore[reportUnknownVariableType]
     printable_name,  # pyright:ignore[reportUnknownVariableType]
@@ -164,7 +164,20 @@ class _KeywordDecorator:
         self.doc = doc
 
     @staticmethod
+    def _save_status_reporter_failure(exception: BaseException):
+        """normally, robot wraps exceptions from keywords in a `HandlerExecutionFailed` or
+        something, but we want to preserve the original exception so that users can use
+        `try`/`except` without having to worry about their expected exception being wrapped in
+        something else, so instead we just add this attribute to the existing exception so we can
+        refer to it after the test is over, to determine if we still need to log the failure or if
+        it was already logged inside a keyword"""
+        exception._pytest_robot_status_reporter_exception = HandlerExecutionFailed(  # pyright:ignore[reportAttributeAccessIssue]
+            ErrorDetails(exception)
+        )
+
+    @classmethod
     def inner(
+        cls,
         fn: Callable[P, T],
         status_reporter: ContextManager[object],
         /,
@@ -179,6 +192,7 @@ class _KeywordDecorator:
                 error = e
                 raise
         if error:
+            cls._save_status_reporter_failure(error)
             raise error
         # pyright assumes the assignment to error could raise an exception but that will NEVER
         # happen
@@ -349,6 +363,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                     if error is None:
                         _ = self.status_reporter.__exit__(None, None, None)
                     else:
+                        cls._save_status_reporter_failure(error)  # pyright:ignore[reportPrivateUsage]
                         _ = self.status_reporter.__exit__(type(error), error, error.__traceback__)
                 return suppress or False
 

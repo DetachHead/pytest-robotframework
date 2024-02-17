@@ -570,10 +570,14 @@ def test_assertion_fails_with_assertion_hook(pr: PytestRobotTester):
         pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
     )
     pr.assert_log_file_exists()
-    assert output_xml().xpath(
+    xml = output_xml()
+    assert xml.xpath(
         "//kw[@name='assert' and ./arg[.='left == right'] and ./status[@status='FAIL']]"
         + "/msg[@level='FAIL' and .='assert 1 == 2']"
     )
+    # make sure the error was only logged once , since the exception gets re-raised after the
+    # keyword is over we want to make sure it's not printed multiple times
+    assert len(cast(List[_Element], xml.xpath("///msg[@level='FAIL']"))) == 1
 
 
 def test_assertion_passes_hide_assert(pr: PytestRobotTester):
