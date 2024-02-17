@@ -67,7 +67,9 @@ def pytest_robot_assertion(
     :param line_number:
         the line number containing the `assert` statement
     :param assertion_error:
-        the exception raised if the `assert` statement failed. `None` if the assertion passed
+        the exception raised if the `assert` statement failed. `None` if the assertion passed.
+        you must re-raise the assertion error for the assertion to fail (useful if you want to
+        conditionally ignore an assertion error)
     :param explanation:
         pytest's explanation of the result. the format will be different depending on whether the
         assertion passed or failed
@@ -75,5 +77,5 @@ def pytest_robot_assertion(
     warning:
     -------
     this hook is experimental and relies heavily on patching the internals of pytest. it may break,
-    change or be removed at any time.
+    change or be removed at any time. you should only use this hook if you know what you're doing
     """
