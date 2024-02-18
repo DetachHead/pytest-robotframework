@@ -1,5 +1,3 @@
-# noqa: INP001
-# init file breaks it and i dont care
 from __future__ import annotations
 
 from robot.libraries.BuiltIn import BuiltIn

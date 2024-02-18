@@ -1,4 +1,3 @@
-# noqa: INP001
 from __future__ import annotations
 
 from robot.api import logger

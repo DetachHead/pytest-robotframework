@@ -1,5 +1,5 @@
-# noqa: INP001
-# init file breaks it and i dont care because i hate init files
+# noqa: N999
+# module needs to have the same name as the class when registering the listener with the cli
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -15,10 +15,6 @@ called = False
 
 class Listener(ListenerV3):
     @override
-    def start_suite(
-        self,
-        data: running.TestSuite,
-        result: result.TestSuite,  # pylint:disable=redefined-outer-name
-    ):
+    def start_suite(self, data: running.TestSuite, result: result.TestSuite):
         global called
         called = True
