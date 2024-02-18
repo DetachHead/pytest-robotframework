@@ -328,10 +328,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
         try:
             # can't use the public get_hookimpls method because it returns a copy and we need to
             # mutate the original
-            # https://github.com/microsoft/pyright/issues/6994
-            hook_caller._hookimpls[:] = (  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType]
-                []
-            )
+            hook_caller._hookimpls[:] = []  # pyright:ignore[reportPrivateUsage]
             for hookimpl in hookimpls:
                 hook_caller._add_hookimpl(  # pyright:ignore[reportPrivateUsage]
                     hookimpl
