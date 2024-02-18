@@ -1,5 +1,5 @@
-# noqa: INP001
-# init file breaks it and i dont care because i hate init files
+# noqa: N999
+# module needs to have the same name as the class when registering the listener with the cli
 from __future__ import annotations
 
 from pathlib import Path
