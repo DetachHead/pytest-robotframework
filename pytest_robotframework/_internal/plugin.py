@@ -374,7 +374,7 @@ def _call_assertion_hook(
 ):
     item = current_item()
     if not item:
-        raise InternalError("failed to get current item for pytest_robot_assertion hook")
+        return
     if assertion_error and explanation and explanation.startswith("\n"):
         # pretty gross but we have to remove this trailing \n which means the fail message was None
         # but the assertion rewriter already wrote the error message thinking it wasn't None because
