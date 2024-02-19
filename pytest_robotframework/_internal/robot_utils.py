@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from typing import (
+    TYPE_CHECKING,
     Callable,
+    Dict,
     Final,
     Generic,
     List,
@@ -21,6 +23,11 @@ from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsa
 from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 from robot.version import VERSION
 from typing_extensions import override
+
+from pytest_robotframework._internal.utils import main_package_name
+
+if TYPE_CHECKING:
+    from types import TracebackType
 
 ModelTestCase = model.TestCase[model.Keyword]
 """robot `model.TestSuite` with the default generic value"""
@@ -219,3 +226,25 @@ def cli_defaults(settings_class: Callable[[dict[str, object]], _BaseSettings]) -
 
 
 robot_6: Final = VERSION.startswith("6.")
+
+
+def is_robot_traceback(tb: TracebackType) -> bool | str | None:
+    """Consider all the extended framework as 'robot'"""
+    # importing these modules here because i don't want whole module imports to be available at the
+    # top level
+    import _pytest  # noqa: PLC0415
+    import pluggy  # noqa: PLC0415
+    import pytest  # noqa: PLC0415
+    import robot  # noqa: PLC0415
+
+    module_name = cast(
+        Optional[str], cast(Dict[str, object], tb.tb_frame.f_globals).get("__name__")
+    )
+    # not importing pytest_robotframework itself because it would cause circular imports
+    return module_name == main_package_name or (
+        module_name
+        and module_name.startswith((
+            *(f"{module.__name__}." for module in (robot, pytest, _pytest, pluggy)),
+            main_package_name,
+        ))
+    )
