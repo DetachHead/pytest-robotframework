@@ -6,8 +6,9 @@ from types import TracebackType
 from typing import TYPE_CHECKING, Callable, cast
 
 from basedtyping import Function
+from robot.errors import DataError
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
-from robot.running.statusreporter import StatusReporter
+from robot.running.statusreporter import ExecutionStatus, StatusReporter
 from robot.utils.error import ErrorDetails
 from typing_extensions import override
 
@@ -85,30 +86,32 @@ class FullStackStatusReporter(StatusReporter):
     def _get_failure(
         self,
         exc_type: type[BaseException],
-        exc_value: BaseException,
+        exc_value: BaseException | None,
         exc_tb: TracebackType,
         context: object,
     ):
-        full_system_traceback = inspect.stack()
-        tb = None
+        tb = exc_tb
+        if exc_value is not None and not isinstance(exc_value, (ExecutionStatus, DataError)):
+            full_system_traceback = inspect.stack()
+            tb = None
 
-        in_framework = True
-        base_tb = exc_tb
-        while base_tb and is_robot_traceback(base_tb):
-            base_tb = base_tb.tb_next
-        for frame in full_system_traceback:
-            trace = TracebackType(
-                tb or base_tb, frame.frame, frame.frame.f_lasti, frame.frame.f_lineno
-            )
-            if in_framework and is_robot_traceback(trace):
-                continue
-            in_framework = False
-            tb = trace
-            if str(Path(frame.filename)).endswith(
-                str(Path(main_package_name) / "_internal/plugin.py")
-            ):
-                break
-        else:
-            raise InternalError("erm...")
-        exc_value.__traceback__ = tb
+            in_framework = True
+            base_tb = exc_tb
+            while base_tb and is_robot_traceback(base_tb):
+                base_tb = base_tb.tb_next
+            for frame in full_system_traceback:
+                trace = TracebackType(
+                    tb or base_tb, frame.frame, frame.frame.f_lasti, frame.frame.f_lineno
+                )
+                if in_framework and is_robot_traceback(trace):
+                    continue
+                in_framework = False
+                tb = trace
+                if str(Path(frame.filename)).endswith(
+                    str(Path(main_package_name) / "_internal/plugin.py")
+                ):
+                    break
+            else:
+                raise InternalError("erm...")
+            exc_value.__traceback__ = tb
         return super()._get_failure(exc_value, exc_value, tb, context)  # pyright: ignore[reportUnknownMemberType]
