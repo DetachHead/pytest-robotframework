@@ -4,16 +4,18 @@ robot (some of them are not activated when running pytest in `--collect-only` mo
 from __future__ import annotations
 
 from contextlib import suppress
+from re import sub
 from types import ModuleType
 from typing import TYPE_CHECKING, Callable, Generator, Literal, Optional, Tuple, cast
 
 from _pytest import runner
+from ansi2html import Ansi2HTMLConverter
 from pluggy import HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
 from pytest import Function, Item, Session, version_tuple as pytest_version
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
-from robot.model import SuiteVisitor
+from robot.model import Message, SuiteVisitor
 from robot.running.model import Body
 from typing_extensions import override
 
@@ -508,3 +510,31 @@ class ErrorDetector(ListenerV3):
                 get_item_from_robot_test(self.session, self.current_test) or self.session
             )
         add_robot_error(item_or_session, message.message)
+
+
+@catch_errors
+class AnsiLogger(ListenerV3):
+    esc = "\N{ESCAPE}"
+
+    def __init__(self):
+        super().__init__()
+        self.current_test_status_contains_ansi = False
+
+    @override
+    def start_test(self, data: running.TestCase, result: result.TestCase):  # pylint:disable=redefined-outer-name
+        self.current_test_status_contains_ansi = False
+
+    @override
+    def log_message(self, message: Message):
+        if self.esc in message.message and not message.html:
+            self.current_test_status_contains_ansi = True
+            message.html = True
+            message.message = Ansi2HTMLConverter(inline=True, escaped=False).convert(
+                message.message, full=False
+            )
+
+    @override
+    def end_test(self, data: running.TestCase, result: result.TestCase):  # pylint:disable=redefined-outer-name
+        if self.current_test_status_contains_ansi:
+            self.current_test_status_contains_ansi = False
+            result.message = sub(rf"{self.esc}\[.*?m", "", result.message)
