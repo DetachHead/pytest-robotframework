@@ -799,22 +799,20 @@ def test_ansi(pr: PytestRobotTester):
     assert xpath(
         xml,
         """//msg[@level='FAIL' and @html='true'
-        and contains(., 'assert [1, 2, 3] == [1, 4, 3]')
+        and contains(., "assert [1, 2, 3] == [1, '&lt;div&gt;asdf&lt;/div&gt;', 3]")
         and contains(., 'span style="color: #5c5cff">2</span><span style="color: #7f7f7f"')
         ]""",
     ).text
     assert xml.xpath("""//status[@status='FAIL' and .="\
-assert [1, 2, 3] == [1, 4, 3]
+assert [1, 2, 3] == [1, '<div>asdf</div>', 3]
   
-  At index 1 diff: 2 != 4
+  At index 1 diff: 2 != '<div>asdf</div>'
   
   Full diff:
     [
         1,
-  -     4,
-  ?     ^
+  -     '<div>asdf</div>',
   +     2,
-  ?     ^
         3,
     ]"
     ]""")
