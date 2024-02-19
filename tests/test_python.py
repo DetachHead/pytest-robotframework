@@ -841,9 +841,9 @@ def test_ansi(pr: PytestRobotTester):
     ).text
     assert xml.xpath("""//status[@status='FAIL' and .="\
 assert [1, 2, 3] == [1, '<div>asdf</div>', 3]
-
+  
   At index 1 diff: 2 != '<div>asdf</div>'
-
+  
   Full diff:
     [
         1,
