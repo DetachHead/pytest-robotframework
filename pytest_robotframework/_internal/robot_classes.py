@@ -529,9 +529,7 @@ class AnsiLogger(ListenerV3):
         if self.esc in message.message and not message.html:
             self.current_test_status_contains_ansi = True
             message.html = True
-            message.message = Ansi2HTMLConverter(inline=True, escaped=False).convert(
-                message.message, full=False
-            )
+            message.message = Ansi2HTMLConverter(inline=True).convert(message.message, full=False)
 
     @override
     def end_test(self, data: running.TestCase, result: result.TestCase):  # pylint:disable=redefined-outer-name
