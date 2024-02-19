@@ -21,7 +21,6 @@ from typing import (
     Iterator,
     List,
     Mapping,
-    Optional,
     Tuple,
     Type,
     TypeVar,
@@ -38,7 +37,7 @@ from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model.visitor import SuiteVisitor
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
-from robot.running.statusreporter import HandlerExecutionFailed, StatusReporter
+from robot.running.statusreporter import HandlerExecutionFailed
 from robot.utils import (
     getshortdoc,  # pyright:ignore[reportUnknownVariableType]
     printable_name,  # pyright:ignore[reportUnknownVariableType]
@@ -48,6 +47,7 @@ from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
+from pytest_robotframework._internal.patches.robot import FullStackStatusReporter, kw_attribute
 from pytest_robotframework._internal.robot_utils import (
     Listener as _Listener,
     RobotOptions as _RobotOptions,
@@ -56,12 +56,10 @@ from pytest_robotframework._internal.robot_utils import (
     execution_context,
     robot_6,
 )
-from pytest_robotframework._internal.utils import ClassOrInstance, ContextManager, patch_method
+from pytest_robotframework._internal.utils import ClassOrInstance, ContextManager
 
 if TYPE_CHECKING:
     from types import TracebackType
-
-    from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 
 
 RobotVariables: TypeAlias = Dict[str, object]
@@ -93,59 +91,6 @@ def import_resource(path: Path | str):
         )
     else:
         _resources.append(Path(path))
-
-
-_kw_attribute = "_keyword_original_function"
-
-if robot_6:
-
-    @patch_method(LibraryKeywordRunner)
-    def _runner_for(  # pyright:ignore[reportUnusedFunction] # noqa: PLR0917
-        old_method: Callable[
-            [LibraryKeywordRunner, _ExecutionContext, Function, list[object], dict[str, object]],
-            Function,
-        ],
-        self: LibraryKeywordRunner,
-        context: _ExecutionContext,
-        handler: Function,
-        positional: list[object],
-        named: dict[str, object],
-    ) -> Function:
-        """use the original function instead of the `@keyword` wrapped one"""
-        handler = cast(Function, getattr(handler, _kw_attribute, handler))
-        return old_method(self, context, handler, positional, named)
-
-else:
-    from robot.running.librarykeyword import StaticKeyword, StaticKeywordCreator
-
-    class _StaticKeyword(StaticKeyword):  # pylint:disable=abstract-method
-        """prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
-        two status reporters when called from `.robot` tests"""
-
-        @property
-        @override
-        def method(self) -> Function:
-            method = cast(Function, super().method)
-            return cast(Function, getattr(method, _kw_attribute, method))
-
-        @override
-        def copy(self, **attributes: object) -> _StaticKeyword:
-            return _StaticKeyword(  # pyright:ignore[reportUnknownMemberType]
-                self.method_name,
-                self.owner,
-                self.name,
-                self.args,
-                self._doc,
-                self.tags,
-                self._resolve_args_until,
-                self.parent,
-                self.error,
-            ).config(**attributes)
-
-    # patch StaticKeywordCreator to use our one instead
-    StaticKeywordCreator.keyword_class = (  # pyright:ignore[reportGeneralTypeIssues]
-        _StaticKeyword
-    )
 
 
 class _KeywordDecorator:
@@ -230,7 +175,7 @@ class _KeywordDecorator:
             ] = (  # pyright:ignore[reportAssignmentType]
                 (
                     # needed to work around pyright bug, see ContextManager documentation
-                    StatusReporter(
+                    FullStackStatusReporter(
                         data=data,
                         result=(
                             result.Keyword(
@@ -247,7 +192,7 @@ class _KeywordDecorator:
                     )
                     if robot_6
                     else (
-                        StatusReporter(
+                        FullStackStatusReporter(
                             data=data,
                             result=result.Keyword(
                                 name=keyword_name,
@@ -272,7 +217,7 @@ class _KeywordDecorator:
             )
             return self.inner(fn, context_manager, *args, **kwargs)
 
-        setattr(inner, _kw_attribute, fn)
+        setattr(inner, kw_attribute, fn)
         return inner
 
 
@@ -779,18 +724,3 @@ any options missing from this `TypedDict` are not allowed to be modified as they
 functionality of this plugin. see https://github.com/detachhead/pytest-robotframework#config for
 alternatives
 """
-
-
-@patch_method(ErrorDetails)
-def _is_robot_traceback(  # pyright: ignore[reportUnusedFunction]
-    _old_method: object, _self: ErrorDetails, tb: TracebackType
-) -> bool | str | None:
-    """Consider all the extended framework as 'robot'"""
-    module = cast(Optional[str], cast(Dict[str, object], tb.tb_frame.f_globals).get("__name__"))
-    return module and module.startswith((
-        "robot.",
-        "pytest.",
-        "_pytest.",
-        "pytest_robotframework.",
-        "pluggy.",
-    ))

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from re import search
 from typing import TYPE_CHECKING, List, cast
 
 from lxml.etree import _Element  # pyright:ignore[reportPrivateUsage]
@@ -764,19 +765,6 @@ def test_xdist_n_0(pytester_dir: PytesterDir):
     pr.assert_log_file_exists()
 
 
-def test_trace_ricing(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
-    pr.assert_log_file_exists()
-    xml = output_xml()
-    result = xpath(
-        xml, "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
-    ).text
-
-    assert result
-    assert "Exception: THIS!" in result
-    assert len(result.splitlines()) == 4
-
-
 def test_two_tests_specified_by_full_path(pr: PytestRobotTester):
     file_name = f"{test_two_tests_specified_by_full_path.__name__}.py"
     pr.run_and_assert_result(
@@ -792,6 +780,54 @@ def test_assertion_rewritten_in_conftest_when_assertion_hook_enabled(pr: PytestR
     pr.assert_log_file_exists()
 
 
+class TestStackTraces:
+    @staticmethod
+    def parse_stack_trace(stack: str) -> dict[int, str]:
+        result: dict[int, str] = {}
+        for line in stack.split("\n"):
+            match = search(r"\s+File \".*\", line (\d+), in (.*)", line)
+            if match:
+                result[int(match[1])] = match[2]
+        return result
+
+    @classmethod
+    def test_trace_ricing(cls, pr: PytestRobotTester):
+        pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
+        pr.assert_log_file_exists()
+        xml = output_xml()
+        result = xpath(
+            xml, "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
+        ).text
+
+        assert result
+        assert "Exception: THIS!" in result
+        assert cls.parse_stack_trace(result) == {5: "test_0"}
+
+    @classmethod
+    def test_full_stack_keyword_decorator(cls, pr: PytestRobotTester):
+        pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG"], failed=1)
+        pr.assert_log_file_exists()
+        xml = output_xml()
+        result = cast(
+            List[_Element],
+            xml.xpath("//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"),
+        )[0].text
+        assert result, "failed to find xpath"
+        assert cls.parse_stack_trace(result) == {12: "test_keyword", 8: "bar"}
+
+    @classmethod
+    def test_full_stack_keyword_context_manager(cls, pr: PytestRobotTester):
+        pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG"], failed=1)
+        pr.assert_log_file_exists()
+        xml = output_xml()
+        result = cast(
+            List[_Element],
+            xml.xpath("//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"),
+        )[0].text
+        assert result, "failed to find xpath"
+        assert cls.parse_stack_trace(result) == {17: "test_as_keyword", 8: "foo", 13: "bar"}
+
+
 def test_ansi(pr: PytestRobotTester):
     pr.run_and_assert_result(pytest_args=["-vv", "--color=yes"], failed=1)
     pr.assert_log_file_exists()
@@ -805,9 +841,9 @@ def test_ansi(pr: PytestRobotTester):
     ).text
     assert xml.xpath("""//status[@status='FAIL' and .="\
 assert [1, 2, 3] == [1, '<div>asdf</div>', 3]
-  
+
   At index 1 diff: 2 != '<div>asdf</div>'
-  
+
   Full diff:
     [
         1,

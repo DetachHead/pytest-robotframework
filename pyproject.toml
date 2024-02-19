@@ -212,7 +212,6 @@ enable = [
     "useless-type-doc",
     "using-constant-test",
     "using-final-decorator-in-unsupported-version",
-    "while-used",
     "wrong-exception-operation",
     "bad-file-encoding",
     "bad-mcs-classmethod-argument",

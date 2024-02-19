@@ -77,3 +77,7 @@ else:
     # Generic that works at runtime
     class ContextManager(Generic[out_T], AbstractContextManager):
         pass
+
+
+main_package_name = __name__.split(".")[0]
+"""the name of the top level package (should be `pytest_robotframework`)"""
