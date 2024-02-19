@@ -445,7 +445,7 @@ def visit_Assert(  # noqa: N802
     if not self.config:
         raise InternalError("failed to rewrite assertion because config was somehow `None`")
     try:
-        main_test = next(statement for statement in result if isinstance(statement, If))
+        main_test = next(statement for statement in reversed(result) if isinstance(statement, If))
     except StopIteration:
         raise InternalError("failed to find if statement for assertion rewriting") from None
     expression = _get_assertion_exprs(self.source)[assert_.lineno]
