@@ -568,15 +568,25 @@ def test_assertion_passes(pr: PytestRobotTester):
 
 
 def test_assertion_fails_with_assertion_hook(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
-    )
+    pr.run_and_assert_result(pytest_args=["-o", "enable_assertion_pass_hook=true"], failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
         "//kw[@name='assert' and ./arg[.='left == right'] and ./status[@status='FAIL']]"
         + "/msg[@level='FAIL' and .='assert 1 == 2']"
     )
+    # make sure the error was only logged once , since the exception gets re-raised after the
+    # keyword is over we want to make sure it's not printed multiple times
+    assert len(cast(List[_Element], xml.xpath("///msg[@level='FAIL']"))) == 1
+
+
+def test_nested_keyword_that_fails(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
+    )
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xml.xpath("//kw[@name='Bar']/msg[@level='FAIL' and .='asdf']")
     # make sure the error was only logged once , since the exception gets re-raised after the
     # keyword is over we want to make sure it's not printed multiple times
     assert len(cast(List[_Element], xml.xpath("///msg[@level='FAIL']"))) == 1
