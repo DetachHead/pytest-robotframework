@@ -783,3 +783,10 @@ def test_two_tests_specified_by_full_path(pr: PytestRobotTester):
         pytest_args=[f"{file_name}::test_foo", f"{file_name}::test_bar"], passed=2
     )
     pr.assert_log_file_exists()
+
+
+def test_assertion_rewritten_in_conftest_when_assertion_hook_enabled(pr: PytestRobotTester):
+    pr.run_and_assert_result(
+        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
+    )
+    pr.assert_log_file_exists()
