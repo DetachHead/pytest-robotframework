@@ -5,7 +5,17 @@
 groups = ["default", "lint", "test", "docs"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:84742166a02f8e8d649e2740cf38841274d77eeb8ba11d01c9c623b4eef5fc49"
+content_hash = "sha256:e52cfa67396a7957bc113e15b6b3c288b3a3e3000b4213a1cf20885d256f268f"
+
+[[package]]
+name = "ansi2html"
+version = "1.9.1"
+requires_python = ">=3.7"
+summary = "Convert text with ANSI color codes to HTML or to LaTeX"
+files = [
+    {file = "ansi2html-1.9.1-py3-none-any.whl", hash = "sha256:29ccdb1e83520d648ebdc9c9544059ea4d424ecc33d3ef723657f7f5a9ae5225"},
+    {file = "ansi2html-1.9.1.tar.gz", hash = "sha256:5c6837a13ecc1903aab7a545353312049dfedfe5105362ad3a8d9d207871ec71"},
+]
 
 [[package]]
 name = "astroid"

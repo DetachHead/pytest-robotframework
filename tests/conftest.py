@@ -5,14 +5,13 @@ from os import PathLike, symlink
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
-from typing import TYPE_CHECKING, Literal, cast, overload
+from typing import TYPE_CHECKING, List, Literal, cast, overload
 
-from lxml.etree import XML
+from lxml.etree import XML, _Element  # pyright: ignore[reportPrivateUsage]
 from pytest import ExitCode, FixtureRequest, Function, Pytester, RunResult, fixture
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
-    from lxml.etree import _Element  # pyright:ignore[reportPrivateUsage]
     from typing_extensions import Never, override
 
 # needed for fixtures that depend on other fixtures
@@ -117,6 +116,10 @@ def _log_file_exists():
 
 def output_xml() -> _Element:
     return XML(Path("output.xml").read_bytes())
+
+
+def xpath(x: _Element, query: str) -> _Element:
+    return cast(List[_Element], x.xpath(query))[0]
 
 
 def assert_robot_total_stats(*, passed: int = 0, skipped: int = 0, failed: int = 0):
