@@ -11,6 +11,7 @@ import inspect
 from contextlib import AbstractContextManager, contextmanager, nullcontext
 from functools import wraps
 from pathlib import Path
+from types import TracebackType
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -34,10 +35,11 @@ from pytest import StashKey
 from robot import result, running
 from robot.api import deco
 from robot.api.interfaces import ListenerV2, ListenerV3
+from robot.errors import DataError, ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model.visitor import SuiteVisitor
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
-from robot.running.statusreporter import HandlerExecutionFailed
+from robot.running.statusreporter import ExecutionStatus, HandlerExecutionFailed, StatusReporter
 from robot.utils import (
     getshortdoc,  # pyright:ignore[reportUnknownVariableType]
     printable_name,  # pyright:ignore[reportUnknownVariableType]
@@ -47,20 +49,20 @@ from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
-from pytest_robotframework._internal.patches.robot import FullStackStatusReporter, kw_attribute
+from pytest_robotframework._internal.patches.robot import kw_attribute
 from pytest_robotframework._internal.robot_utils import (
     Listener as _Listener,
     RobotOptions as _RobotOptions,
     add_robot_error,
     escape_robot_str,
     execution_context,
+    is_robot_traceback,
     robot_6,
 )
-from pytest_robotframework._internal.utils import ClassOrInstance, ContextManager
+from pytest_robotframework._internal.utils import ClassOrInstance, ContextManager, main_package_name
 
 if TYPE_CHECKING:
-    from types import TracebackType
-
+    from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 
 RobotVariables: TypeAlias = Dict[str, object]
 """variable names and values to be set on the suite level. see the `set_variables` function"""
@@ -93,6 +95,94 @@ def import_resource(path: Path | str):
         _resources.append(Path(path))
 
 
+class _FullStackStatusReporter(StatusReporter):
+    """Riced status reporter that does the following:
+
+    - inserts the full test traceback into exceptions raisec within it (otherwise it would only go
+    back to the start of the keyword, instead of the whole test)
+    - does not log failures when they came from a nested keyword, to prevent errors from being
+    duplicated for each keyword in the stack"""
+
+    @override
+    def _get_failure(
+        self,
+        exc_type: type[BaseException],
+        exc_value: BaseException | None,
+        exc_tb: TracebackType,
+        context: _ExecutionContext,
+    ):
+        if exc_value is None:
+            return None
+        if isinstance(exc_value, ExecutionStatus):
+            return exc_value
+        if isinstance(exc_value, DataError):
+            msg = exc_value.message
+            context.fail(msg)  # pyright:ignore[reportUnknownMemberType]
+            return ExecutionFailed(msg, syntax=exc_value.syntax)
+
+        tb = None
+        full_system_traceback = inspect.stack()
+        in_framework = True
+        base_tb = exc_tb
+        while base_tb and is_robot_traceback(base_tb):
+            base_tb = base_tb.tb_next
+        for frame in full_system_traceback:
+            trace = TracebackType(
+                tb or base_tb, frame.frame, frame.frame.f_lasti, frame.frame.f_lineno
+            )
+            if in_framework and is_robot_traceback(trace):
+                continue
+            in_framework = False
+            tb = trace
+            if str(Path(frame.filename)).endswith(
+                str(Path(main_package_name) / "_internal/plugin.py")
+            ):
+                break
+        else:
+            raise InternalError("erm...")
+        exc_value.__traceback__ = tb
+
+        error = ErrorDetails(exc_value)
+        failure = HandlerExecutionFailed(error)
+        if failure.timeout:
+            context.timeout_occurred = True
+        # the one we just wrapped. i think this should always be present. maybe we should raise an
+        # internal error if it's not, but we don't just to be safe:
+        wrapped_errors = _get_status_reporter_failures(exc_value)
+        # if the wrapped error has a wrapped error, that means it came from a child keyword and
+        # therefore has already been logged by its status reporter
+        is_nested_status_reporter_failure = len(wrapped_errors) > 1
+        if failure.skip:
+            context.skip(error.message)  # pyright:ignore[reportUnknownMemberType]
+        elif not is_nested_status_reporter_failure:
+            context.fail(error.message)  # pyright:ignore[reportUnknownMemberType]
+        if not is_nested_status_reporter_failure and error.traceback:
+            context.debug(error.traceback)  # pyright:ignore[reportUnknownMemberType]
+        return failure
+
+
+_status_reporter_exception_attr = "__pytest_robot_status_reporter_exceptions__"
+
+
+def _get_status_reporter_failures(exception: BaseException) -> list[HandlerExecutionFailed]:
+    """normally, robot wraps exceptions from keywords in a `HandlerExecutionFailed` or
+    something, but we want to preserve the original exception so that users can use
+    `try`/`except` without having to worry about their expected exception being wrapped in
+    something else, so instead we just add this attribute to the existing exception so we can
+    refer to it after the test is over, to determine if we still need to log the failure or if
+    it was already logged inside a keyword
+
+    it's a stack because we need to check if there is more than 1 wrapped exception in
+    `FullStackStatusReporter`"""
+    wrapped_error: list[HandlerExecutionFailed] | None = getattr(
+        exception, _status_reporter_exception_attr, None
+    )
+    if wrapped_error is None:
+        wrapped_error = []
+        setattr(exception, _status_reporter_exception_attr, wrapped_error)
+    return wrapped_error
+
+
 class _KeywordDecorator:
     def __init__(
         self,
@@ -110,15 +200,8 @@ class _KeywordDecorator:
 
     @staticmethod
     def _save_status_reporter_failure(exception: BaseException):
-        """normally, robot wraps exceptions from keywords in a `HandlerExecutionFailed` or
-        something, but we want to preserve the original exception so that users can use
-        `try`/`except` without having to worry about their expected exception being wrapped in
-        something else, so instead we just add this attribute to the existing exception so we can
-        refer to it after the test is over, to determine if we still need to log the failure or if
-        it was already logged inside a keyword"""
-        exception._pytest_robot_status_reporter_exception = HandlerExecutionFailed(  # pyright:ignore[reportAttributeAccessIssue]
-            ErrorDetails(exception)
-        )
+        stack = _get_status_reporter_failures(exception)
+        stack.append(HandlerExecutionFailed(ErrorDetails(exception)))
 
     @classmethod
     def inner(
@@ -134,10 +217,10 @@ class _KeywordDecorator:
             try:
                 result_ = fn(*args, **kwargs)
             except BaseException as e:
+                cls._save_status_reporter_failure(e)
                 error = e
                 raise
         if error:
-            cls._save_status_reporter_failure(error)
             raise error
         # pyright assumes the assignment to error could raise an exception but that will NEVER
         # happen
@@ -175,7 +258,7 @@ class _KeywordDecorator:
             ] = (  # pyright:ignore[reportAssignmentType]
                 (
                     # needed to work around pyright bug, see ContextManager documentation
-                    FullStackStatusReporter(
+                    _FullStackStatusReporter(
                         data=data,
                         result=(
                             result.Keyword(
@@ -192,7 +275,7 @@ class _KeywordDecorator:
                     )
                     if robot_6
                     else (
-                        FullStackStatusReporter(
+                        _FullStackStatusReporter(
                             data=data,
                             result=result.Keyword(
                                 name=keyword_name,
