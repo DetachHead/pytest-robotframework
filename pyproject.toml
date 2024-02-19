@@ -9,6 +9,7 @@ dependencies = [
     "pytest<9,>=7",
     "robotframework<8.0.0,>=6.1",
     "basedtyping<0.2,>=0.1.0",
+    "ansi2html>=1.9.1",
 ]
 requires-python = ">=3.8,<4.0"
 readme = "README.md"
@@ -317,6 +318,7 @@ ignore = [
     "ISC001",  # single-line-implicit-string-concatenation (conflicts with formatter)
     "COM812",  # missing-trailing-comma (conflicts with formatter)
     "ISC003",  # explicit-string-concatenation (https://github.com/astral-sh/ruff/issues/9965)
+    "W293",    # modifies strings (https://github.com/astral-sh/ruff/issues/10038)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]

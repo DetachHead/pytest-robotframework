@@ -13,6 +13,7 @@ from tests.conftest import (
     assert_log_file_doesnt_exist,
     assert_robot_total_stats,
     output_xml,
+    xpath,
 )
 
 if TYPE_CHECKING:
@@ -767,10 +768,9 @@ def test_trace_ricing(pr: PytestRobotTester):
     pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
-    result = cast(
-        List[_Element],
-        xml.xpath("//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"),
-    )[0].text
+    result = xpath(
+        xml, "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
+    ).text
 
     assert result
     assert "Exception: THIS!" in result
@@ -790,3 +790,31 @@ def test_assertion_rewritten_in_conftest_when_assertion_hook_enabled(pr: PytestR
         pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
     )
     pr.assert_log_file_exists()
+
+
+def test_ansi(pr: PytestRobotTester):
+    pr.run_and_assert_result(pytest_args=["-vv", "--color=yes"], failed=1)
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xpath(
+        xml,
+        """//msg[@level='FAIL' and @html='true'
+        and contains(., 'assert [1, 2, 3] == [1, 4, 3]')
+        and contains(., 'span style="color: #5c5cff">2</span><span style="color: #7f7f7f"')
+        ]""",
+    ).text
+    assert xml.xpath("""//status[@status='FAIL' and .="\
+assert [1, 2, 3] == [1, 4, 3]
+  
+  At index 1 diff: 2 != 4
+  
+  Full diff:
+    [
+        1,
+  -     4,
+  ?     ^
+  +     2,
+  ?     ^
+        3,
+    ]"
+    ]""")

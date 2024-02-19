@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from ast import Assert, Call, Constant, Expr, If, Raise, copy_location, stmt
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Generator, Mapping, cast
+from typing import TYPE_CHECKING, Callable, Generator, Mapping, Sequence, cast
 
 import pytest
 from _pytest.assertion import rewrite
@@ -14,6 +15,7 @@ from _pytest.assertion.rewrite import (
     traverse_node,
 )
 from _pytest.main import resolve_collection_argument
+from ansi2html import Ansi2HTMLConverter
 from pluggy import Result
 from pytest import Collector, StashKey, TempPathFactory, TestReport, hookimpl
 from robot.api import logger
@@ -25,6 +27,9 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.rebot import Rebot
 from robot.run import RobotFramework, RobotSettings
+from robot.utils import markuputils
+from robot.utils.markupwriters import _MarkupWriter  # pyright: ignore[reportPrivateUsage]
+from typing_extensions import Unpack
 
 from pytest_robotframework import (
     AssertOptions,
@@ -592,3 +597,46 @@ def pytest_runtest_protocol(item: Item):
         )
         return True
     return None
+
+
+def _escape(text: str, escapes: Sequence[tuple[str, str]] = markuputils._generic_escapes) -> str:  # pyright: ignore[reportPrivateUsage]
+    esc = "\N{ESCAPE}"
+    if esc in text:
+        if _markup_ansi:
+            text = Ansi2HTMLConverter(inline=True, escaped=False).convert(text, full=False)
+        else:
+            # This might not catch the extended VT100 codes, archaic/proprietary printer codes, etc.
+            #  but it catches all styling codes, so I'm fine with it.
+            text = re.sub(rf"{esc}\[.*?m", "", text)
+    return markuputils_escape(text, escapes)
+
+
+markuputils_escape = markuputils._escape  # pyright: ignore[reportPrivateUsage, reportUnknownVariableType, reportUnknownMemberType]
+markuputils._escape = _escape  # pyright: ignore[reportPrivateUsage]
+
+_markup_ansi = True
+
+
+@patch_method(_MarkupWriter)
+def element(
+    og: Callable[
+        [_MarkupWriter, str, str | None, dict[str, str] | None, Unpack[tuple[object, ...]]], None
+    ],
+    self: _MarkupWriter,
+    name: str,
+    content: str | None = None,
+    attrs: dict[str, str] | None = None,
+    *args: object,
+    **kwargs: object,  # different amount of args in robot 6
+):
+    """Handle ASCI escape codes"""
+    global _markup_ansi
+    if name == "status":
+        _markup_ansi = False
+    elif content and "\N{ESCAPE}" in content and attrs and "html" not in attrs:
+        attrs["html"] = "true"
+        content = markuputils_escape(content)
+    try:
+        return og(self, name, content, attrs, *args, **kwargs)
+    finally:
+        _markup_ansi = True
