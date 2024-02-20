@@ -19,7 +19,6 @@ from robot.api.interfaces import ListenerV3, Parser
 from robot.model import Message, SuiteVisitor
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.model import Body
-from robot.utils.error import ErrorDetails
 from typing_extensions import override
 
 from pytest_robotframework import (
@@ -41,7 +40,6 @@ from pytest_robotframework._internal.robot_utils import (
     add_robot_error,
     full_test_name,
     get_item_from_robot_test,
-    is_robot_traceback,
     robot_6,
     running_test_case_key,
 )
@@ -49,7 +47,6 @@ from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from types import TracebackType
 
     from basedtyping import P
     from robot.running.builder.settings import TestDefaults
@@ -576,18 +573,6 @@ else:
         """prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
         two status reporters when called from `.robot` tests"""
 
-        def __init__(self) -> None:
-            super().__init__()
-            self._method_with_keyword_decorator: Function | None = None
-            """the method decorated with the `keyword` decorator. we don't want this one to be
-            called by robot because it would result in the same keyword being nested in two status
-            reporters, so we save it here, set the method to the original undecorated function, then
-             set it back after the robot is finished with it"""
-
-        @staticmethod
-        def _set_method_attribute(keyword: StaticKeyword, method: Function):
-            setattr(keyword.owner.instance, keyword.method_name, method)  # pyright:ignore[reportAny]
-
         @override
         def start_library_keyword(
             self,
@@ -600,31 +585,5 @@ else:
             unwrapped_method: Function | None = getattr(
                 implementation.method, _keyword_original_function_attr, None
             )
-            if unwrapped_method is None:
-                return
-            self._method_with_keyword_decorator = implementation.method
-            self._set_method_attribute(implementation, unwrapped_method)
-
-        @override
-        def end_library_keyword(
-            self,
-            data: running.Keyword,
-            implementation: running.LibraryKeyword,
-            result: result.Keyword,  # pylint:disable=redefined-outer-name
-        ):
-            if not self._method_with_keyword_decorator:
-                return
-            if not isinstance(implementation, StaticKeyword):
-                raise InternalError(
-                    "keyword implementation was expected to be StaticKeyword but was "
-                    + type(implementation).__name__
-                )
-            self._set_method_attribute(implementation, self._method_with_keyword_decorator)
-            self._method_with_keyword_decorator = None
-
-
-@patch_method(ErrorDetails)
-def _is_robot_traceback(  # pyright: ignore[reportUnusedFunction]
-    _old_method: object, _self: ErrorDetails, tb: TracebackType
-) -> bool | str | None:
-    return is_robot_traceback(tb)
+            if unwrapped_method is not None:
+                setattr(implementation.owner.instance, implementation.method_name, unwrapped_method)  # pyright:ignore[reportAny]

@@ -24,6 +24,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.rebot import Rebot
 from robot.run import RobotFramework, RobotSettings
+from robot.utils.error import ErrorDetails
 from typing_extensions import TYPE_CHECKING, Callable, Generator, Mapping, cast
 
 from pytest_robotframework import (
@@ -56,6 +57,7 @@ from pytest_robotframework._internal.robot_utils import (
     banned_options,
     cli_defaults,
     escape_robot_str,
+    is_robot_traceback,
     merge_robot_options,
     report_robot_errors,
     robot_6,
@@ -69,6 +71,8 @@ from pytest_robotframework._internal.xdist_utils import (
 )
 
 if TYPE_CHECKING:
+    from types import TracebackType
+
     from pluggy import PluginManager
     from pytest import CallInfo, Item, Parser, Session
 
@@ -602,3 +606,10 @@ def pytest_runtest_protocol(item: Item):
         )
         return True
     return None
+
+
+@patch_method(ErrorDetails)
+def _is_robot_traceback(  # pyright: ignore[reportUnusedFunction]
+    _old_method: object, _self: ErrorDetails, tb: TracebackType
+) -> bool | str | None:
+    return is_robot_traceback(tb)
