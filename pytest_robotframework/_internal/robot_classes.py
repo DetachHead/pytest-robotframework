@@ -12,14 +12,17 @@ from _pytest import runner
 from ansi2html import Ansi2HTMLConverter
 from pluggy import HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
-from pytest import Function, Item, Session, version_tuple as pytest_version
+from pytest import Function as PytestFunction, Item, Session, version_tuple as pytest_version
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
 from robot.model import Message, SuiteVisitor
 from robot.running.model import Body
 from typing_extensions import override
 
-from pytest_robotframework import catch_errors
+from pytest_robotframework import (
+    _keyword_original_function_attr,  # pyright:ignore[reportPrivateUsage]
+    catch_errors,
+)
 from pytest_robotframework._internal import robot_library
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest_robot_items import (
@@ -35,13 +38,14 @@ from pytest_robotframework._internal.robot_utils import (
     add_robot_error,
     full_test_name,
     get_item_from_robot_test,
+    robot_6,
     running_test_case_key,
 )
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from basedtyping import P
+    from basedtyping import Function, P
     from robot.running.builder.settings import TestDefaults
 
 
@@ -175,13 +179,13 @@ class PytestCollector(SuiteVisitor):
             if not item.path.is_absolute():
                 item.path = item.path.resolve()
             # only include items that are part of this current suite
-            if item.path != suite.source or not isinstance(item, Function):
+            if item.path != suite.source or not isinstance(item, PytestFunction):
                 continue
             # create robot test case for .py test:
             test_case = running.TestCase(
                 name=item.name,
                 doc=cast(
-                    Function,
+                    PytestFunction,
                     item.function,  # pyright:ignore[reportUnknownMemberType]
                 ).__doc__
                 or "",
@@ -536,3 +540,60 @@ class AnsiLogger(ListenerV3):
         if self.current_test_status_contains_ansi:
             self.current_test_status_contains_ansi = False
             result.message = sub(rf"{self.esc}\[.*?m", "", result.message)
+
+
+# the methods used in this listener were added in robot 7. in robot 6 we do this by patching
+# `LibraryKeywordRunner._runner_for` in patches/robot.py instead
+if not robot_6:
+    from robot.running.librarykeyword import StaticKeyword
+
+    @catch_errors
+    class KeywordUnwrapper(ListenerV3):
+        """prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
+        two status reporters when called from `.robot` tests"""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self._method_with_keyword_decorator: Function | None = None
+            """the method decorated with the `keyword` decorator. we don't want this one to be
+            called by robot because it would result in the same keyword being nested in two status
+            reporters, so we save it here, set the method to the original undecorated function, then
+             set it back after the robot is finished with it"""
+
+        @staticmethod
+        def _set_method_attribute(keyword: StaticKeyword, method: Function):
+            setattr(keyword.owner.instance, keyword.method_name, method)  # pyright:ignore[reportAny]
+
+        @override
+        def start_library_keyword(
+            self,
+            data: running.Keyword,
+            implementation: running.LibraryKeyword,
+            result: result.Keyword,  # pylint:disable=redefined-outer-name
+        ):
+            if not isinstance(implementation, StaticKeyword):
+                return
+            unwrapped_method: Function | None = getattr(
+                implementation.method, _keyword_original_function_attr, None
+            )
+            if unwrapped_method is None:
+                return
+            self._method_with_keyword_decorator = implementation.method
+            self._set_method_attribute(implementation, unwrapped_method)
+
+        @override
+        def end_library_keyword(
+            self,
+            data: running.Keyword,
+            implementation: running.LibraryKeyword,
+            result: result.Keyword,  # pylint:disable=redefined-outer-name
+        ):
+            if not self._method_with_keyword_decorator:
+                return
+            if not isinstance(implementation, StaticKeyword):
+                raise InternalError(
+                    "keyword implementation was expected to be StaticKeyword but was "
+                    + type(implementation).__name__
+                )
+            self._set_method_attribute(implementation, self._method_with_keyword_decorator)
+            self._method_with_keyword_decorator = None

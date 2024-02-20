@@ -49,7 +49,6 @@ from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
-from pytest_robotframework._internal.patches.robot import kw_attribute
 from pytest_robotframework._internal.robot_utils import (
     Listener as _Listener,
     RobotOptions as _RobotOptions,
@@ -183,6 +182,9 @@ def _get_status_reporter_failures(exception: BaseException) -> list[HandlerExecu
     return wrapped_error
 
 
+_keyword_original_function_attr = "__pytest_robot_keyword_original_function__"
+
+
 class _KeywordDecorator:
     def __init__(
         self,
@@ -300,7 +302,7 @@ class _KeywordDecorator:
             )
             return self.inner(fn, context_manager, *args, **kwargs)
 
-        setattr(inner, kw_attribute, fn)
+        setattr(inner, _keyword_original_function_attr, fn)
         return inner
 
 
