@@ -260,6 +260,7 @@ typeCheckingMode = "all"
 reportMissingTypeStubs = false           # https://github.com/robotframework/robotframework/issues/4822
 reportImplicitStringConcatenation = true # ideally this should be off and handled by the ruff formatter https://github.com/astral-sh/ruff/issues/9965
 enableTypeIgnoreComments = false         # https://github.com/DetachHead/basedpyright/issues/55
+reportUnusedImport = false               # covered by ruff (which has a quickfix)
 
 [tool.ruff]
 unsafe-fixes = true
@@ -318,7 +319,6 @@ ignore = [
     "COM812",  # missing-trailing-comma (conflicts with formatter)
     "ISC003",  # explicit-string-concatenation (https://github.com/astral-sh/ruff/issues/9965)
     "W293",    # modifies strings (https://github.com/astral-sh/ruff/issues/10038)
-    "F401",    # unused-import (covered by pyright)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
