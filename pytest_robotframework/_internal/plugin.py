@@ -40,6 +40,7 @@ from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotI
 from pytest_robotframework._internal.robot_classes import (
     AnsiLogger,
     ErrorDetector,
+    KeywordUnwrapper,
     PytestCollector,
     PytestRuntestProtocolHooks,
     PytestRuntestProtocolInjector,
@@ -51,6 +52,7 @@ from pytest_robotframework._internal.robot_utils import (
     escape_robot_str,
     merge_robot_options,
     report_robot_errors,
+    robot_6,
 )
 from pytest_robotframework._internal.xdist_utils import (
     is_xdist,
@@ -211,6 +213,8 @@ def _collect_or_run(
         else:
             listeners.append(PytestRuntestProtocolHooks(session=session))
         listeners += [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
+        if not robot_6:
+            listeners.append(KeywordUnwrapper())
         robot_args = merge_robot_options(
             robot_args,
             {
