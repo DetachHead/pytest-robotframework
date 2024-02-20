@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
+from ast import Assert, Call, Constant, Expr, If, Raise, copy_location, stmt
 from pathlib import Path
 
 import pytest
+from _pytest.assertion import rewrite
+from _pytest.assertion.rewrite import (
+    AssertionRewriter,
+    _get_assertion_exprs,  # pyright:ignore[reportPrivateUsage]
+    traverse_node,
+)
 from _pytest.main import resolve_collection_argument
 from pluggy import Result
 from pytest import Collector, StashKey, TempPathFactory, TestReport, hookimpl
@@ -17,7 +24,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.rebot import Rebot
 from robot.run import RobotFramework, RobotSettings
-from typing_extensions import TYPE_CHECKING, Generator, Mapping, cast
+from typing_extensions import TYPE_CHECKING, Callable, Generator, Mapping, cast
 
 from pytest_robotframework import (
     AssertOptions,
@@ -33,14 +40,13 @@ from pytest_robotframework import (
     keywordify,
 )
 from pytest_robotframework._internal import cringe_globals
+from pytest_robotframework._internal.cringe_globals import current_item
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.patches.pytest import explanation_key
 from pytest_robotframework._internal.pytest_exception_getter import save_exception_to_item
 from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
 from pytest_robotframework._internal.robot_classes import (
     AnsiLogger,
     ErrorDetector,
-    KeywordUnwrapper,
     PytestCollector,
     PytestRuntestProtocolHooks,
     PytestRuntestProtocolInjector,
@@ -54,6 +60,7 @@ from pytest_robotframework._internal.robot_utils import (
     report_robot_errors,
     robot_6,
 )
+from pytest_robotframework._internal.utils import patch_method
 from pytest_robotframework._internal.xdist_utils import (
     is_xdist,
     is_xdist_master,
@@ -64,6 +71,100 @@ from pytest_robotframework._internal.xdist_utils import (
 if TYPE_CHECKING:
     from pluggy import PluginManager
     from pytest import CallInfo, Item, Parser, Session
+
+
+_explanation_key = StashKey[str]()
+
+
+def _call_assertion_hook(
+    expression: str,
+    fail_message: object,
+    line_number: int,
+    assertion_error: AssertionError | None,
+    explanation: str | None = None,
+):
+    item = current_item()
+    if not item:
+        return
+    if assertion_error and explanation and explanation.startswith("\n"):
+        # pretty gross but we have to remove this trailing \n which means the fail message was None
+        # but the assertion rewriter already wrote the error message thinking it wasn't None because
+        # it was an AssertOptions object
+        explanation = explanation[1:]
+        assertion_error.args = (explanation, *assertion_error.args[1:])
+    item.ihook.pytest_robot_assertion(
+        item=item,
+        expression=expression,
+        fail_message=fail_message,
+        line_number=line_number,
+        assertion_error=assertion_error,
+        explanation=item.stash[_explanation_key] if explanation is None else explanation,
+    )
+
+
+# we aren't patching an existing function here but instead adding a new one to the rewrite module,
+# since the rewritten assert statement needs to call it, and this is the easist way to do that
+rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue]
+
+
+@patch_method(AssertionRewriter)
+def visit_Assert(  # noqa: N802
+    og: Callable[[AssertionRewriter, Assert], list[stmt]], self: AssertionRewriter, assert_: Assert
+) -> list[stmt]:
+    """we patch the assertion rewriter because the hook functions do not give us what we need. see
+    these issues:
+
+    - https://github.com/pytest-dev/pytest/issues/11984
+    - https://github.com/pytest-dev/pytest/issues/11975
+    """
+    result = og(self, assert_)
+    if not self.enable_assertion_pass_hook:
+        return result
+    assert_msg = assert_.msg or Constant(None)
+    if not self.config:
+        raise InternalError("failed to rewrite assertion because config was somehow `None`")
+    try:
+        main_test = next(statement for statement in reversed(result) if isinstance(statement, If))
+    except StopIteration:
+        raise InternalError("failed to find if statement for assertion rewriting") from None
+    expression = _get_assertion_exprs(self.source)[assert_.lineno]
+    # rice the fail statements:
+    raise_statement = cast(Raise, main_test.body.pop())
+    if not raise_statement.exc:
+        raise InternalError("raise statement without exception")
+    main_test.body.append(
+        Expr(
+            self.helper(
+                "_call_assertion_hook",
+                Constant(expression),  # expression
+                assert_msg,  # fail_message
+                Constant(assert_.lineno),  # line_number
+                raise_statement.exc,  # assertion_error
+                cast(Call, raise_statement.exc).args[0],  # explanation
+            )
+        )
+    )
+
+    # rice the pass statements:
+    main_test.orelse.append(
+        Expr(
+            self.helper(
+                "_call_assertion_hook",
+                Constant(expression),  # expression
+                assert_msg,  # fail_message
+                Constant(assert_.lineno),  # line_number
+                Constant(None),  # assertion_error
+                # explanation is handled by the pytest_assertion_pass hook above, since its too
+                # hard to get it from here
+            )
+        )
+    )
+    # copied from the end of og, need to rerun this since a new statement was added:
+    for statement in result:
+        for node in traverse_node(statement):
+            _ = copy_location(node, assert_)
+    return result
+
 
 HookWrapperResult = Generator[None, Result[object], None]
 
@@ -214,6 +315,11 @@ def _collect_or_run(
             listeners.append(PytestRuntestProtocolHooks(session=session))
         listeners += [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
         if not robot_6:
+            # this listener is conditionally defined so has to be conditionally imported
+            from pytest_robotframework._internal.robot_classes import (  # noqa: PLC0415
+                KeywordUnwrapper,
+            )
+
             listeners.append(KeywordUnwrapper())
         robot_args = merge_robot_options(
             robot_args,
@@ -356,7 +462,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
 
 def pytest_assertion_pass(item: Item, expl: str):
     """getting the explanation from this hook to pass on to the `pytest_robot_assertion` hook"""
-    item.stash[explanation_key] = expl
+    item.stash[_explanation_key] = expl
 
 
 def pytest_robot_assertion(
