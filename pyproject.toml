@@ -318,6 +318,7 @@ ignore = [
     "COM812",  # missing-trailing-comma (conflicts with formatter)
     "ISC003",  # explicit-string-concatenation (https://github.com/astral-sh/ruff/issues/9965)
     "W293",    # modifies strings (https://github.com/astral-sh/ruff/issues/10038)
+    "F401",    # unused-import (covered by pyright)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]

@@ -10,13 +10,16 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Optional, Tuple,
 
 from _pytest import runner
 from ansi2html import Ansi2HTMLConverter
+from basedtyping import Function
 from pluggy import HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
 from pytest import Function as PytestFunction, Item, Session, version_tuple as pytest_version
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
 from robot.model import Message, SuiteVisitor
+from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.model import Body
+from robot.utils.error import ErrorDetails
 from typing_extensions import override
 
 from pytest_robotframework import (
@@ -38,15 +41,19 @@ from pytest_robotframework._internal.robot_utils import (
     add_robot_error,
     full_test_name,
     get_item_from_robot_test,
+    is_robot_traceback,
     robot_6,
     running_test_case_key,
 )
+from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from types import TracebackType
 
-    from basedtyping import Function, P
+    from basedtyping import P
     from robot.running.builder.settings import TestDefaults
+    from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 
 
 def _create_running_keyword(
@@ -543,8 +550,25 @@ class AnsiLogger(ListenerV3):
 
 
 # the methods used in this listener were added in robot 7. in robot 6 we do this by patching
-# `LibraryKeywordRunner._runner_for` in patches/robot.py instead
-if not robot_6:
+# `LibraryKeywordRunner._runner_for` instead
+if robot_6:
+
+    @patch_method(LibraryKeywordRunner)
+    def _runner_for(  # pyright:ignore[reportUnusedFunction] # noqa: PLR0917
+        old_method: Callable[
+            [LibraryKeywordRunner, _ExecutionContext, Function, list[object], dict[str, object]],
+            Function,
+        ],
+        self: LibraryKeywordRunner,
+        context: _ExecutionContext,
+        handler: Function,
+        positional: list[object],
+        named: dict[str, object],
+    ) -> Function:
+        """use the original function instead of the `@keyword` wrapped one"""
+        handler = cast(Function, getattr(handler, _keyword_original_function_attr, handler))
+        return old_method(self, context, handler, positional, named)
+else:
     from robot.running.librarykeyword import StaticKeyword
 
     @catch_errors
@@ -597,3 +621,10 @@ if not robot_6:
                 )
             self._set_method_attribute(implementation, self._method_with_keyword_decorator)
             self._method_with_keyword_decorator = None
+
+
+@patch_method(ErrorDetails)
+def _is_robot_traceback(  # pyright: ignore[reportUnusedFunction]
+    _old_method: object, _self: ErrorDetails, tb: TracebackType
+) -> bool | str | None:
+    return is_robot_traceback(tb)
