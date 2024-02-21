@@ -11,6 +11,7 @@ import inspect
 from contextlib import AbstractContextManager, contextmanager, nullcontext
 from functools import wraps
 from pathlib import Path
+from traceback import format_stack
 from types import TracebackType
 from typing import (
     TYPE_CHECKING,
@@ -33,7 +34,7 @@ from typing import (
 from basedtyping import Function, P, T
 from pytest import StashKey
 from robot import result, running
-from robot.api import deco
+from robot.api import deco, logger
 from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.errors import DataError, ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
@@ -139,7 +140,16 @@ class _FullStackStatusReporter(StatusReporter):
             ):
                 break
         else:
-            raise InternalError("erm...")
+            # using logger.error because raising an exception here would screw up the output xml
+            logger.error(
+                str(
+                    InternalError(
+                        "failed to filter out pytest-robotframework machinery for exception: "
+                        + f"{exc_value!r}\n\nfull traceback:\n\n"
+                        + "".join(format_stack())
+                    )
+                )
+            )
         exc_value.__traceback__ = tb
 
         error = ErrorDetails(exc_value)
