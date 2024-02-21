@@ -5,7 +5,7 @@ from os import PathLike, symlink
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
-from typing import TYPE_CHECKING, List, Literal, cast, overload
+from typing import TYPE_CHECKING, Literal, cast, overload
 
 from lxml.etree import XML, _Element  # pyright: ignore[reportPrivateUsage]
 from pytest import ExitCode, FixtureRequest, Function, Pytester, RunResult, fixture
@@ -118,8 +118,12 @@ def output_xml() -> _Element:
     return XML(Path("output.xml").read_bytes())
 
 
-def xpath(xml: _Element, query: str) -> list[_Element]:
-    return cast(List[_Element], xml.xpath(query))
+def xpath(xml: _Element, query: str) -> _Element:
+    results = xml.xpath(query)
+    assert isinstance(results, list)
+    (result,) = results
+    assert isinstance(result, _Element)
+    return result
 
 
 def assert_robot_total_stats(*, passed: int = 0, skipped: int = 0, failed: int = 0):

@@ -752,14 +752,8 @@ def test_pytest_runtest_protocol_hook_in_different_suite(pr: PytestRobotTester):
         passed=1,
     )
     pr.assert_log_file_exists()
-    assert (
-        len(
-            xpath(
-                output_xml(),
-                "//kw[@name='assert' and ./arg[.='True'] and ./status[@status='PASS']]",
-            )
-        )
-        == 1
+    assert xpath(
+        output_xml(), "//kw[@name='assert' and ./arg[.='True'] and ./status[@status='PASS']]"
     )
 
 
@@ -821,7 +815,7 @@ class TestStackTraces:
         xml = output_xml()
         result = xpath(
             xml, "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
-        )[0].text
+        ).text
 
         assert result
         assert "Exception: THIS!" in result
@@ -832,10 +826,9 @@ class TestStackTraces:
         pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG"], failed=1)
         pr.assert_log_file_exists()
         xml = output_xml()
-        result = cast(
-            List[_Element],
-            xml.xpath("//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"),
-        )[0].text
+        result = xpath(
+            xml, "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
+        ).text
         assert result, "failed to find xpath"
         assert cls.parse_stack_trace(result) == {12: "test_keyword", 8: "bar"}
 
@@ -844,11 +837,10 @@ class TestStackTraces:
         pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG"], failed=1)
         pr.assert_log_file_exists()
         xml = output_xml()
-        result = cast(
-            List[_Element],
-            xml.xpath("//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"),
-        )[0].text
-        assert result, "failed to find xpath"
+        result = xpath(
+            xml, "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
+        ).text
+        assert result, "no text in xpath"
         assert cls.parse_stack_trace(result) == {17: "test_as_keyword", 8: "foo", 13: "bar"}
 
 
@@ -862,7 +854,7 @@ def test_ansi(pr: PytestRobotTester):
         and contains(., "assert [1, 2, 3] == [1, '&lt;div&gt;asdf&lt;/div&gt;', 3]")
         and contains(., 'span style="color: #5c5cff">2</span><span style="color: #7f7f7f"')
         ]""",
-    )[0].text
+    ).text
     assert xml.xpath("""//status[@status='FAIL' and .="\
 assert [1, 2, 3] == [1, '<div>asdf</div>', 3]
   
