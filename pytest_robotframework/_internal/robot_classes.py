@@ -4,24 +4,28 @@ robot (some of them are not activated when running pytest in `--collect-only` mo
 from __future__ import annotations
 
 from contextlib import suppress
+from functools import wraps
 from re import sub
 from types import ModuleType
-from typing import TYPE_CHECKING, Callable, Generator, Literal, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Callable, Generator, Generic, Literal, Optional, Tuple, cast
 
 from _pytest import runner
 from ansi2html import Ansi2HTMLConverter
-from basedtyping import Function
+from basedtyping import Function, P, T
 from pluggy import HookCaller, HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
 from pytest import Function as PytestFunction, Item, Session, version_tuple as pytest_version
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
+from robot.errors import HandlerExecutionFailed
 from robot.model import Message, SuiteVisitor
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.model import Body
+from robot.utils.error import ErrorDetails
 from typing_extensions import override
 
 from pytest_robotframework import (
+    _get_status_reporter_failures,  # pyright:ignore[reportPrivateUsage]
     _keyword_original_function_attr,  # pyright:ignore[reportPrivateUsage]
     catch_errors,
 )
@@ -48,7 +52,6 @@ from pytest_robotframework._internal.utils import patch_method
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from basedtyping import P
     from robot.running.builder.settings import TestDefaults
     from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 
@@ -551,6 +554,21 @@ class AnsiLogger(ListenerV3):
             result.message = sub(rf"{self.esc}\[.*?m", "", result.message)
 
 
+def _hide_already_raised_exception_from_robot_log(keyword: Callable[P, T]) -> Callable[P, T]:
+    @wraps(keyword)
+    def wrapped(*args: P.args, **kwargs: P.kwargs) -> T:
+        try:
+            return keyword(*args, **kwargs)
+        except Exception as e:
+            if _get_status_reporter_failures(e):
+                # don't print the exception to the log again, the child keyword would have
+                # done that already
+                raise HandlerExecutionFailed(ErrorDetails(e)) from e
+            raise
+
+    return wrapped
+
+
 # the methods used in this listener were added in robot 7. in robot 6 we do this by patching
 # `LibraryKeywordRunner._runner_for` instead
 if robot_6:
@@ -568,15 +586,18 @@ if robot_6:
         named: dict[str, object],
     ) -> Function:
         """use the original function instead of the `@keyword` wrapped one"""
-        handler = cast(Function, getattr(handler, _keyword_original_function_attr, handler))
+        handler = _hide_already_raised_exception_from_robot_log(
+            cast(Function, getattr(handler, _keyword_original_function_attr, handler))
+        )
         return old_method(self, context, handler, positional, named)
 else:
     from robot.running.librarykeyword import StaticKeyword
 
     @catch_errors
-    class KeywordUnwrapper(ListenerV3):
+    class KeywordUnwrapper(ListenerV3, Generic[P, T]):
         """prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
-        two status reporters when called from `.robot` tests"""
+        two status reporters when called from `.robot` tests, and prevents exceptions from being
+        printed a second time since they would already have been printed in a child keyword"""
 
         @override
         def start_library_keyword(
@@ -587,8 +608,14 @@ else:
         ):
             if not isinstance(implementation, StaticKeyword):
                 return
-            unwrapped_method: Function | None = getattr(
+            unwrapped_method: Callable[P, T] | None = getattr(
                 implementation.method, _keyword_original_function_attr, None
             )
-            if unwrapped_method is not None:
-                setattr(implementation.owner.instance, implementation.method_name, unwrapped_method)  # pyright:ignore[reportAny]
+            if unwrapped_method is None:
+                return
+
+            setattr(
+                implementation.owner.instance,  # pyright:ignore[reportAny]
+                implementation.method_name,
+                _hide_already_raised_exception_from_robot_log(unwrapped_method),
+            )

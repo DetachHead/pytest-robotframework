@@ -155,12 +155,9 @@ class _FullStackStatusReporter(StatusReporter):
         failure = HandlerExecutionFailed(error)
         if failure.timeout:
             context.timeout_occurred = True
-        # the one we just wrapped. i think this should always be present. maybe we should raise an
-        # internal error if it's not, but we don't just to be safe:
-        wrapped_errors = _get_status_reporter_failures(exc_value)
-        # if the wrapped error has a wrapped error, that means it came from a child keyword and
+        # if there is more than 1 wrapped error, that means it came from a child keyword and
         # therefore has already been logged by its status reporter
-        is_nested_status_reporter_failure = len(wrapped_errors) > 1
+        is_nested_status_reporter_failure = len(_get_status_reporter_failures(exc_value)) > 1
         if failure.skip:
             context.skip(error.message)  # pyright:ignore[reportUnknownMemberType]
         elif not is_nested_status_reporter_failure:
