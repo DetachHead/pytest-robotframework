@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, cast
 
-from lxml.etree import _Element  # pyright:ignore[reportPrivateUsage]
 from pytest import ExitCode, Item, Mark
 
 from tests.conftest import (
@@ -11,6 +10,7 @@ from tests.conftest import (
     assert_log_file_doesnt_exist,
     assert_robot_total_stats,
     output_xml,
+    xpath,
 )
 
 if TYPE_CHECKING:
@@ -219,9 +219,9 @@ def test_init_file(pr: PytestRobotTester):
     result = pr.run_pytest()
     result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
-    assert cast(
-        str, cast(List[_Element], output_xml().xpath("/robot/suite"))[0].attrib["name"]
-    ).startswith("Test Init File")
+    assert cast(str, xpath(output_xml(), "/robot/suite").attrib["name"]).startswith(
+        "Test Init File"
+    )
 
 
 def test_init_file_nested(pr: PytestRobotTester):
