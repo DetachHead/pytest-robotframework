@@ -118,8 +118,8 @@ def output_xml() -> _Element:
     return XML(Path("output.xml").read_bytes())
 
 
-def xpath(x: _Element, query: str) -> _Element:
-    return cast(List[_Element], x.xpath(query))[0]
+def xpath(xml: _Element, query: str) -> list[_Element]:
+    return cast(List[_Element], xml.xpath(query))
 
 
 def assert_robot_total_stats(*, passed: int = 0, skipped: int = 0, failed: int = 0):
