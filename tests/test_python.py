@@ -868,5 +868,6 @@ def test_set_log_level(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
-    assert xml.xpath("//msg[@level='DEBUG' and .='Log level changed from INFO to DEBUG.']")
+    # on robot 6 this is logged as INFO and on robot 7 it's logged as DEBUG
+    assert xml.xpath("//msg[.='Log level changed from INFO to DEBUG.']")
     assert xml.xpath("//msg[@level='DEBUG' and .='hello???']")
