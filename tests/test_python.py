@@ -5,12 +5,12 @@ from pathlib import Path
 from re import search
 from typing import TYPE_CHECKING, List, cast
 
-from lxml.etree import _Element  # pyright:ignore[reportPrivateUsage]
 from pytest import ExitCode, MonkeyPatch
 
 from pytest_robotframework._internal.errors import UserError
 from tests.conftest import (
     PytestRobotTester,
+    XmlElement,
     assert_log_file_doesnt_exist,
     assert_robot_total_stats,
     output_xml,
@@ -577,7 +577,7 @@ def test_assertion_fails_with_assertion_hook(pr: PytestRobotTester):
     )
     # make sure the error was only logged once , since the exception gets re-raised after the
     # keyword is over we want to make sure it's not printed multiple times
-    assert len(cast(List[_Element], xml.xpath("///msg[@level='FAIL']"))) == 1
+    assert xpath(xml, "///msg[@level='FAIL']")
 
 
 def test_nested_keyword_that_fails(pr: PytestRobotTester):
@@ -589,7 +589,7 @@ def test_nested_keyword_that_fails(pr: PytestRobotTester):
     assert xml.xpath("//kw[@name='Bar']/msg[@level='FAIL' and .='asdf']")
     # make sure the error was only logged once , since the exception gets re-raised after the
     # keyword is over we want to make sure it's not printed multiple times
-    assert len(cast(List[_Element], xml.xpath("///msg[@level='FAIL']"))) == 1
+    assert xpath(xml, "///msg[@level='FAIL']")
 
 
 def test_assertion_passes_hide_assert(pr: PytestRobotTester):
@@ -677,7 +677,7 @@ def test_assertion_passes_hide_asserts_context_manager(pr: PytestRobotTester):
     assert xml.xpath("//kw[@name='assert']/arg[.='1']")
     assert xml.xpath("//kw[@name='assert']/arg[.='right == left']")
     assert xml.xpath("//kw[@name='assert']/arg[.='2']")
-    assert len(cast(List[_Element], xml.xpath("//kw[@name='assert']"))) == 3
+    assert len(cast(List[XmlElement], xml.xpath("//kw[@name='assert']"))) == 3
 
 
 def test_assertion_pass_hook_multiple_tests(pr: PytestRobotTester):

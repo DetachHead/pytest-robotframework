@@ -5,14 +5,23 @@ from os import PathLike, symlink
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
-from typing import TYPE_CHECKING, Literal, cast, overload
+from typing import TYPE_CHECKING, Iterable, Iterator, Literal, cast, overload
 
-from lxml.etree import XML, _Element  # pyright: ignore[reportPrivateUsage]
+from lxml.etree import (
+    XML,
+    _Element,  # pyright: ignore[reportPrivateUsage]
+)
 from pytest import ExitCode, FixtureRequest, Function, Pytester, RunResult, fixture
+from typing_extensions import TypeGuard, override
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
-    from typing_extensions import Never, override
+    from lxml.etree import (
+        _AnyStr,  # pyright: ignore[reportPrivateUsage]
+        _NonDefaultNSMapArg,  # pyright: ignore[reportPrivateUsage]
+        _XPathObject,  # pyright: ignore[reportPrivateUsage]
+    )
+    from typing_extensions import Never
 
 # needed for fixtures that depend on other fixtures
 # pylint:disable=redefined-outer-name
@@ -114,16 +123,91 @@ def _log_file_exists():
     return Path("log.html").exists()
 
 
-def output_xml() -> _Element:
-    return XML(Path("output.xml").read_bytes())
+def _is_dunder(name: str) -> bool:
+    return len(name) > 4 and name[:2] == name[-2:] == "__" and name[2] != "_" and name[-3] != "_"
 
 
-def xpath(xml: _Element, query: str) -> _Element:
+def _is_element_list(xpath_object: _XPathObject) -> TypeGuard[list[_Element]]:
+    result = isinstance(xpath_object, list)
+    if result and xpath_object:
+        return isinstance(xpath_object[0], _Element)
+    return result
+
+
+class _XmlElement(Iterable["_XmlElement"]):
+    def __init__(self, element: _Element) -> None:
+        super().__init__()
+        self._proxied = element
+
+    @override
+    def __getattribute__(self, /, name: str) -> object:
+        if _is_dunder(name) or name not in vars(_Element):
+            return super().__getattribute__(name)  # pyright:ignore[reportAny]
+        return getattr(self._proxied, name)  # pyright:ignore[reportAny]
+
+    def __bool__(self) -> Literal[True]:
+        return True
+
+    def __len__(self) -> Never:
+        raise Exception(
+            "cannot call `len()` on `XmlElement` to count its children, use `count_children` "
+            + "instead"
+        )
+
+    @override
+    def __iter__(self) -> Iterator[_XmlElement]:
+        for element in self._proxied:
+            yield _XmlElement(element)
+
+    def xpath(
+        self,
+        _path: _AnyStr,
+        namespaces: _NonDefaultNSMapArg | None = ...,
+        extensions: object = ...,
+        smart_strings: bool = ...,  # noqa:FBT001
+        **_variables: _XPathObject,
+    ) -> _XPathObject:
+        result = self._proxied.xpath(_path, namespaces, extensions, smart_strings, **_variables)
+        if _is_element_list(result):
+            # variance moment, but we aren't storing the value anywhere so it's fine
+            return [_XmlElement(element) for element in result]  # pyright:ignore[reportReturnType]
+        return result
+
+    def count_children(self) -> int:
+        return len(self._proxied)
+
+
+if TYPE_CHECKING:
+
+    class XmlElement(_Element):
+        """proxy for lxml's `_Element` that disables its stupid nonsense `__bool__` and `__len__`
+        behavior"""
+
+        def __init__(self, element: _Element) -> None: ...  # pyright:ignore[reportMissingSuperCall]
+
+        def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType]
+            """normally this returns `Tru` only if it has children"""
+
+        @override
+        def __len__(self) -> Never:  # pyright:ignore[reportReturnType]
+            """normally this returns how many children it has. but if you want to check than then
+            call `count_children` instead"""
+
+        def count_children(self) -> int: ...
+else:
+    XmlElement = _XmlElement
+
+
+def output_xml() -> XmlElement:
+    return XmlElement(XML(Path("output.xml").read_bytes()))
+
+
+def xpath(xml: _Element, query: str) -> XmlElement:
     results = xml.xpath(query)
     assert isinstance(results, list)
     (result,) = results
     assert isinstance(result, _Element)
-    return result
+    return XmlElement(result)
 
 
 def assert_robot_total_stats(*, passed: int = 0, skipped: int = 0, failed: int = 0):
