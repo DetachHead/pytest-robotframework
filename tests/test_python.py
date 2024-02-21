@@ -862,3 +862,11 @@ assert [1, 2, 3] == [1, '<div>asdf</div>', 3]
         3,
     ]"
     ]""")
+
+
+def test_set_log_level(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=1)
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xml.xpath("//msg[@level='DEBUG' and .='Log level changed from INFO to DEBUG.']")
+    assert xml.xpath("//msg[@level='DEBUG' and .='hello???']")

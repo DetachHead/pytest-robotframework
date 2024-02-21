@@ -315,33 +315,42 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
             # if there were no outputs there were probably no tests run or some other error occured,
             # so silently skip this
             if outputs:
+                rebot_options = merge_robot_options(
+                    {
+                        # rebot doesn't recreate the output.xml unless you sepecify it
+                        # explicitly. we want to do this because our usage of rebot is an
+                        # implementation detail and we want the output to appear the same
+                        # regardless of whether the user is running with xdist
+                        "output": "output.xml",
+                        "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
+                    },
+                    {
+                        key: value
+                        for key, value in robot_args.items()
+                        if key
+                        in option_names(
+                            RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
+                        )
+                        or key
+                        in option_names(
+                            _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
+                        )
+                    },
+                )
+                # we need to always set the loglevel to TRACE, despite whatever it was set to
+                # when running robot. otherwise if the loglevel was changed to DEBUG or TRACE
+                # programmatically inside a test, they would not appear in the merged output
+                log_level_value = robot_args["loglevel"]
+                default_log_level = (
+                    log_level_value.split(":")[1] if ":" in log_level_value else "INFO"
+                )
+                rebot_options["loglevel"] = f"TRACE:{default_log_level}"
                 Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
                     outputs,
                     # merge is deliberately specified here instead of in the merged dict because it
                     # should never be overwritten
                     merge=True,
-                    **merge_robot_options(
-                        {
-                            # rebot doesn't recreate the output.xml unless you sepecify it
-                            # explicitly. we want to do this because our usage of rebot is an
-                            # implementation detail and we want the output to appear the same
-                            # regardless of whether the user is running with xdist
-                            "output": "output.xml",
-                            "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
-                        },
-                        {
-                            key: value
-                            for key, value in robot_args.items()
-                            if key
-                            in option_names(
-                                RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
-                            )
-                            or key
-                            in option_names(
-                                _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
-                            )
-                        },
-                    ),
+                    **rebot_options,
                 )
         yield
     finally:
