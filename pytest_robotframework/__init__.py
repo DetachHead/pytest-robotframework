@@ -39,6 +39,7 @@ from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.errors import DataError, ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model.visitor import SuiteVisitor
+from robot.running import model
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import ExecutionStatus, HandlerExecutionFailed, StatusReporter
 from robot.utils import (
@@ -59,7 +60,7 @@ from pytest_robotframework._internal.robot_utils import (
     is_robot_traceback,
     robot_6,
 )
-from pytest_robotframework._internal.utils import ClassOrInstance, ContextManager, main_package_name
+from pytest_robotframework._internal.utils import ClassOrInstance, ContextManager
 
 if TYPE_CHECKING:
     from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
@@ -134,9 +135,8 @@ class _FullStackStatusReporter(StatusReporter):
                 continue
             in_framework = False
             tb = trace
-            if str(Path(frame.filename)).endswith(
-                str(Path(main_package_name) / "_internal/plugin.py")
-            ):
+            # find a frame from a module that should always be in the trace
+            if Path(frame.filename) == Path(model.__file__):
                 break
         else:
             # using logger.error because raising an exception here would screw up the output xml
