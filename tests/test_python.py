@@ -745,8 +745,22 @@ def test_pytest_runtest_protocol_item_hook(pr: PytestRobotTester):
 
 
 def test_pytest_runtest_protocol_hook_in_different_suite(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["-m", "asdf"], passed=1)
+    pr.run_and_assert_result(
+        # the assertion_pass hook relies on this functionality so we need to make sure that works
+        # correctly too
+        pytest_args=["-m", "asdf", "-o", "enable_assertion_pass_hook=true"],
+        passed=1,
+    )
     pr.assert_log_file_exists()
+    assert (
+        len(
+            xpath(
+                output_xml(),
+                "//kw[@name='assert' and ./arg[.='True'] and ./status[@status='PASS']]",
+            )
+        )
+        == 1
+    )
 
 
 def test_traceback(pr: PytestRobotTester):
@@ -807,7 +821,7 @@ class TestStackTraces:
         xml = output_xml()
         result = xpath(
             xml, "//msg[@level='DEBUG' and contains(., 'Traceback (most recent call last)')]"
-        ).text
+        )[0].text
 
         assert result
         assert "Exception: THIS!" in result
@@ -848,7 +862,7 @@ def test_ansi(pr: PytestRobotTester):
         and contains(., "assert [1, 2, 3] == [1, '&lt;div&gt;asdf&lt;/div&gt;', 3]")
         and contains(., 'span style="color: #5c5cff">2</span><span style="color: #7f7f7f"')
         ]""",
-    ).text
+    )[0].text
     assert xml.xpath("""//status[@status='FAIL' and .="\
 assert [1, 2, 3] == [1, '<div>asdf</div>', 3]
   

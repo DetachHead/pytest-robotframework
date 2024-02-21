@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Callable, Generator, Literal, Optional, Tuple,
 from _pytest import runner
 from ansi2html import Ansi2HTMLConverter
 from basedtyping import Function
-from pluggy import HookImpl
+from pluggy import HookCaller, HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
 from pytest import Function as PytestFunction, Item, Session, version_tuple as pytest_version
 from robot import model, result, running
@@ -332,22 +332,33 @@ class PytestRuntestProtocolHooks(ListenerV3):
         return item
 
     @staticmethod
-    def _call_hooks(item: Item, hookimpls: list[HookImpl]) -> object:
+    def _unproxy_hook_caller(hook_caller: HookCaller) -> HookCaller:
+        """`HookCaller`s can sometimes be a proxy, which means it can't be mutated, so we need to
+        unproxy it if we intend to modify it"""
+        return (
+            hook_caller._orig  # pyright:ignore[reportPrivateUsage]
+            if isinstance(hook_caller, _SubsetHookCaller)
+            else hook_caller
+        )
+
+    @classmethod
+    def _call_hooks(cls, item: Item, hookimpls: list[HookImpl]) -> object:
         hook_caller = item.ihook.pytest_runtest_protocol
         original_hookimpls = hook_caller.get_hookimpls()
+        mutable_hook_caller = cls._unproxy_hook_caller(hook_caller)
         try:
             # can't use the public get_hookimpls method because it returns a copy and we need to
             # mutate the original
-            hook_caller._hookimpls[:] = []  # pyright:ignore[reportPrivateUsage]
+            mutable_hook_caller._hookimpls[:] = []  # pyright:ignore[reportPrivateUsage]
             for hookimpl in hookimpls:
-                hook_caller._add_hookimpl(  # pyright:ignore[reportPrivateUsage]
+                mutable_hook_caller._add_hookimpl(  # pyright:ignore[reportPrivateUsage]
                     hookimpl
                 )
             hook_result = cast(
                 object, hook_caller(item=item, nextitem=cast(Optional[Item], item.nextitem))
             )
         finally:
-            hook_caller._hookimpls[:] = (  # pyright:ignore[reportPrivateUsage]
+            mutable_hook_caller._hookimpls[:] = (  # pyright:ignore[reportPrivateUsage]
                 original_hookimpls
             )
         return hook_result
@@ -363,15 +374,9 @@ class PytestRuntestProtocolHooks(ListenerV3):
         hook_caller = item.ihook.pytest_runtest_protocol
 
         # remove the runner plugin because `PytestRuntestProtocolInjector` re-implements it
-        original_hook_caller = (
-            # need to bypass the _SubsetHookCaller proxy otherwise it won't actually remove the
-            # plugin
-            hook_caller._orig  # pyright:ignore[reportPrivateUsage]
-            if isinstance(hook_caller, _SubsetHookCaller)
-            else hook_caller
-        )
+        mutable_hook_caller = self._unproxy_hook_caller(hook_caller)
         with suppress(ValueError):  # already been removed
-            original_hook_caller._remove_plugin(  # pyright:ignore[reportPrivateUsage]
+            mutable_hook_caller._remove_plugin(  # pyright:ignore[reportPrivateUsage]
                 runner
             )
 
