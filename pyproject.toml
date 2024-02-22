@@ -22,14 +22,14 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 robotframework = "pytest_robotframework._internal.plugin"
 
 [tool.pyprojectx]
-pdm = "pdm==2.12.3"
+pdm = "pdm>=2.12.3"
 
 [tool.pyprojectx.aliases]
 install = "pdm sync --clean"
 run = "pdm run"
 outdated = "pdm update --outdated"
 test = "pdm run pytest -n auto"
-
+update = ["pw --lock", "pdm update"]
 
 [tool.pdm.dev-dependencies]
 lint = [
