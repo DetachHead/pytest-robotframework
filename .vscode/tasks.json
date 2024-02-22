@@ -11,6 +11,15 @@
       "presentation": {
         "clear": true
       }
+    },
+    {
+      "label": "update pyprojectx lockfile",
+      "type": "shell",
+      "command": "./pw",
+      "args": ["--lock"],
+      "presentation": {
+        "clear": true
+      }
     }
   ]
 }
