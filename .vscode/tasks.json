@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "pdm install requirements",
+      "label": "install dependencies",
       "type": "shell",
       "command": "./pw",
       "args": ["install"],
@@ -14,10 +14,10 @@
       "problemMatcher": []
     },
     {
-      "label": "pdm update lockfile",
+      "label": "update dependencies (refresh lockfiles)",
       "type": "shell",
       "command": "./pw",
-      "args": ["pdm", "update"],
+      "args": ["update"],
       "presentation": {
         "clear": true
       },
