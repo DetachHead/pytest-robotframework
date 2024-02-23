@@ -16,7 +16,6 @@ from types import TracebackType
 from typing import (
     TYPE_CHECKING,
     Callable,
-    ClassVar,
     ContextManager,
     DefaultDict,
     Dict,
@@ -36,7 +35,6 @@ from basedtyping import Function, P, T
 from pytest import StashKey
 from robot import result, running
 from robot.api import deco, logger
-from robot.api.interfaces import ListenerV2, ListenerV3
 from robot.errors import DataError, ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model.visitor import SuiteVisitor
@@ -51,7 +49,7 @@ from robot.utils.error import ErrorDetails
 from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
-from pytest_robotframework._internal.errors import InternalError, UserError
+from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot.utils import (
     Listener as _Listener,
     RobotOptions as _RobotOptions,
@@ -61,10 +59,11 @@ from pytest_robotframework._internal.robot.utils import (
     is_robot_traceback,
     robot_6,
 )
-from pytest_robotframework._internal.utils import ClassOrInstance, SuppressableContextManager
 
 if TYPE_CHECKING:
     from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
+
+    from pytest_robotframework._internal.utils import SuppressableContextManager
 
 RobotVariables: TypeAlias = Dict[str, object]
 """variable names and values to be set on the suite level. see the `set_variables` function"""
@@ -634,63 +633,6 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
         setattr(cls, name, wrapped(method))
     setattr(cls, marker, True)
     return cls
-
-
-class _RobotClassRegistry:
-    listeners: ClassVar[list[Listener]] = []
-    pre_rebot_modifiers: ClassVar[list[SuiteVisitor]] = []
-    too_late: ClassVar[bool] = False
-
-    @classmethod
-    def check_too_late(cls, obj: ClassOrInstance[Listener | SuiteVisitor]):
-        if cls.too_late:
-            raise UserError(
-                f"{(obj if isinstance(obj, type) else type(obj)).__name__} cannot be"
-                + " registered because robot has already started running. make sure it's"
-                + " defined in a `conftest.py` file"
-            )
-
-
-_T_Listener = TypeVar("_T_Listener", bound=ClassOrInstance["Listener"])
-
-
-@deprecated(
-    "add listeners using the `pytest_robot_modify_options` hook instead. see"
-    + " https://github.com/DetachHead/pytest-robotframework#pytest_robot_modify_options-hook"
-)
-def listener(obj: _T_Listener) -> _T_Listener:
-    """registers a class or instance as a global robot listener. listeners using this decorator are
-    always enabled and do not need to be registered with the `--listener` robot option.
-
-    must be called before robot starts running (eg. in a `pytest_sessionstart` hook). if using as a
-    decorator, the listener must be defined in your `conftest.py` (or in a module imported by it) so
-    it gets registered before robot starts running."""
-    _RobotClassRegistry.check_too_late(obj)
-    _RobotClassRegistry.listeners.append(
-        obj if isinstance(obj, (ListenerV2, ListenerV3)) else catch_errors(obj)()
-    )
-    return obj
-
-
-_T_SuiteVisitor = TypeVar("_T_SuiteVisitor", bound=ClassOrInstance[SuiteVisitor])
-
-
-@deprecated(
-    "add pre-rebot modifiers using the `pytest_robot_modify_options` hook instead. see"
-    + " https://github.com/DetachHead/pytest-robotframework#pytest_robot_modify_options-hook"
-)
-def pre_rebot_modifier(obj: _T_SuiteVisitor) -> _T_SuiteVisitor:
-    """registers a suite visitor as a pre-rebot modifier. classes using this decorator are always
-    enabled and do not need to be registered with the `--prerebotmodifier` robot option.
-
-    must be called before robot starts running (eg. in a `pytest_sessionstart` hook). if using as a
-    decorator, the class must be defined in your `conftest.py` (or in a module imported by it) so
-    it gets registered before robot starts running."""
-    _RobotClassRegistry.check_too_late(obj)
-    _RobotClassRegistry.pre_rebot_modifiers.append(
-        obj if isinstance(obj, SuiteVisitor) else catch_errors(obj)()
-    )
-    return obj
 
 
 class AssertOptions:
