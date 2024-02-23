@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, List, cast
 
 from pytest import ExitCode, MonkeyPatch
 
-from pytest_robotframework._internal.errors import UserError
 from tests.conftest import (
     PytestRobotTester,
     XmlElement,
@@ -495,45 +494,6 @@ def test_xfail_passes_no_reason(pr: PytestRobotTester):
     assert output_xml().xpath(
         "//kw[@name='Run Test' and ./msg[@level='FAIL' and .='[XPASS(strict)] ']]"
     )
-
-
-def test_listener_decorator(pr: PytestRobotTester):
-    pr.run_and_assert_result(passed=1)
-    pr.assert_log_file_exists()
-
-
-def test_listener_decorator_stays_active_on_second_test(pr: PytestRobotTester):
-    # when testing with xdist we want them both to run on the same node
-    if pr.xdist:
-        pr.xdist = 1
-    pr.run_and_assert_result(passed=2)
-    pr.assert_log_file_exists()
-
-
-def test_listener_decorator_registered_too_late(pr: PytestRobotTester):
-    # all the other tests run pytest in subprocess mode but we keep this one as inprocess to check
-    # for https://github.com/DetachHead/pytest-robotframework/issues/38
-    result = pr.run_pytest(subprocess=False)
-    # the error gets duplicated when running with xdist, i guess because the module where the
-    # listener is defined gets imported multiple times, who knows
-    result.assert_outcomes(errors=pr.xdist * 2 if pr.xdist else 1)
-    # pytest failed before test was collected so nothing in the robot run. if xdist then it failed
-    # before robot started so there'll be no robot files at all
-    if pr.xdist:
-        return
-    assert_robot_total_stats()
-    pr.assert_log_file_exists()
-    # TODO: why does this intermittently fail when running with xdist
-    # https://github.com/DetachHead/pytest-robotframework/issues/184
-    expected_message = (
-        f" {UserError.__module__}.{UserError.__qualname__}: Listener cannot be"
-        " registered because robot has already started running. make sure it's defined"
-        " in a `conftest.py` file"
-    )
-    if not any(line.endswith(expected_message) for line in result.outlines):
-        raise AssertionError(
-            f"{expected_message=} did not appear in the result: {result.outlines=}"
-        )
 
 
 def test_catch_errors_decorator(pr: PytestRobotTester):

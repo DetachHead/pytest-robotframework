@@ -33,7 +33,6 @@ from pytest_robotframework import (
     RobotOptions,
     _hide_asserts_context_manager_key,  # pyright:ignore[reportPrivateUsage]
     _resources,  # pyright:ignore[reportPrivateUsage]
-    _RobotClassRegistry,  # pyright:ignore[reportPrivateUsage]
     _suite_variables,  # pyright:ignore[reportPrivateUsage]
     as_keyword,
     hooks,
@@ -292,9 +291,7 @@ def _collect_or_run(
             "exitonerror": True,
         }
     else:
-        # we can't use our listener decorator here because we may have already set
-        # _RobotClassRegistry.too_late to True
-        listeners: list[Listener] = []
+        listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
         # if item_context is not set then it's being run from pytest_runtest_protocol instead of
         # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
         if xdist_item:
@@ -303,10 +300,12 @@ def _collect_or_run(
                 "report": None,
                 "log": None,
                 "output": _log_path(xdist_item),
+                # we don't want prerebotmodifiers to run multiple times so we defer them to the end
+                # of the test if we're running with xdist
+                "prerebotmodifier": None,
             }
         else:
             listeners.append(PytestRuntestProtocolHooks(session=session))
-        listeners += [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
         if not robot_6:
             # this listener is conditionally defined so has to be conditionally imported
             from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # noqa: PLC0415
@@ -318,32 +317,18 @@ def _collect_or_run(
             robot_args,
             {
                 "prerunmodifier": [PytestRuntestProtocolInjector(session=session, item=xdist_item)],
-                "listener": [*_RobotClassRegistry.listeners, *listeners],
-                # we don't want prerebotmodifiers to run multiple times so we defer them to the end
-                # of the test if we're running with xdist
-                "prerebotmodifier": (
-                    None if xdist_item else _RobotClassRegistry.pre_rebot_modifiers
-                ),
+                "listener": listeners,
             },
         )
-    # technically it's not too late if running with xdist and it's only up to the collection stage,
-    # but we don't want the errors to be dependent on whether the user is running with xdist or not.
-    _RobotClassRegistry.too_late = True
 
-    try:
-        # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
-        # the test is over
-        with LOGGER:
-            _ = robot.main(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
-                _get_pytest_collection_paths(session),
-                # needed because PythonParser.visit_init creates an empty suite
-                **robot_args,
-            )
-    finally:
-        # we don't want to clear listeners/pre_rebot_modifiers that were registered before
-        # collection
-        if not collect:
-            _RobotClassRegistry.too_late = False
+    # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
+    # the test is over
+    with LOGGER:
+        _ = robot.main(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
+            _get_pytest_collection_paths(session),
+            # needed because PythonParser.visit_init creates an empty suite
+            **robot_args,
+        )
 
     robot_errors = report_robot_errors(session)
     if robot_errors:
@@ -424,10 +409,10 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                         # explicitly. we want to do this because our usage of rebot is an
                         # implementation detail and we want the output to appear the same
                         # regardless of whether the user is running with xdist
-                        "output": "output.xml",
-                        "prerebotmodifier": _RobotClassRegistry.pre_rebot_modifiers,
+                        "output": "output.xml"
                     },
                     {
+                        # filter out any robot args that aren't valid rebot args
                         key: value
                         for key, value in robot_args.items()
                         if key
@@ -457,8 +442,6 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                 )
         yield
     finally:
-        _RobotClassRegistry.listeners.clear()
-        _RobotClassRegistry.pre_rebot_modifiers.clear()
         cringe_globals._current_session = None  # pyright:ignore[reportPrivateUsage]
 
 

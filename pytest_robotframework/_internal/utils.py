@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, ContextManager, Protocol, Type, Union, cast
+from typing import TYPE_CHECKING, Callable, ContextManager, Protocol, cast
 
 from basedtyping import P, T, out_T
 from typing_extensions import override
@@ -11,9 +11,6 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from typing_extensions import Concatenate
-
-
-ClassOrInstance = Union[T, Type[T]]
 
 
 def patch_method(
