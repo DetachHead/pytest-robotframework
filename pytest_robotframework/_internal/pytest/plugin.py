@@ -43,9 +43,15 @@ from pytest_robotframework import (
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.cringe_globals import current_item
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.pytest_exception_getter import save_exception_to_item
-from pytest_robotframework._internal.pytest_robot_items import RobotFile, RobotItem
-from pytest_robotframework._internal.robot_classes import (
+from pytest_robotframework._internal.pytest.exception_getter import save_exception_to_item
+from pytest_robotframework._internal.pytest.robot_file_support import RobotFile, RobotItem
+from pytest_robotframework._internal.pytest.xdist_utils import (
+    is_xdist,
+    is_xdist_master,
+    is_xdist_worker,
+    worker_id,
+)
+from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (
     AnsiLogger,
     ErrorDetector,
     PytestCollector,
@@ -53,7 +59,7 @@ from pytest_robotframework._internal.robot_classes import (
     PytestRuntestProtocolInjector,
     PythonParser,
 )
-from pytest_robotframework._internal.robot_utils import (
+from pytest_robotframework._internal.robot.utils import (
     banned_options,
     cli_defaults,
     escape_robot_str,
@@ -63,12 +69,6 @@ from pytest_robotframework._internal.robot_utils import (
     robot_6,
 )
 from pytest_robotframework._internal.utils import patch_method
-from pytest_robotframework._internal.xdist_utils import (
-    is_xdist,
-    is_xdist_master,
-    is_xdist_worker,
-    worker_id,
-)
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -320,7 +320,7 @@ def _collect_or_run(
         listeners += [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
         if not robot_6:
             # this listener is conditionally defined so has to be conditionally imported
-            from pytest_robotframework._internal.robot_classes import (  # noqa: PLC0415
+            from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # noqa: PLC0415
                 KeywordUnwrapper,
             )
 

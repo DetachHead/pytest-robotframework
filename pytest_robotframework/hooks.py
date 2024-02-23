@@ -1,5 +1,5 @@
-# ideally this would be in _internal so this would go without saying, but i can't figure out any
-# other way to get this module to show up in pdoc
+# ideally this would be in _internal.pytest so this would go without saying, but i can't figure out
+# any other way to get this module to show up in pdoc
 """new hooks defined by the pytest_robotframework plugin. these are not to be imported. see
 [the documentation for pytest hook functions](https://docs.pytest.org/en/7.1.x/how-to/writing_hook_functions.html)
 for information on how to use them."""
@@ -13,7 +13,7 @@ from pytest import Item, hookspec
 if TYPE_CHECKING:
     from pytest import Session
 
-    from pytest_robotframework._internal.robot_utils import RobotOptions
+    from pytest_robotframework._internal.robot.utils import RobotOptions
 
 # these are basically abstract methods, but hooks are defined in this wacky way which isn't
 # supported by linters/type checkers:

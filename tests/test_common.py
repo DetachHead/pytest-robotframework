@@ -6,7 +6,7 @@ from pytest import ExitCode, mark
 from robot.conf.settings import RobotSettings
 
 from pytest_robotframework import RobotOptions
-from pytest_robotframework._internal.robot_utils import banned_options, cli_defaults, robot_6
+from pytest_robotframework._internal.robot.utils import banned_options, cli_defaults, robot_6
 
 if TYPE_CHECKING:
     from tests.conftest import PytestRobotTester

@@ -19,11 +19,11 @@ from pytest_robotframework import (
 )
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.pytest_exception_getter import exception_key
-from pytest_robotframework._internal.pytest_utils import init_stash
+from pytest_robotframework._internal.pytest.exception_getter import exception_key
+from pytest_robotframework._internal.pytest.utils import init_stash
 
 if TYPE_CHECKING:
-    from pytest_robotframework._internal.robot_utils import Cloaked
+    from pytest_robotframework._internal.robot.utils import Cloaked
 
 _report_key = StashKey[List[TestReport]]()
 

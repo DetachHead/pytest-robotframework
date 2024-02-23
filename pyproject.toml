@@ -19,7 +19,7 @@ license = { text = "MIT" }
 repository = "https://github.com/detachhead/pytest-robotframework"
 
 [project.entry-points.pytest11]
-robotframework = "pytest_robotframework._internal.plugin"
+robotframework = "pytest_robotframework._internal.pytest.plugin"
 
 [tool.pyprojectx]
 pdm = "pdm==2.12.3"

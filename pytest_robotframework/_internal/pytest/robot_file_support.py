@@ -14,7 +14,7 @@ from robot.running.model import Body
 from typing_extensions import override
 
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.robot_utils import (
+from pytest_robotframework._internal.robot.utils import (
     ModelTestCase,
     ModelTestSuite,
     execution_context,

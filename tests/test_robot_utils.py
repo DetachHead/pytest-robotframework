@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pytest_robotframework._internal.robot_utils import merge_robot_options
+from pytest_robotframework._internal.robot.utils import merge_robot_options
 
 
 def test_merge_robot_options():
