@@ -54,10 +54,10 @@ from pytest_robotframework._internal.pytest.xdist_utils import (
 from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (
     AnsiLogger,
     ErrorDetector,
-    PytestCollector,
     PytestRuntestProtocolHooks,
     PytestRuntestProtocolInjector,
     PythonParser,
+    TestFilterer,
 )
 from pytest_robotframework._internal.robot.utils import (
     banned_options,
@@ -256,29 +256,20 @@ def _get_robot_args(session: Session) -> RobotOptions:
 
 
 def _collect_or_run(
-    session: Session,
-    *,
-    robot_options: RobotOptions,
-    collect_only: bool,
-    xdist_item: Item | None = None,
+    session: Session, *, robot_options: RobotOptions, collect: bool, xdist_item: Item | None = None
 ):
     """
     if not running with xdist:
     --------------------------
-    this is called either by `pytest_collection` or `pytest_runtestloop` depending on whether
-    `collect_only` is `True`, because to avoid having to run robot multiple times for both the
-    collection and running, it's more efficient to just have `pytest_runtestloop` handle the
-    collection as well if possible.
+    this is called once by `pytest_collection` (with `collect=True`), then again by
+    `pytest_runtestloop`, meaning robot gets run twice per session.
 
     if running with xdist:
     ----------------------
-    this is called by `pytest_collection` to collect all the tests, then by
+    this is called by `pytest_collection` to collect all the tests in the current runner, then by
     `pytest_runtest_protocol` for each item individually. this means a separate robot session
     is started for every test.
     """
-    # when running with xdist, collect/run gets called multiple times
-    if not collect_only and not is_xdist(session) and _RobotClassRegistry.too_late:
-        raise InternalError("somehow ran collect/run twice???")
     robot = RobotFramework()
 
     robot_args: Mapping[str, object] = merge_robot_options(
@@ -287,14 +278,12 @@ def _collect_or_run(
             "extension": "py:robot",
             "runemptysuite": True,
             "parser": [PythonParser(session)],
-            "prerunmodifier": [
-                PytestCollector(session, collect_only=collect_only, item=xdist_item)
-            ],
+            "prerunmodifier": [TestFilterer(session, collect_only=collect, item=xdist_item)],
         },
     )
     # needs to happen before collection cuz that's when the modules being keywordified get imported
     _keywordify_pytest_functions()
-    if collect_only:
+    if collect:
         robot_args = {
             **robot_args,
             "report": None,
@@ -353,7 +342,7 @@ def _collect_or_run(
     finally:
         # we don't want to clear listeners/pre_rebot_modifiers that were registered before
         # collection
-        if not collect_only:
+        if not collect:
             _RobotClassRegistry.too_late = False
 
     robot_errors = report_robot_errors(session)
@@ -520,13 +509,9 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
     return None
 
 
-def pytest_collection(session: Session) -> object:
-    robot_args = _get_robot_args(session=session)
-    if session.config.option.collectonly or is_xdist_worker(  # pyright:ignore[reportAny]
-        session
-    ):
-        _collect_or_run(session, collect_only=True, robot_options=robot_args)
-    return True
+@hookimpl(trylast=True)
+def pytest_collection(session: Session):
+    _collect_or_run(session, collect=True, robot_options=_get_robot_args(session=session))
 
 
 def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
@@ -600,7 +585,7 @@ def pytest_runtestloop(session: Session) -> object:
     ):
         return None
     robot_args = _get_robot_args(session=session)
-    _collect_or_run(session, collect_only=False, robot_options=robot_args)
+    _collect_or_run(session, collect=False, robot_options=robot_args)
     return None if is_xdist(session) else True
 
 
@@ -609,7 +594,7 @@ def pytest_runtest_protocol(item: Item):
     if is_xdist_worker(item.session):
         _collect_or_run(
             item.session,
-            collect_only=False,
+            collect=False,
             xdist_item=item,
             robot_options=_get_robot_args(session=item.session),
         )

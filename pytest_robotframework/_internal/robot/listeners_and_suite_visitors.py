@@ -14,7 +14,7 @@ from ansi2html import Ansi2HTMLConverter
 from basedtyping import Function, P, T
 from pluggy import HookCaller, HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
-from pytest import Function as PytestFunction, Item, Session, version_tuple as pytest_version
+from pytest import Function as PytestFunction, Item, Session
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
 from robot.errors import HandlerExecutionFailed
@@ -127,13 +127,11 @@ class _NotRunningTestSuiteError(InternalError):
 
 
 @catch_errors
-class PytestCollector(SuiteVisitor):
+class TestFilterer(SuiteVisitor):
     """
-    calls the pytest collection hooks.
+    if `collect_only` is `True`, removes all suites/tests so that robot doesn't run anything
 
-    if `collect_only` is `True`, it also removes all suites/tests so that robot doesn't run anything
-
-    if `collect_only` is `False`, it also does the following to prepare the tests for execution:
+    otherwise if `collect_only` is `False`, does the following to prepare the tests for execution:
 
     - filters out any `.robot` tests/suites that are not included in the collected pytest tests
     - adds the collected `.py` test cases to the robot test suites (with empty bodies. bodies are
@@ -170,19 +168,6 @@ class PytestCollector(SuiteVisitor):
             raise _NotRunningTestSuiteError
         if not suite.parent:  # only do this once, on the top level suite
             self.session.stash[collected_robot_suite_key] = suite
-            # on pytest <8, if collection has already happened, collecting again will result in an
-            # empty list so we can only collect once. on pytest >8, the items attribute is always
-            # present. although that makes it safer to double-collect, it will remake all the
-            # collected items meaning anything added to their stash will be lost
-            if not self.xdist_run and (
-                not hasattr(self.session, "items") or (pytest_version >= (8, 0, 0))
-            ):
-                try:
-                    _ = self.session.perform_collect()
-                except Exception as e:  # noqa: BLE001
-                    # if collection fails we still need to clean up the suite (ie. delete all the
-                    # fake tests), so we defer the error to `end_suite` for the top level suite
-                    self.collection_error = e
         if not suite.source:
             return
         # save the resolved paths for performance reasons
