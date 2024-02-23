@@ -280,8 +280,6 @@ def _collect_or_run(
             "prerunmodifier": [TestFilterer(session, collect_only=collect, item=xdist_item)],
         },
     )
-    # needs to happen before collection cuz that's when the modules being keywordified get imported
-    _keywordify_pytest_functions()
     if collect:
         robot_args = {
             **robot_args,
@@ -385,6 +383,7 @@ def pytest_addoption(parser: Parser):
 
 @hookimpl(tryfirst=True)
 def pytest_sessionstart(session: Session):
+    _keywordify_pytest_functions()
     cringe_globals._current_session = session  # pyright:ignore[reportPrivateUsage]
 
 
