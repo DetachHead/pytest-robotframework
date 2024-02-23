@@ -56,6 +56,7 @@ from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (
     PytestRuntestProtocolHooks,
     PytestRuntestProtocolInjector,
     PythonParser,
+    RobotSuiteCollector,
     TestFilterer,
 )
 from pytest_robotframework._internal.robot.utils import (
@@ -273,20 +274,19 @@ def _collect_or_run(
 
     robot_args: Mapping[str, object] = merge_robot_options(
         robot_options,
-        {
-            "extension": "py:robot",
-            "runemptysuite": True,
-            "parser": [PythonParser(session)],
-            "prerunmodifier": [TestFilterer(session, collect_only=collect, item=xdist_item)],
-        },
+        {"extension": "py:robot", "runemptysuite": True, "parser": [PythonParser(session)]},
     )
     if collect:
         robot_args = {
+            # deliberately not using merge_robot_options because we want to override prerunmodifiers
+            # during collection
             **robot_args,
             "report": None,
             "output": None,
             "log": None,
             "exitonerror": True,
+            "skip": "*",
+            "prerunmodifier": [RobotSuiteCollector(session)],
         }
     else:
         listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
@@ -314,7 +314,10 @@ def _collect_or_run(
         robot_args = merge_robot_options(
             robot_args,
             {
-                "prerunmodifier": [PytestRuntestProtocolInjector(session=session, item=xdist_item)],
+                "prerunmodifier": [
+                    TestFilterer(session, item=xdist_item),
+                    PytestRuntestProtocolInjector(session=session, item=xdist_item),
+                ],
                 "listener": listeners,
             },
         )
@@ -491,7 +494,6 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
     return None
 
 
-@hookimpl(trylast=True)
 def pytest_collection(session: Session):
     _collect_or_run(session, collect=True, robot_options=_get_robot_args(session=session))
 

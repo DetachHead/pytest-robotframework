@@ -127,24 +127,38 @@ class _NotRunningTestSuiteError(InternalError):
 
 
 @catch_errors
+class RobotSuiteCollector(SuiteVisitor):
+    """runs robot to collect its suites so that pytest items can be created from them in
+    `pytest.robot_file_support`"""
+
+    def __init__(self, session: Session):
+        super().__init__()
+        self.session = session
+
+    @override
+    def visit_suite(self, suite: ModelTestSuite):
+        # https://github.com/robotframework/robotframework/issues/4940
+        if not isinstance(suite, running.TestSuite):
+            raise _NotRunningTestSuiteError
+        if not suite.parent:  # only do this once, on the top level suite
+            self.session.stash[collected_robot_suite_key] = suite
+
+
+@catch_errors
 class TestFilterer(SuiteVisitor):
     """
-    if `collect_only` is `True`, removes all suites/tests so that robot doesn't run anything
-
-    otherwise if `collect_only` is `False`, does the following to prepare the tests for execution:
+    does the following to prepare the tests for execution:
 
     - filters out any `.robot` tests/suites that are not included in the collected pytest tests
     - adds the collected `.py` test cases to the robot test suites (with empty bodies. bodies are
     added later by `PytestRuntestProtocolInjector`)
     """
 
-    def __init__(self, session: Session, *, collect_only: bool, item: Item | None = None):
+    def __init__(self, session: Session, *, item: Item | None = None):
         super().__init__()
         self.session = session
-        self.collect_only = collect_only
         self._item = item
         self.xdist_run = item is not None
-        self.collection_error: Exception | None = None
 
     def items(self):
         return [self._item] if self._item else self.session.items
@@ -166,8 +180,6 @@ class TestFilterer(SuiteVisitor):
         # https://github.com/robotframework/robotframework/issues/4940
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
-        if not suite.parent:  # only do this once, on the top level suite
-            self.session.stash[collected_robot_suite_key] = suite
         if not suite.source:
             return
         # save the resolved paths for performance reasons
@@ -208,14 +220,11 @@ class TestFilterer(SuiteVisitor):
             # there should never be more than 1 fake test per suite
             (test,) = fake_tests
             suite.tests.remove(test)
-        if self.collect_only:
-            suite.tests.clear()
         # https://github.com/robotframework/robotframework/issues/4940
         super().visit_suite(suite)  # pyright:ignore[reportUnknownMemberType]
 
     @override
     def end_suite(self, suite: ModelTestSuite):
-        # https://github.com/robotframework/robotframework/issues/4940
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
 
@@ -228,9 +237,6 @@ class TestFilterer(SuiteVisitor):
 
         # delete any suites that are now empty:
         suite.suites = [s for s in suite.suites if s.test_count > 0]
-        # if collection failed, raise the exception now:
-        if not suite.parent and self.collection_error:
-            raise self.collection_error
 
 
 @catch_errors
