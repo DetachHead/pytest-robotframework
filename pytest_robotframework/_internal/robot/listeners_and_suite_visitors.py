@@ -29,16 +29,22 @@ from pytest_robotframework import (
     _keyword_original_function_attr,  # pyright:ignore[reportPrivateUsage]
     catch_errors,
 )
-from pytest_robotframework._internal import robot_library
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.pytest_robot_items import (
+from pytest_robotframework._internal.pytest.robot_file_support import (
     RobotItem,
     collected_robot_suite_key,
     original_body_key,
     original_setup_key,
     original_teardown_key,
 )
-from pytest_robotframework._internal.robot_utils import (
+from pytest_robotframework._internal.robot.library import (
+    __name__ as robot_library_name,
+    internal_error,
+    run_test,
+    setup,
+    teardown,
+)
+from pytest_robotframework._internal.robot.utils import (
     Cloaked,
     ModelTestSuite,
     add_robot_error,
@@ -101,7 +107,7 @@ class PythonParser(Parser):
         test_case.body = [
             _create_running_keyword(
                 "KEYWORD",
-                robot_library.internal_error,
+                internal_error,
                 Cloaked[str]("fake placeholder test appeared. this should never happen :(("),
             )
         ]
@@ -270,7 +276,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     def start_suite(self, suite: ModelTestSuite):
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
-        _ = suite.resource.imports.library(robot_library.__name__, alias=robot_library.__name__)
+        _ = suite.resource.imports.library(robot_library_name, alias=robot_library_name)
         item: Item | None = None
         for test in suite.tests:
             if self.item:
@@ -291,17 +297,13 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                     )
             cloaked_item = Cloaked(item)
             item.stash[original_setup_key] = test.setup
-            test.setup = _create_running_keyword("SETUP", robot_library.setup, cloaked_item)
+            test.setup = _create_running_keyword("SETUP", setup, cloaked_item)
 
             item.stash[original_body_key] = test.body
-            test.body = Body(
-                items=[_create_running_keyword("KEYWORD", robot_library.run_test, cloaked_item)]
-            )
+            test.body = Body(items=[_create_running_keyword("KEYWORD", run_test, cloaked_item)])
 
             item.stash[original_teardown_key] = test.teardown
-            test.teardown = _create_running_keyword(
-                "TEARDOWN", robot_library.teardown, cloaked_item
-            )
+            test.teardown = _create_running_keyword("TEARDOWN", teardown, cloaked_item)
 
 
 _HookWrapper = Generator[None, object, object]

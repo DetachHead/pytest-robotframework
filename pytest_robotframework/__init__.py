@@ -52,7 +52,7 @@ from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError, UserError
-from pytest_robotframework._internal.robot_utils import (
+from pytest_robotframework._internal.robot.utils import (
     Listener as _Listener,
     RobotOptions as _RobotOptions,
     add_robot_error,
