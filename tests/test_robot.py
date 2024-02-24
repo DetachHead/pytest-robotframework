@@ -5,13 +5,7 @@ from typing import TYPE_CHECKING, List, Optional, cast
 
 from pytest import ExitCode, Item, Mark
 
-from tests.conftest import (
-    PytestRobotTester,
-    assert_log_file_doesnt_exist,
-    assert_robot_total_stats,
-    output_xml,
-    xpath,
-)
+from tests.conftest import PytestRobotTester, assert_robot_total_stats, output_xml, xpath
 
 if TYPE_CHECKING:
     from pytest import Session
@@ -185,7 +179,7 @@ def test_parameterized_tags(pr: PytestRobotTester):
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
     result = pr.run_pytest("--collect-only", subprocess=False)
     result.assert_outcomes()
-    assert_log_file_doesnt_exist()
+    pr.assert_log_file_doesnt_exist()
 
 
 def test_correct_items_collected_when_collect_only(pr: PytestRobotTester):

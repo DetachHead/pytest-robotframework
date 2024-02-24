@@ -248,7 +248,7 @@ score = "no"
 max-line-length = 200
 
 [tool.pytest.ini_options]
-addopts = ['-p', 'no:robotframework', '--ignore=tests/fixtures']
+addopts = ['-p', 'no:robotframework', '--ignore=tests/fixtures', '-vv']
 xfail_strict = true
 enable_assertion_pass_hook = true
 

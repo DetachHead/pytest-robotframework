@@ -10,7 +10,6 @@ from pytest import ExitCode, MonkeyPatch
 from tests.conftest import (
     PytestRobotTester,
     XmlElement,
-    assert_log_file_doesnt_exist,
     assert_robot_total_stats,
     output_xml,
     xpath,
@@ -131,7 +130,7 @@ def test_listener_calls_log_file(pr: PytestRobotTester):
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
     result = pr.run_pytest("--collect-only", subprocess=True)
     result.assert_outcomes()
-    assert_log_file_doesnt_exist()
+    pr.assert_log_file_doesnt_exist()
 
 
 # TODO: this test doesnt actually test anything
@@ -497,8 +496,8 @@ def test_xfail_passes_no_reason(pr: PytestRobotTester):
 
 
 def test_catch_errors_decorator(pr: PytestRobotTester):
-    pr.run_and_assert_result(passed=1, exit_code=ExitCode.INTERNAL_ERROR)
-    pr.assert_log_file_exists()
+    pr.run_and_assert_assert_pytest_result(exit_code=ExitCode.INTERNAL_ERROR)
+    pr.assert_log_file_doesnt_exist()
 
 
 def test_catch_errors_decorator_with_non_instance_method(pr: PytestRobotTester):
