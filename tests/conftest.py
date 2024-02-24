@@ -218,15 +218,15 @@ def assert_robot_total_stats(*, passed: int = 0, skipped: int = 0, failed: int =
     assert result == {"pass": str(passed), "fail": str(failed), "skip": str(skipped)}
 
 
-def assert_log_file_doesnt_exist():
-    assert not _log_file_exists()
-
-
 class PytestRobotTester:
     def __init__(self, *, pytester: PytesterDir, xdist: int | None):
         super().__init__()
         self.pytester = pytester
         self.xdist = xdist
+
+    @staticmethod
+    def assert_log_file_doesnt_exist():
+        assert not _log_file_exists()
 
     def assert_log_file_exists(self, *, check_xdist: bool = True):
         """asserts that robot generated a log file, and ensures that it did/didn't use xdist.
