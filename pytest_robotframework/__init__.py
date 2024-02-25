@@ -412,7 +412,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
             status_reporter,
         )
 
-    def __call__(self, fn: Callable[P, ContextManager[T]]) -> Callable[P, ContextManager[T]]:
+    def __call__(self, fn: Callable[P, _T_ContextManager]) -> Callable[P, _T_ContextManager]:
         return self.call(fn)
 
 

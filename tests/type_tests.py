@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, ContextManager, Iterator
+from typing import TYPE_CHECKING, Callable, Iterator
 
 if TYPE_CHECKING:
     from contextlib import (
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     def b() -> Iterator[None]:
         yield
 
-    _ = assert_type(b, Callable[[], ContextManager[None]])
+    _ = assert_type(b, Callable[[], _GeneratorContextManager[None]])
 
     # keyword, wrap_context_manager=False:
     @keyword(wrap_context_manager=False)
