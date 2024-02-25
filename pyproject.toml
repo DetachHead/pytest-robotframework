@@ -334,6 +334,9 @@ combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
 split-on-trailing-comma = false
 
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"contextlib.AbstractContextManager".msg = "Use `typing.ContextManager` instead because it works at runtime on python 3.8."
+
 [tool.robotidy]
 configure = [
     "AlignTemplatedTestCases:enabled=True",
