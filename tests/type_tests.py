@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Iterator
+from typing import TYPE_CHECKING, Callable, ContextManager, Iterator
 
 if TYPE_CHECKING:
     from contextlib import (
-        AbstractContextManager,
         _GeneratorContextManager,  # pyright:ignore[reportPrivateUsage]
         contextmanager,
     )
@@ -37,7 +36,7 @@ if TYPE_CHECKING:
     def b() -> Iterator[None]:
         yield
 
-    _ = assert_type(b, Callable[[], AbstractContextManager[None]])
+    _ = assert_type(b, Callable[[], ContextManager[None]])
 
     # keyword, wrap_context_manager=False:
     @keyword(wrap_context_manager=False)

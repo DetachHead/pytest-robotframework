@@ -1,17 +1,12 @@
 from __future__ import annotations
 
-from contextlib import AbstractContextManager
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Generic, Protocol, Type, Union, cast
+from typing import TYPE_CHECKING, Callable, Type, Union, cast
 
-from basedtyping import P, T, out_T
+from basedtyping import P, T
 
 if TYPE_CHECKING:
-    from abc import abstractmethod
-    from types import TracebackType
-
-    from typing_extensions import Concatenate, override
-
+    from typing_extensions import Concatenate
 
 ClassOrInstance = Union[T, Type[T]]
 
@@ -50,33 +45,6 @@ def patch_method(
         return new_fn
 
     return decorator
-
-
-if TYPE_CHECKING:
-
-    class ContextManager(AbstractContextManager[out_T], Protocol[out_T]):
-        """removes `None` from the return type of `AbstractContextManager.__exit__` to prevent code
-        from being incorrectly marked as unreachable by pyright. see these issues:
-        - https://github.com/microsoft/pyright/issues/6034
-
-        also fixes the issue where `AbstractContextManager` can't be subscripted at runtime
-        """
-
-        @abstractmethod
-        @override
-        def __exit__(
-            self,
-            exc_type: type[BaseException] | None,
-            exc_value: BaseException | None,
-            traceback: TracebackType | None,
-            /,
-        ) -> bool: ...
-
-else:
-    # python 3.8 doesn't support subscripting AbstractContextManager so we make a fake one using
-    # Generic that works at runtime
-    class ContextManager(Generic[out_T], AbstractContextManager):
-        pass
 
 
 main_package_name = __name__.split(".")[0]

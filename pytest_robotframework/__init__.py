@@ -8,7 +8,7 @@ useful helpers for you to use in your pytest tests and `conftest.py` files
 from __future__ import annotations
 
 import inspect
-from contextlib import AbstractContextManager, contextmanager, nullcontext
+from contextlib import contextmanager, nullcontext
 from functools import wraps
 from pathlib import Path
 from traceback import format_stack
@@ -17,6 +17,7 @@ from typing import (
     TYPE_CHECKING,
     Callable,
     ClassVar,
+    ContextManager,
     DefaultDict,
     Dict,
     Iterable,
@@ -60,7 +61,7 @@ from pytest_robotframework._internal.robot_utils import (
     is_robot_traceback,
     robot_6,
 )
-from pytest_robotframework._internal.utils import ClassOrInstance, ContextManager
+from pytest_robotframework._internal.utils import ClassOrInstance
 
 if TYPE_CHECKING:
     from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
@@ -260,11 +261,7 @@ class _KeywordDecorator:
             # afterwards, so that context managers like `pytest.raises` can see the actual
             # exception instead of `robot.errors.HandlerExecutionFailed`
             suppress = True
-            context_manager: ContextManager[
-                object
-                # nullcontext is typed as returning None which pyright incorrectly marks as
-                # unreachable. see ContextManager documentation
-            ] = (  # pyright:ignore[reportAssignmentType]
+            context_manager: ContextManager[object] = (
                 (
                     # needed to work around pyright bug, see ContextManager documentation
                     _FullStackStatusReporter(
@@ -323,7 +320,7 @@ class _FunctionKeywordDecorator(_KeywordDecorator):
         + " context manager"
     )
     @overload
-    def __call__(self, fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
+    def __call__(self, fn: Callable[P, ContextManager[T]]) -> Never: ...
 
     @overload
     def __call__(self, fn: Callable[P, T]) -> Callable[P, T]: ...
@@ -332,7 +329,7 @@ class _FunctionKeywordDecorator(_KeywordDecorator):
         return self.call(fn)
 
 
-_T_ContextManager = TypeVar("_T_ContextManager", bound="AbstractContextManager[object]")
+_T_ContextManager = TypeVar("_T_ContextManager", bound=ContextManager[object])
 
 
 class _NonWrappedContextManagerKeywordDecorator(_KeywordDecorator):
@@ -367,7 +364,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
 
             def __init__(
                 self,
-                wrapped: AbstractContextManager[T_WrappedContextManager],
+                wrapped: ContextManager[T_WrappedContextManager],
                 status_reporter: ContextManager[object],
             ) -> None:
                 super().__init__()
@@ -405,7 +402,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                 return suppress or False
 
         fn_result = fn(*args, **kwargs)
-        if not isinstance(fn_result, AbstractContextManager):
+        if not isinstance(fn_result, ContextManager):
             raise TypeError(
                 f"keyword decorator expected a context manager but instead got {fn_result!r}"
             )
@@ -415,9 +412,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
             status_reporter,
         )
 
-    def __call__(
-        self, fn: Callable[P, AbstractContextManager[T]]
-    ) -> Callable[P, AbstractContextManager[T]]:
+    def __call__(self, fn: Callable[P, ContextManager[T]]) -> Callable[P, ContextManager[T]]:
         return self.call(fn)
 
 
@@ -462,7 +457,7 @@ def keyword(  # pyright:ignore[reportOverlappingOverload]
     "you must explicitly pass `wrap_context_manager` when using `keyword` with a context manager"
 )
 @overload
-def keyword(fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
+def keyword(fn: Callable[P, ContextManager[T]]) -> Never: ...
 
 
 @overload
@@ -535,7 +530,7 @@ def as_keyword(
     def fn(*_args: str, **_kwargs: str) -> Iterator[None]:
         yield
 
-    return cast(ContextManager[None], fn(*(args or []), **(kwargs or {})))
+    return fn(*(args or []), **(kwargs or {}))
 
 
 def keywordify(
