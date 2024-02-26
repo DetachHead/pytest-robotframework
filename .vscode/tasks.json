@@ -103,6 +103,17 @@
         "clear": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "clear pycache",
+      "type": "shell",
+      "command": "${command:python.interpreterPath}",
+      "args": ["scripts/clear_pycache.py"],
+      "presentation": {
+        "clear": true
+      },
+      "problemMatcher": [],
+      "isBackground": true
     }
   ]
 }
