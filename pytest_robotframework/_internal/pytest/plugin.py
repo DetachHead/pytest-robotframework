@@ -286,6 +286,7 @@ def _collect_or_run(
             "log": None,
             "exitonerror": True,
             "prerunmodifier": [RobotSuiteCollector(session)],
+            "listener": [],
         }
     else:
         listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]

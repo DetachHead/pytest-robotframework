@@ -29,6 +29,7 @@ install = "pdm sync --clean"
 run = "pdm run"
 outdated = "pdm update --outdated"
 test = "pdm run pytest -n auto"
+cleat_pycache = ""
 
 
 [tool.pdm.dev-dependencies]
