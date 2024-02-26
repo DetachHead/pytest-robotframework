@@ -1,3 +1,3 @@
 *** Test Cases ***
 Foo
-    Fail
+    Fail    test ran
