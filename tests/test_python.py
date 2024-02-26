@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from re import search
 from typing import TYPE_CHECKING, List, cast
@@ -75,34 +74,23 @@ def test_nested_suites(pr: PytestRobotTester):
     assert xml.xpath("./suite/suite[@name='Test Top Level']/test[@name='test_func1']")
 
 
-def test_robot_options_variable(pr: PytestRobotTester):
+def test_robot_options_variable(pr: PytestRobotTester, monkeypatch: MonkeyPatch):
     results_path = pr.pytester.path / "results"
-    env_variable = "ROBOT_OPTIONS"
-    try:
-        os.environ[env_variable] = f"-d {results_path}"
-        result = pr.run_pytest(subprocess=True)
-    finally:
-        del os.environ[env_variable]
-    result.assert_outcomes(passed=1)
+    monkeypatch.setenv("ROBOT_OPTIONS", f"-d {results_path}")
+    pr.run_and_assert_assert_pytest_result(passed=1, subprocess=True)
     assert (results_path / "log.html").exists()
 
 
 def test_robot_options_merge_listeners(pr: PytestRobotTester):
-    result = pr.run_pytest(
-        "--robot-listener", str(pr.pytester.path / "Listener.py"), subprocess=True
+    pr.run_and_assert_result(
+        "--robot-listener", str(pr.pytester.path / "Listener.py"), subprocess=True, passed=1
     )
-    result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
 
 
-def test_robot_options_variable_merge_listeners(pr: PytestRobotTester):
-    env_variable = "ROBOT_OPTIONS"
-    try:
-        os.environ[env_variable] = f"--listener {pr.pytester.path / 'Listener.py'}"
-        result = pr.run_pytest(subprocess=True)
-    finally:
-        del os.environ[env_variable]
-    result.assert_outcomes(passed=1)
+def test_robot_options_variable_merge_listeners(pr: PytestRobotTester, monkeypatch: MonkeyPatch):
+    monkeypatch.setenv("ROBOT_OPTIONS", f"--listener {pr.pytester.path / 'Listener.py'}")
+    pr.run_and_assert_result(passed=1, subprocess=True)
     pr.assert_log_file_exists()
 
 
@@ -117,10 +105,9 @@ def test_robot_modify_options_hook_listener_instance(pr: PytestRobotTester):
 
 
 def test_listener_calls_log_file(pr: PytestRobotTester):
-    result = pr.run_pytest(
-        "--robot-listener", str(pr.pytester.path / "Listener.py"), subprocess=True
+    pr.run_and_assert_result(
+        "--robot-listener", str(pr.pytester.path / "Listener.py"), subprocess=True, passed=1
     )
-    result.assert_outcomes(passed=1)
     pr.assert_log_file_exists()
     # the log file does not get created by robot when running in xdist mode, instead it gets created
     # later by rebot, so the listener method is never called
@@ -128,8 +115,7 @@ def test_listener_calls_log_file(pr: PytestRobotTester):
 
 
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
-    result = pr.run_pytest("--collect-only", subprocess=True)
-    result.assert_outcomes()
+    pr.run_and_assert_assert_pytest_result("--collect-only", subprocess=True)
     pr.assert_log_file_doesnt_exist()
 
 
@@ -241,7 +227,7 @@ def test_error_moment_and_second_test(pr: PytestRobotTester):
 
 
 def test_error_moment_exitonerror(pr: PytestRobotTester):
-    pr.run_and_assert_result(failed=1, pytest_args=["--robot-exitonerror"])
+    pr.run_and_assert_result("--robot-exitonerror", failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='ERROR' and .='foo']")
@@ -254,7 +240,7 @@ def test_error_moment_exitonerror_multiple_tests(pr: PytestRobotTester):
     if pr.xdist:
         pr.run_and_assert_result(failed=1, passed=1)
     else:
-        pr.run_and_assert_assert_pytest_result(failed=1, pytest_args=["--robot-exitonerror"])
+        pr.run_and_assert_assert_pytest_result("--robot-exitonerror", failed=1)
         # they run in separate workers so exitonerror won't work here
         assert_robot_total_stats(failed=2)
     pr.assert_log_file_exists()
@@ -277,6 +263,7 @@ def test_error_moment_exitonerror_multiple_tests(pr: PytestRobotTester):
 def test_teardown_skipped(pr: PytestRobotTester):
     result = pr.run_pytest(subprocess=True)
     result.assert_outcomes(passed=1, skipped=1)
+    assert result.ret == ExitCode.OK
     # unlike pytest, teardown skips in robot count as a test skip
     assert_robot_total_stats(skipped=1)
     pr.assert_log_file_exists()
@@ -352,7 +339,7 @@ def test_keyword_decorator_context_manager_that_raises_in_exit(pr: PytestRobotTe
 
 
 def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
+    pr.run_and_assert_result("--robot-loglevel", "DEBUG:INFO", failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='start']")
@@ -496,8 +483,8 @@ def test_xfail_passes_no_reason(pr: PytestRobotTester):
 
 
 def test_catch_errors_decorator(pr: PytestRobotTester):
-    pr.run_and_assert_assert_pytest_result(exit_code=ExitCode.INTERNAL_ERROR)
-    pr.assert_log_file_doesnt_exist()
+    pr.run_and_assert_assert_pytest_result(passed=1, exit_code=ExitCode.INTERNAL_ERROR)
+    pr.assert_log_file_exists()
 
 
 def test_catch_errors_decorator_with_non_instance_method(pr: PytestRobotTester):
@@ -506,7 +493,7 @@ def test_catch_errors_decorator_with_non_instance_method(pr: PytestRobotTester):
 
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
-    pr.run_and_assert_assert_pytest_result(pytest_args=["asdfdsf"], exit_code=ExitCode.USAGE_ERROR)
+    pr.run_and_assert_assert_pytest_result("asdfdsf", exit_code=ExitCode.USAGE_ERROR)
 
 
 def test_assertion_fails(pr: PytestRobotTester):
@@ -516,9 +503,7 @@ def test_assertion_fails(pr: PytestRobotTester):
 
 
 def test_assertion_passes(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, passed=1)
     pr.assert_log_file_exists()
     assert output_xml().xpath(
         "//kw[@name='assert' and ./arg[.='left == right'] and ./status[@status='PASS']]"
@@ -527,7 +512,7 @@ def test_assertion_passes(pr: PytestRobotTester):
 
 
 def test_assertion_fails_with_assertion_hook(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["-o", "enable_assertion_pass_hook=true"], failed=1)
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
@@ -540,9 +525,7 @@ def test_assertion_fails_with_assertion_hook(pr: PytestRobotTester):
 
 
 def test_nested_keyword_that_fails(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath("//kw[@name='Bar']/msg[@level='FAIL' and .='asdf']")
@@ -552,9 +535,7 @@ def test_nested_keyword_that_fails(pr: PytestRobotTester):
 
 
 def test_assertion_passes_hide_assert(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
@@ -568,9 +549,7 @@ def test_assertion_passes_hide_assert(pr: PytestRobotTester):
 
 
 def test_assertion_passes_custom_messages(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
@@ -588,7 +567,9 @@ def test_assertion_passes_custom_messages(pr: PytestRobotTester):
 
 def test_assertion_passes_show_assert_when_no_assertions_in_robot_log(pr: PytestRobotTester):
     pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true", "--no-assertions-in-robot-log"],
+        "-o",
+        "enable_assertion_pass_hook=true",
+        "--no-assertions-in-robot-log",
         subprocess=True,
         passed=1,
     )
@@ -604,9 +585,7 @@ def test_assertion_passes_show_assert_when_no_assertions_in_robot_log(pr: Pytest
 
 
 def test_assertion_fails_with_fail_message_hide_assert(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
@@ -616,9 +595,7 @@ def test_assertion_fails_with_fail_message_hide_assert(pr: PytestRobotTester):
 
 
 def test_assertion_fails_with_description(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
@@ -628,9 +605,7 @@ def test_assertion_fails_with_description(pr: PytestRobotTester):
 
 
 def test_assertion_passes_hide_asserts_context_manager(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath("//kw[@name='assert']/arg[.='1']")
@@ -641,7 +616,10 @@ def test_assertion_passes_hide_asserts_context_manager(pr: PytestRobotTester):
 
 def test_assertion_pass_hook_multiple_tests(pr: PytestRobotTester):
     pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true", "--robot-loglevel", "DEBUG:INFO"],
+        "-o",
+        "enable_assertion_pass_hook=true",
+        "--robot-loglevel",
+        "DEBUG:INFO",
         subprocess=True,
         passed=2,
     )
@@ -705,9 +683,12 @@ def test_pytest_runtest_protocol_item_hook(pr: PytestRobotTester):
 
 def test_pytest_runtest_protocol_hook_in_different_suite(pr: PytestRobotTester):
     pr.run_and_assert_result(
+        "-m",
+        "asdf",
         # the assertion_pass hook relies on this functionality so we need to make sure that works
         # correctly too
-        pytest_args=["-m", "asdf", "-o", "enable_assertion_pass_hook=true"],
+        "-o",
+        "enable_assertion_pass_hook=true",
         passed=1,
     )
     pr.assert_log_file_exists()
@@ -717,7 +698,7 @@ def test_pytest_runtest_protocol_hook_in_different_suite(pr: PytestRobotTester):
 
 
 def test_traceback(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
+    pr.run_and_assert_result("--robot-loglevel", "DEBUG:INFO", failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
@@ -726,13 +707,13 @@ def test_traceback(pr: PytestRobotTester):
 
 
 def test_config_file_in_different_location(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["-c", "asdf/tox.ini"], passed=1)
+    pr.run_and_assert_result("-c", "asdf/tox.ini", passed=1)
     pr.assert_log_file_exists()
 
 
 def test_config_file_and_cwd_in_different_location(pr: PytestRobotTester, monkeypatch: MonkeyPatch):
     monkeypatch.chdir(pr.pytester.path / "foo")
-    pr.run_and_assert_result(pytest_args=["-c", "../config/tox.ini", "../tests"], passed=1)
+    pr.run_and_assert_result("-c", "../config/tox.ini", "../tests", passed=1)
     pr.assert_log_file_exists()
 
 
@@ -744,16 +725,12 @@ def test_xdist_n_0(pytester_dir: PytesterDir):
 
 def test_two_tests_specified_by_full_path(pr: PytestRobotTester):
     file_name = f"{test_two_tests_specified_by_full_path.__name__}.py"
-    pr.run_and_assert_result(
-        pytest_args=[f"{file_name}::test_foo", f"{file_name}::test_bar"], passed=2
-    )
+    pr.run_and_assert_result(f"{file_name}::test_foo", f"{file_name}::test_bar", passed=2)
     pr.assert_log_file_exists()
 
 
 def test_assertion_rewritten_in_conftest_when_assertion_hook_enabled(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, passed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, passed=1)
     pr.assert_log_file_exists()
 
 
@@ -769,7 +746,7 @@ class TestStackTraces:
 
     @classmethod
     def test_trace_ricing(cls, pr: PytestRobotTester):
-        pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG:INFO"], failed=1)
+        pr.run_and_assert_result("--robot-loglevel", "DEBUG:INFO", failed=1)
         pr.assert_log_file_exists()
         xml = output_xml()
         result = xpath(
@@ -782,7 +759,7 @@ class TestStackTraces:
 
     @classmethod
     def test_full_stack_keyword_decorator(cls, pr: PytestRobotTester):
-        pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG"], failed=1)
+        pr.run_and_assert_result("--robot-loglevel", "DEBUG", failed=1)
         pr.assert_log_file_exists()
         xml = output_xml()
         result = xpath(
@@ -793,7 +770,7 @@ class TestStackTraces:
 
     @classmethod
     def test_full_stack_keyword_context_manager(cls, pr: PytestRobotTester):
-        pr.run_and_assert_result(pytest_args=["--robot-loglevel", "DEBUG"], failed=1)
+        pr.run_and_assert_result("--robot-loglevel", "DEBUG", failed=1)
         pr.assert_log_file_exists()
         xml = output_xml()
         result = xpath(
@@ -804,7 +781,7 @@ class TestStackTraces:
 
 
 def test_ansi(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["-vv", "--color=yes"], failed=1)
+    pr.run_and_assert_result("-vv", "--color=yes", failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xpath(

@@ -36,8 +36,9 @@ def test_two_tests_one_fail_one_pass(pr: PytestRobotTester):
 
 
 def test_listener_calls_log_file(pr: PytestRobotTester):
-    result = pr.run_pytest("--robot-listener", str(pr.pytester.path / "Listener.py"))
-    result.assert_outcomes(passed=1)
+    pr.run_and_assert_assert_pytest_result(
+        "--robot-listener", str(pr.pytester.path / "Listener.py"), passed=1
+    )
     pr.assert_log_file_exists()
     # the log file does not get created by robot when running in xdist mode, instead it gets created
     # later by rebot, so the listener method is never called
@@ -84,8 +85,7 @@ def test_teardown_passes(pr: PytestRobotTester):
 
 
 def test_teardown_fails(pr: PytestRobotTester):
-    result = pr.run_pytest()
-    result.assert_outcomes(passed=1, errors=1)
+    pr.run_and_assert_assert_pytest_result(passed=1, errors=1, exit_code=ExitCode.TESTS_FAILED)
     # unlike pytest, teardown failures in robot count as a test failure
     assert_robot_total_stats(failed=1)
     pr.assert_log_file_exists()
@@ -98,8 +98,7 @@ def test_teardown_fails(pr: PytestRobotTester):
 
 
 def test_teardown_skipped(pr: PytestRobotTester):
-    result = pr.run_pytest()
-    result.assert_outcomes(passed=1, skipped=1)
+    pr.run_and_assert_assert_pytest_result(passed=1, skipped=1)
     # unlike pytest, teardown skips in robot count as a test skip
     assert_robot_total_stats(skipped=1)
     pr.assert_log_file_exists()
@@ -112,7 +111,7 @@ def test_teardown_skipped(pr: PytestRobotTester):
 
 
 def test_two_files_run_one_test(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["foo.robot::Foo"], passed=1)
+    pr.run_and_assert_result("foo.robot::Foo", passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath("./suite//test[@name='Foo']/status[@status='PASS']")
@@ -124,7 +123,7 @@ def test_two_files_run_one_test(pr: PytestRobotTester):
 def test_two_files_run_test_from_second_suite(pr: PytestRobotTester):
     """makes sure `PytestCollector` correctly filters the tests without mutating the list of tests
     as it iterates over it"""
-    pr.run_and_assert_result(pytest_args=["fdsa/bar.robot::Baz"], passed=1)
+    pr.run_and_assert_result("fdsa/bar.robot::Baz", passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath("./suite//test[@name='Baz']/status[@status='PASS']")
@@ -134,7 +133,7 @@ def test_two_files_run_test_from_second_suite(pr: PytestRobotTester):
 
 
 def test_tags(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["-m", "m1"], passed=1)
+    pr.run_and_assert_result("-m", "m1", passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(".//test[@name='Foo']/tag[.='m1']")
@@ -142,7 +141,7 @@ def test_tags(pr: PytestRobotTester):
 
 
 def test_tags_in_settings(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["-m", "m1"], passed=2)
+    pr.run_and_assert_result("-m", "m1", passed=2)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(".//test[@name='Foo']/tag[.='m1']")
@@ -152,8 +151,9 @@ def test_tags_in_settings(pr: PytestRobotTester):
 def test_warning_on_unknown_tag(pr: PytestRobotTester):
     # TODO: figure out why the error message is wack
     #  https://github.com/DetachHead/pytest-robotframework/issues/37
-    result = pr.run_pytest("--strict-markers", "-m", "m1")
-    result.assert_outcomes(errors=pr.xdist if pr.xdist else 1)
+    pr.run_and_assert_assert_pytest_result(
+        "--strict-markers", "-m", "m1", errors=pr.xdist if pr.xdist else 1
+    )
 
 
 def test_parameterized_tags(pr: PytestRobotTester):
@@ -166,10 +166,9 @@ def test_parameterized_tags(pr: PytestRobotTester):
             for item in session.items:
                 markers = item.own_markers
 
-    result = pr.run_pytest(
+    pr.run_and_assert_assert_pytest_result(
         "--collectonly", "--strict-markers", plugins=[TagGetter()], subprocess=False
     )
-    result.assert_outcomes()
     assert markers
     assert len(markers) == 1
     assert markers[0].name == "key"
@@ -177,8 +176,7 @@ def test_parameterized_tags(pr: PytestRobotTester):
 
 
 def test_doesnt_run_when_collecting(pr: PytestRobotTester):
-    result = pr.run_pytest("--collect-only", subprocess=False)
-    result.assert_outcomes()
+    pr.run_and_assert_assert_pytest_result("--collect-only", subprocess=False)
     pr.assert_log_file_doesnt_exist()
 
 
@@ -197,7 +195,7 @@ def test_collect_only_nested_suites(pr: PytestRobotTester):
 
 
 def test_doesnt_run_tests_outside_path(pr: PytestRobotTester):
-    pr.run_and_assert_result(pytest_args=["foo"], passed=1)
+    pr.run_and_assert_result("foo", passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(".//test[@name='Foo']")
@@ -210,8 +208,7 @@ def test_run_keyword_and_ignore_error(pr: PytestRobotTester):
 
 
 def test_init_file(pr: PytestRobotTester):
-    result = pr.run_pytest()
-    result.assert_outcomes(passed=1)
+    pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     assert cast(str, xpath(output_xml(), "/robot/suite").attrib["name"]).startswith(
         "Test Init File"
@@ -219,14 +216,12 @@ def test_init_file(pr: PytestRobotTester):
 
 
 def test_init_file_nested(pr: PytestRobotTester):
-    result = pr.run_pytest("foo")
-    result.assert_outcomes(passed=2)
+    pr.run_and_assert_result("foo", passed=2)
     pr.assert_log_file_exists()
 
 
 def test_setup_with_args(pr: PytestRobotTester):
-    result = pr.run_pytest()
-    result.assert_outcomes(passed=1)
+    pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
@@ -248,7 +243,7 @@ def test_keyword_with_conflicting_name(pr: PytestRobotTester):
 
 
 def test_no_tests_found_when_tests_exist(pr: PytestRobotTester):
-    pr.run_and_assert_assert_pytest_result(pytest_args=["asdfdsf"], exit_code=ExitCode.USAGE_ERROR)
+    pr.run_and_assert_assert_pytest_result("asdfdsf", exit_code=ExitCode.USAGE_ERROR)
 
 
 def test_keyword_decorator(pr: PytestRobotTester):
@@ -286,9 +281,7 @@ def test_tags_with_kwargs(pr: PytestRobotTester):
 
 
 def test_nested_keyword_that_fails(pr: PytestRobotTester):
-    pr.run_and_assert_result(
-        pytest_args=["-o", "enable_assertion_pass_hook=true"], subprocess=True, failed=1
-    )
+    pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", subprocess=True, failed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xpath(xml, "//kw[@name='Bar']/kw[@name='Baz']/msg[@level='FAIL' and .='asdf']")

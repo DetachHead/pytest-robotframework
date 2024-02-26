@@ -239,11 +239,38 @@ class PytestRobotTester:
         if check_xdist or not self.xdist:
             assert bool(self.xdist) == bool(list(self.pytester.path.glob("**/robot_xdist_outputs")))
 
+    @overload
     def run_and_assert_assert_pytest_result(
         self,
-        *,
-        pytest_args: list[str] | None = None,
+        *pytest_args: str,
+        subprocess: Literal[False],
+        plugins: list[object] | None = None,
+        passed: int = 0,
+        skipped: int = 0,
+        failed: int = 0,
+        errors: int = 0,
+        xfailed: int = 0,
+        exit_code: ExitCode | None = None,
+    ) -> None: ...
+
+    @overload
+    def run_and_assert_assert_pytest_result(
+        self,
+        *pytest_args: str,
+        subprocess: bool = ...,
+        passed: int = 0,
+        skipped: int = 0,
+        failed: int = 0,
+        errors: int = 0,
+        xfailed: int = 0,
+        exit_code: ExitCode | None = None,
+    ) -> None: ...
+
+    def run_and_assert_assert_pytest_result(
+        self,
+        *pytest_args: str,
         subprocess: bool = True,
+        plugins: list[object] | None = None,
         passed: int = 0,
         skipped: int = 0,
         failed: int = 0,
@@ -251,7 +278,8 @@ class PytestRobotTester:
         xfailed: int = 0,
         exit_code: ExitCode | None = None,
     ):
-        result = self.run_pytest(*pytest_args or [], subprocess=subprocess)
+        # checked by the overloads
+        result = self.run_pytest(*pytest_args or [], subprocess=subprocess, plugins=plugins)  # pyright:ignore[reportArgumentType]
 
         if not exit_code:
             if errors:
@@ -303,8 +331,7 @@ class PytestRobotTester:
 
     def run_and_assert_result(
         self,
-        *,
-        pytest_args: list[str] | None = None,
+        *pytest_args: str,
         subprocess: bool = True,
         passed: int = 0,
         skipped: int = 0,
@@ -313,10 +340,8 @@ class PytestRobotTester:
         xfailed: int = 0,
         exit_code: ExitCode | None = None,
     ):
-        if pytest_args is None:
-            pytest_args = []
         self.run_and_assert_assert_pytest_result(
-            pytest_args=pytest_args,
+            *pytest_args,
             subprocess=subprocess,
             passed=passed,
             skipped=skipped,

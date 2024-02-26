@@ -32,7 +32,7 @@ from pytest_robotframework import (
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest.robot_file_support import (
     RobotItem,
-    collected_robot_suite_key,
+    collected_robot_tests_key,
     original_body_key,
     original_setup_key,
     original_teardown_key,
@@ -136,12 +136,17 @@ class RobotSuiteCollector(SuiteVisitor):
         self.session = session
 
     @override
-    def visit_suite(self, suite: ModelTestSuite):
+    def start_suite(self, suite: ModelTestSuite):
         # https://github.com/robotframework/robotframework/issues/4940
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
         if not suite.parent:  # only do this once, on the top level suite
-            self.session.stash[collected_robot_suite_key] = suite
+            self.session.stash[collected_robot_tests_key] = list(suite.all_tests)  # pyright:ignore[reportUnknownMemberType,reportUnknownArgumentType]
+        suite.tests.clear()
+
+    @override
+    def end_suite(self, suite: ModelTestSuite):
+        suite.suites.clear()
 
 
 @catch_errors

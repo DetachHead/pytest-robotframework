@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Iterator, cast
+from typing import TYPE_CHECKING, Iterator, List, cast
 
 from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark, skip
 from robot import model
@@ -16,7 +16,6 @@ from typing_extensions import override
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot.utils import (
     ModelTestCase,
-    ModelTestSuite,
     execution_context,
     robot_6,
     running_test_case_key,
@@ -27,7 +26,7 @@ if TYPE_CHECKING:
     from os import PathLike
 
 
-collected_robot_suite_key = StashKey[ModelTestSuite]()
+collected_robot_tests_key = StashKey[List[ModelTestCase]]()
 original_setup_key = StashKey[model.Keyword]()
 original_body_key = StashKey[Body]()
 original_teardown_key = StashKey[model.Keyword]()
@@ -36,11 +35,7 @@ original_teardown_key = StashKey[model.Keyword]()
 class RobotFile(File):
     @override
     def collect(self) -> Iterable[Item]:
-        for test in cast(
-            Iterator[ModelTestCase],
-            # https://github.com/robotframework/robotframework/issues/4940#issuecomment-1817683893
-            self.session.stash[collected_robot_suite_key].all_tests,  # pyright:ignore[reportUnknownMemberType]
-        ):
+        for test in self.session.stash[collected_robot_tests_key]:
             if self.path == test.source:
                 yield RobotItem.from_parent(  # pyright:ignore[reportUnknownMemberType]
                     self, name=test.name, robot_test=test

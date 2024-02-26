@@ -285,7 +285,6 @@ def _collect_or_run(
             "output": None,
             "log": None,
             "exitonerror": True,
-            "skip": "*",
             "prerunmodifier": [RobotSuiteCollector(session)],
         }
     else:
@@ -325,11 +324,16 @@ def _collect_or_run(
     # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
     # the test is over
     with LOGGER:
-        _ = robot.main(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
+        exit_code = robot.main(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
             _get_pytest_collection_paths(session),
             # needed because PythonParser.visit_init creates an empty suite
             **robot_args,
         )
+    if collect and exit_code:
+        # robot should never fail during collection because we prevent it from running any tests, so
+        # any failure would mean one of our suite visitors or something messed up, or it tried to
+        # run tests
+        raise InternalError("robot failed during collection")
 
     robot_errors = report_robot_errors(session)
     if robot_errors:
