@@ -88,6 +88,11 @@ def test_robot_options_merge_listeners(pr: PytestRobotTester):
     pr.assert_log_file_exists()
 
 
+def test_listener_not_run_during_collection(pr: PytestRobotTester):
+    pr.run_and_assert_assert_pytest_result("--collect-only", subprocess=True)
+    pr.assert_log_file_doesnt_exist()
+
+
 def test_robot_options_variable_merge_listeners(pr: PytestRobotTester, monkeypatch: MonkeyPatch):
     monkeypatch.setenv("ROBOT_OPTIONS", f"--listener {pr.pytester.path / 'Listener.py'}")
     pr.run_and_assert_result(passed=1, subprocess=True)
