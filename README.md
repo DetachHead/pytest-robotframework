@@ -395,9 +395,12 @@ except:
 
 vscode's builtin python plugin should discover both your python and robot tests by default, and show run buttons next to them:
 
-![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/411233d0-a0d6-4fca-9701-0503b534bd46)
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/d81278cc-1574-4360-be3c-29805b47dec6)
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/cce2fc08-806f-4b0e-85b9-42be677871ab)
 
-if you use an extension for robotframework language support, you should disable the option to show tests in the test explorer. otherwise, each test will be listed twice
+
+
+if you use an extension for robotframework language support, you should disable its option to add tests to the test explorer, otherwise each test will be listed twice.
 
 ### running `.robot` tests
 
