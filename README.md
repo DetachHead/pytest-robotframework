@@ -398,26 +398,9 @@ vscode's builtin python plugin should discover both your python and robot tests 
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/d81278cc-1574-4360-be3c-29805b47dec6)
 ![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/cce2fc08-806f-4b0e-85b9-42be677871ab)
 
-
-
-if you use an extension for robotframework language support, you should disable its option to add tests to the test explorer, otherwise each test will be listed twice.
-
 ### running `.robot` tests
 
-if you still intend to use `.robot` files with pytest-robotframework, you'll need to configure your robot vscode extension of choice.
-
-#### [robotcode](https://github.com/d-biehl/robotcode) (recommended)
-
-set `robotcode.testExplorer.enabled` to `false` in `.vscode/settings.json`.
-
-#### [robotframework-lsp](https://github.com/robocorp/robotframework-lsp)
-
-note that the robotframework-lsp project is essentially abandoned, as [robocorp no longer maintains their robotframework tools](https://robocorp.com/docs-robot-framework/switch), which is why we recommend using [robotcode](https://github.com/d-biehl/robotcode) instead.
-
-but if you still want to use robotframework-lsp:
-
-1. since the version with the option to disable the test explorer was never released, you'll need to [install our fork](https://github.com/DetachHead/robotframework-lsp/releases/tag/asdf)
-2. set `robot.testView.enabled` to `false` in `.vscode/settings.json`
+if you still intend to use `.robot` files with pytest-robotframework, we recommend using the [robotcode](https://github.com/d-biehl/robotcode) extension and setting `robotcode.testExplorer.enabled` to `false` in `.vscode/settings.json`. this will prevent the tests from being duplicated in the test explorer.
 
 ## pycharm
 
