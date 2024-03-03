@@ -47,7 +47,7 @@
       "label": "ruff - all files",
       "type": "shell",
       "command": "${command:python.interpreterPath}",
-      "args": ["-m", "ruff", "."],
+      "args": ["-m", "ruff", "check", "."],
       "presentation": {
         "clear": true
       },
