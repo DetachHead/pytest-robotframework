@@ -189,15 +189,7 @@ def _xdist_temp_dir(session: Session) -> Path:
     )
 
 
-def _log_path(item: Item) -> Path:
-    return (
-        _xdist_temp_dir(item.session)
-        / "robot_xdist_outputs"
-        / f"{worker_id(item.session)}_{hash(item.nodeid)}.xml"
-    )
-
-
-_robot_args_key = StashKey[RobotOptions]()
+_xdist_ourput_dir_name = "robot_xdist_outputs"
 
 
 def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
@@ -222,6 +214,9 @@ def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
         )
         result.add(path)
     return frozenset(result)
+
+
+_robot_args_key = StashKey[RobotOptions]()
 
 
 def _get_robot_args(session: Session) -> RobotOptions:
@@ -308,7 +303,9 @@ def _collect_or_run(
                 **robot_args,
                 "report": None,
                 "log": None,
-                "output": _log_path(xdist_item),
+                "output": _xdist_temp_dir(xdist_item.session)
+                / _xdist_ourput_dir_name
+                / f"{worker_id(xdist_item.session)}_{hash(xdist_item.nodeid)}.xml",
                 # we don't want prerebotmodifiers to run multiple times so we defer them to the end
                 # of the test if we're running with xdist
                 "prerebotmodifier": None,
@@ -417,7 +414,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
             def option_names(settings: Mapping[str, tuple[str, object]]) -> list[str]:
                 return [value[0] for value in settings.values()]
 
-            outputs = list(_xdist_temp_dir(session).glob("*/robot_xdist_outputs/*.xml"))
+            outputs = list(_xdist_temp_dir(session).glob(f"*/{_xdist_ourput_dir_name}/*.xml"))
             # if there were no outputs there were probably no tests run or some other error occured,
             # so silently skip this
             if outputs:
