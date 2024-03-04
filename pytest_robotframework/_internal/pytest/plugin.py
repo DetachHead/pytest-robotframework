@@ -14,7 +14,14 @@ from _pytest.assertion.rewrite import (
 )
 from _pytest.main import resolve_collection_argument
 from pluggy import Result
-from pytest import Collector, StashKey, TempPathFactory, TestReport, hookimpl
+from pytest import (
+    Collector,
+    StashKey,
+    TempPathFactory,
+    TestReport,
+    hookimpl,
+    version_tuple as pytest_version,
+)
 from robot.api import logger
 from robot.conf.settings import (
     RebotSettings,
@@ -194,23 +201,25 @@ _robot_args_key = StashKey[RobotOptions]()
 
 
 def _get_pytest_collection_paths(session: Session) -> set[Path]:
-    """this is usually done during collection inside `perform_collect`, but since robot does the
-    collection during `pytest_runtestloop we need to know these paths ahead of time.
-
-    when pytest does this it returns a `list`, but we return a `set` instead because if there are
-    any duplicates robot will incorrectly run the suite visitors/parsers/etc multiple times on the
-    same suite"""
-    # TODO: maybe refactor this so that collection always happens during the actual collection hooks
-    # so this isn't needed.
-    # https://github.com/DetachHead/pytest-robotframework/issues/189
-    return {
-        resolve_collection_argument(
+    """this is usually done during collection inside `perform_collect`. but the robot
+    "collection" run happens before pytest collection because it's required by
+    `pytest.robot_file_support`. however the robot run requires the paths that would've
+    been resolved during collection."""
+    result: set[Path] = set()
+    for arg in session.config.args:
+        collection_argument = resolve_collection_argument(
             session.config.invocation_params.dir,
             arg,
             as_pypath=session.config.option.pyargs,  # pyright:ignore[reportAny]
-        )[0]
-        for arg in session.config.args
-    }
+        )
+        path = (
+            collection_argument.path
+            if pytest_version >= (8, 1)
+            # we only run pyright on pytest >=8.1
+            else cast(Path, collection_argument[0])  # pyright:ignore[reportIndexIssue]
+        )
+        result.add(path)
+    return result
 
 
 def _get_robot_args(session: Session) -> RobotOptions:
