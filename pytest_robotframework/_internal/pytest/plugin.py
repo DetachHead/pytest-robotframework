@@ -575,13 +575,12 @@ def pytest_runtestloop(session: Session) -> object:
         # if we're running with xdist, we can't replace the runtestloop with our own because it
         # conflicts with xdist's one. instead we need to run robot individually on each test (in
         # pytest_runtest_protocol) since we can't know which tests we need to run ahead of time (i
-        # think they can dynamically change mid session)
-        or is_xdist_master(session)
-        # however if we're in a worker and there are no items, that means there are no items in the
-        # whole session (i hope). in which case we still need to run robot here to generate an empty
-        # log, because pytest_runtest_protocol never gets called if there's no items but we still
-        # want a log anyway cuz that's how robot normally behaves
-        or (is_xdist_worker(session) and session.items)
+        # think they can dynamically change mid session).
+        # however if this is the xdist master and there are no items, that means none of the workers
+        # are going to run robot, in which case we need to run it here to generate an empty log cuz
+        # that's how robot normally behaves
+        or (is_xdist_master(session) and session.items)
+        or (is_xdist_worker(session))
     ):
         return None
     robot_args = _get_robot_args(session=session)
