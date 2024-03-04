@@ -200,11 +200,13 @@ def _log_path(item: Item) -> Path:
 _robot_args_key = StashKey[RobotOptions]()
 
 
-def _get_pytest_collection_paths(session: Session) -> set[Path]:
+def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
     """this is usually done during collection inside `perform_collect`. but the robot
     "collection" run happens before pytest collection because it's required by
     `pytest.robot_file_support`. however the robot run requires the paths that would've
     been resolved during collection."""
+    if session._initialpaths:  # pyright:ignore[reportPrivateUsage]
+        return session._initialpaths  # pyright:ignore[reportPrivateUsage]
     result: set[Path] = set()
     for arg in session.config.args:
         collection_argument = resolve_collection_argument(
@@ -219,7 +221,7 @@ def _get_pytest_collection_paths(session: Session) -> set[Path]:
             else cast(Path, collection_argument[0])  # pyright:ignore[reportIndexIssue]
         )
         result.add(path)
-    return result
+    return frozenset(result)
 
 
 def _get_robot_args(session: Session) -> RobotOptions:
