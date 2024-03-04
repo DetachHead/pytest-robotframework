@@ -217,7 +217,10 @@ def _merge_robot_options(
     for key, value in dict1.items():
         if isinstance(value, list):
             other_value = cast(Optional[List[object]], dict2.get(key, []))
-            new_value = cast(List[object], value if other_value is None else [*value, *other_value])
+            new_value = cast(
+                Optional[List[object]],
+                other_value if other_value is None else [*value, *other_value],
+            )
         elif key in dict2:
             new_value = dict2[key]
         else:
@@ -228,7 +231,8 @@ def _merge_robot_options(
 
 
 def merge_robot_options(*robot_options: InternalRobotOptions) -> dict[str, object]:
-    """this assumes there are no nested dicts (as far as i can tell no robot args be like that)"""
+    """merges two dicts of robot options, combining lists, or overriding them with `None` if a later
+    object explicitly sets the value to `None`"""
     return reduce(_merge_robot_options, robot_options, {})
 
 
