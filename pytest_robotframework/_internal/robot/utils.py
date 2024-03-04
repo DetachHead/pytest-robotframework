@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import reduce
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -40,6 +41,22 @@ Listener = Union[ListenerV2, ListenerV3]
 
 
 class RobotOptions(TypedDict):
+    """robot command-line arguments after being parsed by robot into a `dict`.
+
+    for example, the following robot options:
+
+    ```dotenv
+    ROBOT_OPTIONS="--listener Foo --listener Bar -d baz"
+    ```
+
+    will be converted to a `dict` like so:
+    >>> {"listener": ["Foo", "Bar"], "outputdir": "baz"}
+
+    any options missing from this `TypedDict` are not allowed to be modified as they interfere with
+    the functionality of this plugin. see https://github.com/detachhead/pytest-robotframework#config
+    for alternatives
+    """
+
     rpa: bool | None
     language: str | None
     extension: str
@@ -96,6 +113,11 @@ class RobotOptions(TypedDict):
     stderr: object  # no idea what this is, it's not in the robot docs
     exitonerror: bool
 
+
+InternalRobotOptions = Mapping[str, object]
+"""a less strict representation of the `RobotOptions` type. only to be used internally when working
+with an incomplete robot options dict, or when using options that the user is not allowed to specify
+"""
 
 banned_options = {
     "include",
@@ -188,23 +210,26 @@ def escape_robot_str(value: str) -> str:
     return value.replace("\\", "\\\\")
 
 
-# not using RobotOptions type since we use it to set banned options that we don't expose to the user
-def merge_robot_options(
-    obj1: Mapping[str, object], obj2: Mapping[str, object]
+def _merge_robot_options(
+    dict1: InternalRobotOptions, dict2: InternalRobotOptions
 ) -> dict[str, object]:
-    """this assumes there are no nested dicts (as far as i can tell no robot args be like that)"""
     result: dict[str, object] = {}
-    for key, value in obj1.items():
+    for key, value in dict1.items():
         if isinstance(value, list):
-            other_value = cast(Optional[List[object]], obj2.get(key, []))
+            other_value = cast(Optional[List[object]], dict2.get(key, []))
             new_value = cast(List[object], value if other_value is None else [*value, *other_value])
-        elif key in obj2:
-            new_value = obj2[key]
+        elif key in dict2:
+            new_value = dict2[key]
         else:
             new_value = value
         result[key] = new_value
-    result.update({key: value for key, value in obj2.items() if key not in obj1})
+    result.update({key: value for key, value in dict2.items() if key not in dict1})
     return result
+
+
+def merge_robot_options(*robot_options: InternalRobotOptions) -> dict[str, object]:
+    """this assumes there are no nested dicts (as far as i can tell no robot args be like that)"""
+    return reduce(_merge_robot_options, robot_options, {})
 
 
 def cli_defaults(settings_class: Callable[[dict[str, object]], _BaseSettings]) -> RobotOptions:

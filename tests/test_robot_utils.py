@@ -25,3 +25,14 @@ def test_merge_robot_options_list_left_side_is_none():
 
 def test_merge_robot_options_list_right_side_is_none():
     assert merge_robot_options({"a": ["b"], "c": "d"}, {"a": None}) == {"a": ["b"], "c": "d"}
+
+
+def test_merge_robot_options_3_dicts():
+    assert merge_robot_options({"a": "b", "c": "d"}, {"c": "e"}, {"a": "f"}) == {"a": "f", "c": "e"}
+
+
+def test_merge_robot_options_list_3_dicts():
+    assert merge_robot_options({"a": ["b"], "c": "d"}, {"a": ["e"]}, {"a": ["f"]}) == {
+        "a": ["b", "e", "f"],
+        "c": "d",
+    }

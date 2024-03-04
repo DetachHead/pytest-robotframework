@@ -742,18 +742,3 @@ def hide_asserts_from_robot_log() -> Iterator[None]:
 Listener: TypeAlias = _Listener
 
 RobotOptions: TypeAlias = _RobotOptions
-"""robot command-line arguments after being parsed by robot into a `dict`.
-
-for example, the following robot options:
-
-```dotenv
-ROBOT_OPTIONS="--listener Foo --listener Bar -d baz"
-```
-
-will be converted to a `dict` like so:
->>> {"listener": ["Foo", "Bar"], "outputdir": "baz"}
-
-any options missing from this `TypedDict` are not allowed to be modified as they interfere with the
-functionality of this plugin. see https://github.com/detachhead/pytest-robotframework#config for
-alternatives
-"""
