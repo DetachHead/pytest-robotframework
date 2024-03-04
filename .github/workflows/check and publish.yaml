@@ -15,6 +15,7 @@ jobs:
         python_version: ["3.8", "3.12"]
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         robot_version: ["6.1.1", "from lockfile"]
+        pytest_version: ["8.0", "from lockfile"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -24,6 +25,8 @@ jobs:
       - run: ./pw pdm install
       - run: ./pw pdm add robotframework==${{ matrix.robot_version }}
         if: ${{ matrix.robot_version != 'from lockfile' }}
+      - run: ./pw pdm add pytest==${{ matrix.pytest_version }}
+        if: ${{ matrix.pytest_version != 'from lockfile' }}
       - run: ./pw test
   static_checks:
     strategy:
