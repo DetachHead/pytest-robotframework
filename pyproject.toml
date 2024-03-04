@@ -29,7 +29,10 @@ install = "pdm sync --clean"
 run = "pdm run"
 outdated = "pdm update --outdated"
 test = "pdm run pytest -n auto"
-
+basedpyright = [
+    "pdm run basedpyright",
+    "pdm run basedpyright --verifytypes pytest_robotframework --ignoreexternal",
+]
 
 [tool.pdm.dev-dependencies]
 lint = [

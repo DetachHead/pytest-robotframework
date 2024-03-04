@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 
 @hookspec
-def pytest_robot_modify_options(options: RobotOptions, session: Session):
+def pytest_robot_modify_options(options: RobotOptions, session: Session) -> None:
     """modify the arguments passed to robot in-place
 
     :param options: the arguments to be passed to robot in dict format. for example,
