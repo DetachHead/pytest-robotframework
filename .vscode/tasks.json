@@ -37,7 +37,7 @@
       "label": "basedpyright - all files",
       "type": "shell",
       "command": "./pw",
-      "args": ["run", "basedpyright"],
+      "args": ["basedpyright"],
       "presentation": {
         "clear": true
       },

@@ -71,7 +71,7 @@ RobotVariables: TypeAlias = Dict[str, object]
 _suite_variables = DefaultDict[Path, RobotVariables](dict)
 
 
-def set_variables(variables: RobotVariables):
+def set_variables(variables: RobotVariables) -> None:
     """sets suite-level variables, equivalent to the `*** Variables ***` section in a `.robot` file.
 
     also performs some validation checks that robot doesn't to make sure the variable has the
@@ -83,7 +83,7 @@ def set_variables(variables: RobotVariables):
 _resources: list[Path] = []
 
 
-def import_resource(path: Path | str):
+def import_resource(path: Path | str) -> None:
     """imports the specified robot `.resource` file when the suite execution begins.
     use this when specifying robot resource imports at the top of the file.
 
@@ -202,10 +202,10 @@ class _KeywordDecorator:
         doc: str | None = None,
     ) -> None:
         super().__init__()
-        self.name = name
-        self.tags = tags or ()
-        self.module = module
-        self.doc = doc
+        self._name = name
+        self._tags = tags or ()
+        self._module = module
+        self._doc = doc
 
     @staticmethod
     def _save_status_reporter_failure(exception: BaseException):
@@ -238,24 +238,24 @@ class _KeywordDecorator:
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
             return fn
-        keyword_name = self.name or cast(str, printable_name(fn.__name__, code_style=True))
+        keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
         deco.keyword(  # pyright:ignore[reportUnknownMemberType]
-            name=keyword_name, tags=self.tags
+            name=keyword_name, tags=self._tags
         )(fn)
 
         @wraps(fn)
         def inner(*args: P.args, **kwargs: P.kwargs) -> T:
-            if self.module is None:
-                self.module = fn.__module__
+            if self._module is None:
+                self._module = fn.__module__
             log_args = (
                 *(str(arg) for arg in args),
                 *(f"{key}={value!s}" for key, value in kwargs.items()),
             )
             context = execution_context()
             data = running.Keyword(name=keyword_name, args=log_args)
-            doc: str = (getshortdoc(inspect.getdoc(fn)) or "") if self.doc is None else self.doc
+            doc: str = (getshortdoc(inspect.getdoc(fn)) or "") if self._doc is None else self._doc
             # we suppress the error in the status reporter because we raise it ourselves
             # afterwards, so that context managers like `pytest.raises` can see the actual
             # exception instead of `robot.errors.HandlerExecutionFailed`
@@ -273,10 +273,10 @@ class _KeywordDecorator:
                             result.Keyword(
                                 # pyright is only run when robot 7 is installed
                                 kwname=keyword_name,  # pyright:ignore[reportCallIssue]
-                                libname=self.module,  # pyright:ignore[reportCallIssue]
+                                libname=self._module,  # pyright:ignore[reportCallIssue]
                                 doc=doc,
                                 args=log_args,
-                                tags=self.tags,
+                                tags=self._tags,
                             )
                         ),
                         context=context,
@@ -288,10 +288,10 @@ class _KeywordDecorator:
                             data=data,
                             result=result.Keyword(
                                 name=keyword_name,
-                                owner=self.module,
+                                owner=self._module,
                                 doc=doc,
                                 args=log_args,
-                                tags=self.tags,
+                                tags=self._tags,
                             ),
                             context=context,
                             suppress=suppress,
@@ -544,7 +544,7 @@ def keywordify(
     tags: tuple[str, ...] | None = None,
     module: str | None = None,
     wrap_context_manager: bool = False,
-):
+) -> None:
     """patches a function to make it show as a keyword in the robot log.
 
     you should only use this on third party modules that you don't control. if you want your own
