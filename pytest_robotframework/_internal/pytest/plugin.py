@@ -67,6 +67,7 @@ from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (
     TestFilterer,
 )
 from pytest_robotframework._internal.robot.utils import (
+    InternalRobotOptions,
     banned_options,
     cli_defaults,
     escape_robot_str,
@@ -193,10 +194,10 @@ _xdist_ourput_dir_name = "robot_xdist_outputs"
 
 
 def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
-    """this is usually done during collection inside `perform_collect`. but the robot
-    "collection" run happens before pytest collection because it's required by
-    `pytest.robot_file_support`. however the robot run requires the paths that would've
-    been resolved during collection."""
+    """this is usually done during collection inside `perform_collect`,
+    but there's a "circular dependency" between pytest collection and robot "collection":
+    pytest collection needs the tests collected by robot, but for robot to run it needs the paths
+    resolved during pytest collection."""
     if session._initialpaths:  # pyright:ignore[reportPrivateUsage]
         return session._initialpaths  # pyright:ignore[reportPrivateUsage]
     result: set[Path] = set()
@@ -242,111 +243,119 @@ def _get_robot_args(session: Session) -> RobotOptions:
         )
 
     # parse any options from the ROBOT_OPTIONS variable:
-    result = cast(
-        RobotOptions,
-        merge_robot_options(
-            options,
-            cast(
-                RobotOptions,
-                RobotFramework().parse_arguments(  # pyright:ignore[reportUnknownMemberType]
-                    # i don't think this is actually used here, but we send it the correct paths
-                    # just to be safe
-                    _get_pytest_collection_paths(session)
-                )[0],
-            ),
+    options = merge_robot_options(
+        options,
+        cast(
+            RobotOptions,
+            RobotFramework().parse_arguments(  # pyright:ignore[reportUnknownMemberType]
+                # i don't think this is actually used here, but we send it the correct paths
+                # just to be safe
+                _get_pytest_collection_paths(session)
+            )[0],
         ),
     )
+
+    result = cast(RobotOptions, options)
     session.config.hook.pytest_robot_modify_options(options=result, session=session)
     session.stash[_robot_args_key] = result
     return result
 
 
-def _collect_or_run(
-    session: Session, *, robot_options: RobotOptions, collect: bool, xdist_item: Item | None = None
-):
-    """
-    if not running with xdist:
-    --------------------------
-    this is called once by `pytest_collection` (with `collect=True`), then again by
-    `pytest_runtestloop`, meaning robot gets run twice per session.
-
-    if running with xdist:
-    ----------------------
-    this is called by `pytest_collection` to collect all the tests in the current runner, then by
-    `pytest_runtest_protocol` for each item individually. this means a separate robot session
-    is started for every test.
-    """
-    robot = RobotFramework()
-
-    robot_args: Mapping[str, object] = merge_robot_options(
+def _run_robot(session: Session, robot_options: InternalRobotOptions) -> int:
+    """runs robot with the specified `robot_options`"""
+    robot_options = merge_robot_options(
+        # user-specified options:
+        _get_robot_args(session),
+        # collect or run test specific options:
         robot_options,
+        # options that always need to be set:
         {"extension": "py:robot", "runemptysuite": True, "parser": [PythonParser(session)]},
     )
-    if collect:
-        robot_args = {
-            # deliberately not using merge_robot_options because we want to override prerunmodifiers
-            # during collection
-            **robot_args,
-            "report": None,
-            "output": None,
-            "log": None,
-            "exitonerror": True,
-            "prerunmodifier": [RobotSuiteCollector(session)],
-            "listener": [],
-        }
-    else:
-        listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
-        # if item_context is not set then it's being run from pytest_runtest_protocol instead of
-        # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
-        if xdist_item:
-            robot_args = {
-                **robot_args,
-                "report": None,
-                "log": None,
-                "output": _xdist_temp_dir(xdist_item.session)
-                / _xdist_ourput_dir_name
-                / f"{worker_id(xdist_item.session)}_{hash(xdist_item.nodeid)}.xml",
-                # we don't want prerebotmodifiers to run multiple times so we defer them to the end
-                # of the test if we're running with xdist
-                "prerebotmodifier": None,
-            }
-        else:
-            listeners.append(PytestRuntestProtocolHooks(session=session))
-        if not robot_6:
-            # this listener is conditionally defined so has to be conditionally imported
-            from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # noqa: PLC0415
-                KeywordUnwrapper,
-            )
 
-            listeners.append(KeywordUnwrapper())
-        robot_args = merge_robot_options(
-            robot_args,
-            {
-                "prerunmodifier": [
-                    TestFilterer(session, item=xdist_item),
-                    PytestRuntestProtocolInjector(session=session, item=xdist_item),
-                ],
-                "listener": listeners,
-            },
-        )
-
+    robot = RobotFramework()
     # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
     # the test is over
     with LOGGER:
-        exit_code = robot.main(  # pyright:ignore[reportUnknownMemberType,reportUnknownVariableType]
-            _get_pytest_collection_paths(session),
-            # needed because PythonParser.visit_init creates an empty suite
-            **robot_args,
+        exit_code = cast(
+            int,
+            robot.main(  # pyright:ignore[reportUnknownMemberType]
+                _get_pytest_collection_paths(session),
+                # needed because PythonParser.visit_init creates an empty suite
+                **robot_options,
+            ),
         )
-    if collect and exit_code:
-        # robot should never fail during collection because we prevent it from running any tests, so
-        # any failure would mean one of our suite visitors or something messed up, or it tried to
-        # run tests
-        raise InternalError("robot failed during collection")
 
     robot_errors = report_robot_errors(session)
     if robot_errors:
         raise Exception(robot_errors)
+    return exit_code
+
+
+def _robot_collect(session: Session):
+    """runs robot in "collection" mode, meaning it won't actually run any tests or output any result
+    files. this is only used to set `session.stash[collected_robot_tests_key]` which is then used in
+    `_internal.pytest.robot_file_support` during collectionto create `RobotItem`s for tests located
+    in `.robot` files
+    """
+    robot_options = {
+        "report": None,
+        "output": None,
+        "log": None,
+        "exitonerror": True,
+        "prerunmodifier": [RobotSuiteCollector(session)],
+        "listener": [],
+    }
+    exit_code = _run_robot(session, robot_options)
+    if exit_code:
+        # robot should never fail during collection because we prevent it from running any tests, so
+        # any failure would mean one of our suite visitors or something messed up, or it tried to
+        # run tests
+        raise InternalError(f"robot failed during collection ({exit_code=})")
+
+
+def _robot_run_tests(session: Session, xdist_item: Item | None = None):
+    """
+    runs robot either on an individual item or on every item in the session.
+
+    :param xdist_item: if provided, only runs robot for this item.
+    """
+    robot_options: InternalRobotOptions = {}
+    listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
+    # if item_context is not set then it's being run from pytest_runtest_protocol instead of
+    # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
+    if xdist_item:
+        robot_options = {
+            "report": None,
+            "log": None,
+            "output": str(
+                _xdist_temp_dir(xdist_item.session)
+                / _xdist_ourput_dir_name
+                / f"{worker_id(xdist_item.session)}_{hash(xdist_item.nodeid)}.xml"
+            ),
+            # we don't want prerebotmodifiers to run multiple times so we defer them to the end
+            # of the test if we're running with xdist
+            "prerebotmodifier": [],
+        }
+    else:
+        listeners.append(PytestRuntestProtocolHooks(session=session))
+    if not robot_6:
+        # this listener is conditionally defined so has to be conditionally imported
+        from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # noqa: PLC0415
+            KeywordUnwrapper,
+        )
+
+        listeners.append(KeywordUnwrapper())
+    robot_options = merge_robot_options(
+        robot_options,
+        {
+            "prerunmodifier": [
+                TestFilterer(session, item=xdist_item),
+                PytestRuntestProtocolInjector(session=session, item=xdist_item),
+            ],
+            "listener": listeners,
+        },
+    )
+    _ = _run_robot(session, robot_options)
 
 
 def pytest_addhooks(pluginmanager: PluginManager):
@@ -508,7 +517,7 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport | 
 
 
 def pytest_collection(session: Session):
-    _collect_or_run(session, collect=True, robot_options=_get_robot_args(session=session))
+    _robot_collect(session)
 
 
 def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
@@ -581,20 +590,14 @@ def pytest_runtestloop(session: Session) -> object:
         or (is_xdist_worker(session) and session.items)
     ):
         return None
-    robot_args = _get_robot_args(session=session)
-    _collect_or_run(session, collect=False, robot_options=robot_args)
+    _robot_run_tests(session)
     return None if is_xdist(session) else True
 
 
 @hookimpl(tryfirst=True)
 def pytest_runtest_protocol(item: Item):
     if is_xdist_worker(item.session):
-        _collect_or_run(
-            item.session,
-            collect=False,
-            xdist_item=item,
-            robot_options=_get_robot_args(session=item.session),
-        )
+        _robot_run_tests(item.session, xdist_item=item)
         return True
     return None
 
