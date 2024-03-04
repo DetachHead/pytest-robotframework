@@ -303,7 +303,7 @@ def _robot_collect(session: Session):
         "log": None,
         "exitonerror": True,
         "prerunmodifier": [RobotSuiteCollector(session)],
-        "listener": [],
+        "listener": None,
     }
     exit_code = _run_robot(session, robot_options)
     if exit_code:
