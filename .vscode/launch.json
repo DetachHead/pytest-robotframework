@@ -16,6 +16,14 @@
       "program": "${file}",
       "console": "internalConsole",
       "justMyCode": false
+    },
+    {
+      "name": "pytest with args",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": "${command:pickArgs}",
+      "justMyCode": false
     }
   ]
 }
