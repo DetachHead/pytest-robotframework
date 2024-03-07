@@ -7,7 +7,17 @@ from contextlib import suppress
 from functools import wraps
 from re import sub
 from types import ModuleType
-from typing import TYPE_CHECKING, Callable, Generator, Generic, Literal, Optional, Tuple, cast
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Final,
+    Generator,
+    Generic,
+    Literal,
+    Optional,
+    Tuple,
+    cast,
+)
 
 from _pytest import runner
 from ansi2html import Ansi2HTMLConverter
@@ -298,6 +308,42 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
             item.stash[original_teardown_key] = test.teardown
             test.teardown = _create_running_keyword("TEARDOWN", teardown, cloaked_item)
+
+
+_top_level_suite_name_metadata_prefix: Final = "_pytest_robot_original_suite_name:"
+
+
+class TopLevelSuiteNameGetter(SuiteVisitor):
+    """when running with xdist, rebot will refuse to combine logs if the top level suite names are
+    different. this can happen when running multiple tests across different files. to fix this,
+    we need to keep track of what all the top level suite names were, then set them all to a
+    placeholder name that gets replaced by the full name by rebot at the end of the session
+    """
+
+    @override
+    def start_suite(self, suite: ModelTestSuite):
+        if not suite.parent:
+            # save the original name in the metadata for later
+            suite.metadata[f"{_top_level_suite_name_metadata_prefix}{suite.name}"] = (
+                "you should never see this!"
+            )
+            suite.name = "<top level suite placeholder name. you should never see this!!!!!!!>"
+
+
+class TopLevelSuiteNameFixer(SuiteVisitor):
+    """when combining the xml's at the end of the session, set the name of the top level suite to
+    the combined original suite names that were saved to the suite metadata by
+    `TopLevelSuiteNameGetter`"""
+
+    @override
+    def start_suite(self, suite: ModelTestSuite) -> bool | None:
+        if not suite.parent:
+            suite_names: set[str] = set()
+            for key in suite.metadata:
+                if key.startswith(_top_level_suite_name_metadata_prefix):
+                    suite_names.add(key.split(":", 1)[1])
+                del suite.metadata[key]
+            suite.name = " & ".join(suite_names)
 
 
 _HookWrapper = Generator[None, object, object]

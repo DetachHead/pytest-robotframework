@@ -737,6 +737,12 @@ def test_two_tests_specified_by_full_path(pr: PytestRobotTester):
 def test_two_tests_specified_by_full_path_in_different_files(pr: PytestRobotTester):
     pr.run_and_assert_result("test_foo.py::test_foo", "test_bar.py::test_bar", passed=2)
     pr.assert_log_file_exists()
+    # test that the combined top-level suite name worked:
+    xml = output_xml()
+    # we don't know what order they will be in:
+    assert xpath(xml, "/robot/suite[@name='Test Bar & Test Foo' or @name='Test Foo & Test Bar']")
+    # make sure the metadata with the original suite names were deleted
+    assert not xml.xpath("//meta")
 
 
 def test_assertion_rewritten_in_conftest_when_assertion_hook_enabled(pr: PytestRobotTester):
