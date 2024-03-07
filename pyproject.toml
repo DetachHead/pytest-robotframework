@@ -114,7 +114,6 @@ enable = [
     "modified-iterating-set",
     "potential-index-error",
     "relative-beyond-top-level",
-    "singledispatch-method",
     "singledispatchmethod-function",
     "abstract-method",
     "arguments-out-of-order",
