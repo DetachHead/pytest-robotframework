@@ -2,10 +2,10 @@
 
 <h1 hidden>pytest-robotframework</h1>
 
-`pytest-robotframework` is a pytest plugin that generates robotframework reports for tests written
-in python and allows you to run robotframework tests using pytest
+`pytest-robotframework` is a pytest plugin that creates robotframework reports for tests written
+in python and allows you to run robotframework tests with pytest.
 
-![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/9caabc2e-450e-4db6-bb63-e149a38d49a2)
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/bf0e787c-6343-4ad1-89ff-44b93e17f7f5)
 
 # install
 
@@ -59,21 +59,16 @@ foo
 which is roughly equivalent to the following python code:
 
 ```py
-# conftest.py
-from robot.api import logger
-from pytest_robotframework import keyword
-
-def pytest_runtet_setup():
-    foo()
+# test_foo.py
+from pytest import mark
 
 @keyword
 def foo():
     logger.info("ran setup")
-```
 
-```py
-# test_foo.py
-from pytest import mark
+@fixture(autouse=True)
+def setup():
+    foo()
 
 @mark.asdf
 @mark.key("value")
@@ -81,28 +76,30 @@ def test_bar():
     ...
 ```
 
-## setup/teardown and other hooks
+## setup/teardown
 
-to define a function that runs for each test at setup or teardown, create a `conftest.py` with a `pytest_runtest_setup` and/or `pytest_runtest_teardown` function:
-
-```py
-# ./tests/conftest.py
-def pytest_runtest_setup():
-    log_in()
-```
+in pytest, setups and teardowns are defined using fixtures:
 
 ```py
-# ./tests/test_suite.py
-def test_something():
-    """i am logged in now"""
+from pytest import fixture
+from robot.api import logger
+
+@fixture
+def user():
+    logger.info("logging in")
+    user = ...
+    yield user
+    logger.info("logging off")
+
+def test_something(user):
+    ...
 ```
 
-these hooks appear in the log the same way that the a `.robot` file's `Setup` and `Teardown` options in `*** Settings ***` would:
+under the hood, pytest calls the fixture setup/teardown code as part of the `pytest_runtest_setup` and and `pytest_runtest_teardown` hooks, which appear in the robot log like so:
 
-![](https://github.com/DetachHead/pytest-robotframework/assets/57028336/d0b6ee6c-adcd-4f84-9880-9e602c2328f9)
+![image](https://github.com/DetachHead/pytest-robotframework/assets/57028336/5583883e-c9a5-47a0-8796-63418973909d)
 
-for more information, see [writing hook functions](https://docs.pytest.org/en/7.1.x/how-to/writing_hook_functions.html). pretty much every pytest hook should work with this plugin
-but i haven't tested them all. please raise an issue if you find one that's broken.
+for more information, see the pytest documentation for [fixtures](https://docs.pytest.org/en/6.2.x/fixture.html) and [hook functions](https://docs.pytest.org/en/7.1.x/how-to/writing_hook_functions.html).
 
 ## tags/markers
 
