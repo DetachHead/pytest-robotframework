@@ -334,7 +334,7 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
             ),
             # we don't want prerebotmodifiers to run multiple times so we defer them to the end
             # of the test if we're running with xdist
-            "prerebotmodifier": [],
+            "prerebotmodifier": None,
         }
     else:
         listeners.append(PytestRuntestProtocolHooks(session=session))
