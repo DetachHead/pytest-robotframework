@@ -65,6 +65,8 @@ from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (
     PythonParser,
     RobotSuiteCollector,
     TestFilterer,
+    TopLevelSuiteNameFixer,
+    TopLevelSuiteNameGetter,
 )
 from pytest_robotframework._internal.robot.utils import (
     InternalRobotOptions,
@@ -321,23 +323,6 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
     """
     robot_options: InternalRobotOptions = {}
     listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
-    # if item_context is not set then it's being run from pytest_runtest_protocol instead of
-    # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
-    if xdist_item:
-        robot_options = {
-            "report": None,
-            "log": None,
-            "output": str(
-                _xdist_temp_dir(xdist_item.session)
-                / _xdist_ourput_dir_name
-                / f"{worker_id(xdist_item.session)}_{hash(xdist_item.nodeid)}.xml"
-            ),
-            # we don't want prerebotmodifiers to run multiple times so we defer them to the end
-            # of the test if we're running with xdist
-            "prerebotmodifier": None,
-        }
-    else:
-        listeners.append(PytestRuntestProtocolHooks(session=session))
     if not robot_6:
         # this listener is conditionally defined so has to be conditionally imported
         from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # noqa: PLC0415
@@ -355,6 +340,27 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
             "listener": listeners,
         },
     )
+    # if item_context is not set then it's being run from pytest_runtest_protocol instead of
+    # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
+    if xdist_item:
+        robot_options = merge_robot_options(
+            robot_options,
+            {
+                "report": None,
+                "log": None,
+                "output": str(
+                    _xdist_temp_dir(xdist_item.session)
+                    / _xdist_ourput_dir_name
+                    / f"{worker_id(xdist_item.session)}_{hash(xdist_item.nodeid)}.xml"
+                ),
+                "prerunmodifier": [TopLevelSuiteNameGetter()],
+                # we don't want prerebotmodifiers to run multiple times so we defer them to the end
+                # of the test if we're running with xdist
+                "prerebotmodifier": None,
+            },
+        )
+    else:
+        listeners.append(PytestRuntestProtocolHooks(session=session))
     _ = _run_robot(session, robot_options)
 
 
@@ -433,7 +439,8 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                         # explicitly. we want to do this because our usage of rebot is an
                         # implementation detail and we want the output to appear the same
                         # regardless of whether the user is running with xdist
-                        "output": "output.xml"
+                        "output": "output.xml",
+                        "prerebotmodifier": [TopLevelSuiteNameFixer()],
                     },
                     {
                         # filter out any robot args that aren't valid rebot args
@@ -449,6 +456,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                         )
                     },
                 )
+
                 # we need to always set the loglevel to TRACE, despite whatever it was set to
                 # when running robot. otherwise if the loglevel was changed to DEBUG or TRACE
                 # programmatically inside a test, they would not appear in the merged output
@@ -457,6 +465,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                     log_level_value.split(":")[1] if ":" in log_level_value else "INFO"
                 )
                 rebot_options["loglevel"] = f"TRACE:{default_log_level}"
+
                 Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
                     outputs,
                     # merge is deliberately specified here instead of in the merged dict because it
