@@ -181,7 +181,7 @@ class TestFilterer(SuiteVisitor):
                 item.stash[running_test_case_key] = test
 
     @override
-    def visit_suite(self, suite: ModelTestSuite):
+    def start_suite(self, suite: ModelTestSuite):
         # https://github.com/robotframework/robotframework/issues/4940
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
@@ -225,8 +225,6 @@ class TestFilterer(SuiteVisitor):
             # there should never be more than 1 fake test per suite
             (test,) = fake_tests
             suite.tests.remove(test)
-        # https://github.com/robotframework/robotframework/issues/4940
-        super().visit_suite(suite)  # pyright:ignore[reportUnknownMemberType]
 
     @override
     def end_suite(self, suite: ModelTestSuite):
