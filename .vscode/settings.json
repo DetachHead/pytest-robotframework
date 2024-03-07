@@ -48,5 +48,8 @@
     "PATH": "${env:PATH};./.pyprojectx/pdm"
   },
   "terminal.integrated.env.osx": { "PATH": "${env:PATH};./.pyprojectx/pdm" },
-  "terminal.integrated.env.linux": { "PATH": "${env:PATH};./.pyprojectx/pdm" }
+  "terminal.integrated.env.linux": {
+    "PATH": "${env:PATH};./.pyprojectx/pdm"
+  },
+  "python.testing.pytestArgs": ["-n", "auto"]
 }
