@@ -11,10 +11,21 @@ from lxml.etree import (
     XML,
     _Element,  # pyright: ignore[reportPrivateUsage]
 )
-from pytest import ExitCode, FixtureRequest, Function, Pytester, RunResult, fixture
+from pytest import (
+    Config,
+    ExitCode,
+    FixtureRequest,
+    Function,
+    Pytester,
+    RunResult,
+    fixture,
+    hookimpl,
+)
 from typing_extensions import TypeGuard, override
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from _typeshed import StrPath
     from lxml.etree import (
         _AnyStr,  # pyright: ignore[reportPrivateUsage]
@@ -360,3 +371,18 @@ class PytestRobotTester:
             # robot doesn't have xfail, uses skips instead
             skipped=skipped + xfailed,
         )
+
+
+@hookimpl(wrapper=True)
+def pytest_xdist_auto_num_workers(config: Config) -> Generator[None, int, int]:
+    """determine how many workers to use based on how many tests were selected in the test explorer
+
+    see https://github.com/pytest-dev/pytest-xdist/issues/853#issuecomment-1982444234"""
+    original_default = yield
+    if "vscode_pytest" in config.option.plugins:  # pyright:ignore[reportAny]
+        result = min(original_default, len(config.option.file_or_dir))  # pyright:ignore[reportAny]
+        if result == 1:
+            # no point using xdist at all if there's only 1 test. 0 disables xdist entirely
+            return 0
+        return result
+    return original_default
