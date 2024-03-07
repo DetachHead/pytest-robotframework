@@ -464,6 +464,11 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                     merge=True,
                     **rebot_options,
                 )
+            else:
+                # this means robot was never run in any of the workers because there was no items,
+                # so we run it here to generate an empty log file to be consistent with what would
+                # happen when running with no items without xdist
+                _robot_run_tests(session)
         yield
     finally:
         cringe_globals._current_session = None  # pyright:ignore[reportPrivateUsage]
@@ -576,8 +581,7 @@ def _keywordify_pytest_functions():
 
 @hookimpl(tryfirst=True)
 def pytest_runtestloop(session: Session) -> object:
-    if (
-        session.config.option.collectonly  # pyright:ignore[reportAny]
+    if session.config.option.collectonly or is_xdist(session):  # pyright:ignore[reportAny]
         # if we're running with xdist, we can't replace the runtestloop with our own because it
         # conflicts with xdist's one. instead we need to run robot individually on each test (in
         # pytest_runtest_protocol) since we can't know which tests we need to run ahead of time (i
@@ -585,12 +589,9 @@ def pytest_runtestloop(session: Session) -> object:
         # however if this is the xdist master and there are no items, that means none of the workers
         # are going to run robot, in which case we need to run it here to generate an empty log cuz
         # that's how robot normally behaves
-        or (is_xdist_master(session) and session.items)
-        or (is_xdist_worker(session))
-    ):
         return None
     _robot_run_tests(session)
-    return None if is_xdist(session) else True
+    return True
 
 
 @hookimpl(tryfirst=True)
