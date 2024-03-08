@@ -30,6 +30,7 @@ from robot.conf.settings import (
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.rebot import Rebot
+from robot.result.resultbuilder import ExecutionResult  # pyright:ignore[reportUnknownVariableType]
 from robot.run import RobotFramework, RobotSettings
 from robot.utils.error import ErrorDetails
 from typing_extensions import TYPE_CHECKING, Callable, Generator, Mapping, cast
@@ -65,8 +66,6 @@ from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (
     PythonParser,
     RobotSuiteCollector,
     TestFilterer,
-    TopLevelSuiteNameFixer,
-    TopLevelSuiteNameGetter,
 )
 from pytest_robotframework._internal.robot.utils import (
     InternalRobotOptions,
@@ -356,7 +355,6 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
                 # we don't want prerebotmodifiers to run multiple times so we defer them to the end
                 # of the test if we're running with xdist
                 "prerebotmodifier": None,
-                "listener": [TopLevelSuiteNameGetter()],
             },
         )
     else:
@@ -433,14 +431,21 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
             # if there were no outputs there were probably no tests run or some other error occured,
             # so silently skip this
             if outputs:
+                rebot = Rebot()
+                # if tests from different suites were run, the top level suite can have a different
+                # name. rebot will refuse to merge if the top level suite names don't match, so we
+                # need to set them all to the same name before merging them.
+                if len(outputs) > 1:
+                    merged_suite_name = cast(str, ExecutionResult(*outputs).suite.name)  # pyright:ignore[reportUnknownMemberType]
+                    for output in outputs:
+                        _ = cast(int, rebot.main([output], output=output, name=merged_suite_name))  # pyright:ignore[reportUnknownMemberType]
                 rebot_options = merge_robot_options(
                     {
                         # rebot doesn't recreate the output.xml unless you sepecify it
                         # explicitly. we want to do this because our usage of rebot is an
                         # implementation detail and we want the output to appear the same
                         # regardless of whether the user is running with xdist
-                        "output": "output.xml",
-                        "prerebotmodifier": [TopLevelSuiteNameFixer()],
+                        "output": "output.xml"
                     },
                     {
                         # filter out any robot args that aren't valid rebot args
@@ -466,7 +471,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                 )
                 rebot_options["loglevel"] = f"TRACE:{default_log_level}"
 
-                Rebot().main(  # pyright:ignore[reportUnusedCallResult,reportUnknownMemberType]
+                _ = rebot.main(  # pyright:ignore[reportUnknownVariableType,reportUnknownMemberType]
                     outputs,
                     # merge is deliberately specified here instead of in the merged dict because it
                     # should never be overwritten
