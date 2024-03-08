@@ -313,7 +313,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 _top_level_suite_name_metadata_prefix: Final = "_pytest_robot_original_suite_name:"
 
 
-class TopLevelSuiteNameGetter(SuiteVisitor):
+class TopLevelSuiteNameGetter(ListenerV3):
     """when running with xdist, rebot will refuse to combine logs if the top level suite names are
     different. this can happen when running multiple tests across different files. to fix this,
     we need to keep track of what all the top level suite names were, then set them all to a
@@ -321,13 +321,13 @@ class TopLevelSuiteNameGetter(SuiteVisitor):
     """
 
     @override
-    def start_suite(self, suite: ModelTestSuite):
-        if not suite.parent:
+    def end_suite(self, data: running.TestSuite, result: result.TestSuite):  # pylint:disable=redefined-outer-name
+        if not result.parent:
             # save the original name in the metadata for later
-            suite.metadata[f"{_top_level_suite_name_metadata_prefix}{suite.name}"] = (
+            result.metadata[f"{_top_level_suite_name_metadata_prefix}{result.name}"] = (
                 "you should never see this!"
             )
-            suite.name = "<top level suite placeholder name. you should never see this!!!!!!!>"
+            result.name = "<top level suite placeholder name. you should never see this!!!!!!!>"
 
 
 class TopLevelSuiteNameFixer(SuiteVisitor):

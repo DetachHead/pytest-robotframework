@@ -353,10 +353,10 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
                     / _xdist_ourput_dir_name
                     / f"{worker_id(xdist_item.session)}_{hash(xdist_item.nodeid)}.xml"
                 ),
-                "prerunmodifier": [TopLevelSuiteNameGetter()],
                 # we don't want prerebotmodifiers to run multiple times so we defer them to the end
                 # of the test if we're running with xdist
                 "prerebotmodifier": None,
+                "listener": [TopLevelSuiteNameGetter()],
             },
         )
     else:
