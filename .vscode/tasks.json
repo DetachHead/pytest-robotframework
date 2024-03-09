@@ -1,119 +1,16 @@
 {
-  // See https://go.microsoft.com/fwlink/?LinkId=733558
-  // for the documentation about the tasks.json format
   "version": "2.0.0",
   "tasks": [
+    // all tasks should be pdm scripts in pyproject.toml instead, except this one.
+    // https://github.com/pyprojectx/pyprojectx/issues/92
     {
-      "label": "pdm install requirements",
+      "label": "install dependencies",
       "type": "shell",
       "command": "./pw",
-      "args": ["install"],
+      "args": ["pdm", "sync", "--clean"],
       "presentation": {
         "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "pdm update lockfile",
-      "type": "shell",
-      "command": "./pw",
-      "args": ["pdm", "update"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "pdm refresh lockfile (no update)",
-      "type": "shell",
-      "command": "./pw",
-      "args": ["pdm", "lock", "--update-reuse"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "basedpyright - all files",
-      "type": "shell",
-      "command": "./pw",
-      "args": ["basedpyright"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "ruff - all files",
-      "type": "shell",
-      "command": "${command:python.interpreterPath}",
-      "args": ["-m", "ruff", "check", "."],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "ruff fix - all files",
-      "type": "shell",
-      "command": "${command:python.interpreterPath}",
-      "args": ["-m", "ruff", "check", "--fix", "."],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "pylint - all files",
-      "type": "shell",
-      "command": "${command:python.interpreterPath}",
-      "args": ["-m", "pylint", "pytest_robotframework", "tests"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "ruff format - all files",
-      "type": "shell",
-      "command": "${command:python.interpreterPath}",
-      "args": ["-m", "ruff", "format", "."],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "open docs",
-      "type": "shell",
-      "command": "${command:python.interpreterPath}",
-      "args": ["-m", "pdoc", "pytest_robotframework"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": [],
-      "isBackground": true
-    },
-    {
-      "label": "run all tests",
-      "type": "shell",
-      "command": "./pw",
-      "args": ["test"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "clear pycache",
-      "type": "shell",
-      "command": "${command:python.interpreterPath}",
-      "args": ["scripts/clear_pycache.py"],
-      "presentation": {
-        "clear": true
-      },
-      "problemMatcher": [],
-      "isBackground": true
+      }
     }
   ]
 }

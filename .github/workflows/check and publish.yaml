@@ -27,7 +27,7 @@ jobs:
         if: ${{ matrix.robot_version != 'from lockfile' }}
       - run: ./pw pdm add pytest==${{ matrix.pytest_version }}
         if: ${{ matrix.pytest_version != 'from lockfile' }}
-      - run: ./pw test
+      - run: ./pw pdm test
   static_checks:
     strategy:
       fail-fast: false
@@ -42,12 +42,11 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - run: ./pw pdm lock --check
       - run: ./pw pdm install
-      - run: ./pw basedpyright
-      - run: ./pw run ruff format --check --diff .
-      - run: ./pw run ruff .
-      - run: ./pw run pylint pytest_robotframework tests
-      - run: ./pw run robocop
-      - run: ./pw run robotidy --color --check --diff .
+      - run: ./pw pdm run typecheck
+      - run: ./pw pdm run ruff_check
+      - run: ./pw pdm run pylint
+      - run: ./pw pdm run robocop
+      - run: ./pw pdm run robotidy
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
