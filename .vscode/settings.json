@@ -51,5 +51,6 @@
   "terminal.integrated.env.linux": {
     "PATH": "${env:PATH};./.pyprojectx/pdm"
   },
-  "python.testing.pytestArgs": ["-n", "auto"]
+  "python.testing.pytestArgs": ["-n", "auto"],
+  "task.problemMatchers.neverPrompt": true
 }

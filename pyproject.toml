@@ -24,15 +24,21 @@ robotframework = "pytest_robotframework._internal.pytest.plugin"
 [tool.pyprojectx]
 pdm = "pdm==2.12.4"
 
-[tool.pyprojectx.aliases]
-install = "pdm sync --clean"
-run = "pdm run"
-outdated = "pdm update --outdated"
-test = "pdm run pytest -n auto"
-basedpyright = [
-    "pdm run basedpyright",
-    "pdm run basedpyright --verifytypes pytest_robotframework --ignoreexternal",
-]
+[tool.pdm.scripts]
+update = "pdm update"
+refresh_lockfile = "pdm lock --update-reuse"
+test = "pytest -n auto"
+typecheck = { composite = [
+    "basedpyright",
+    "basedpyright --verifytypes pytest_robotframework --ignoreexternal",
+] }
+ruff_check = { composite = ['ruff check', 'ruff format --check --diff'] }
+ruff_fix = { composite = ['ruff check --fix', 'ruff format --fix'] }
+pylint = 'pylint pytest_robotframework tests'
+robocop = 'robocop'
+robotidy = 'robotidy --color --check --diff .'
+open_docs = 'pdoc pytest_robotframework'
+clear_pycache = 'python scripts/clear_pycache.py'
 
 [tool.pdm.dev-dependencies]
 lint = [
