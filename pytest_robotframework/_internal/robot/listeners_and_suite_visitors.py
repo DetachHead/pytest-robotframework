@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from contextlib import suppress
 from functools import wraps
+from inspect import getdoc
 from re import sub
-from types import ModuleType
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -20,11 +20,12 @@ from typing import (
 )
 
 from _pytest import runner
+from _pytest.python import PyobjMixin
 from ansi2html import Ansi2HTMLConverter
 from basedtyping import Function, P, T
 from pluggy import HookCaller, HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
-from pytest import Function as PytestFunction, Item, Session
+from pytest import Function as PytestFunction, Item, Module, Session, StashKey
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
 from robot.errors import HandlerExecutionFailed
@@ -49,7 +50,6 @@ from pytest_robotframework._internal.pytest.robot_file_support import (
 )
 from pytest_robotframework._internal.robot.library import (
     __name__ as robot_library_name,
-    internal_error,
     run_test,
     setup,
     teardown,
@@ -67,7 +67,9 @@ from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from types import ModuleType
 
+    from _pytest.nodes import Node
     from robot.running.builder.settings import TestDefaults
     from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 
@@ -84,49 +86,107 @@ def _create_running_keyword(
     return running.Keyword(name=f"{fn.__module__}.{fn.__name__}", args=args, type=keyword_type)
 
 
-_fake_test_tag = "_pytest_robotframework_fake_test"
-
-
 class PythonParser(Parser):
-    """custom robot "parser" for python files. doesn't actually do any parsing, but instead creates
-    empty test suites for each python file found by robot. this is required for the prerunmodifiers.
-    they do all the work
+    """custom robot "parser" for python files. doesn't actually do any parsing, but instead relies
+    on pytest collection already being run, so it can use the collected items to populate a robot
+    suite.
 
-    the `PytestCollector` prerunmodifier then creates empty test cases for each suite, and
-    `PytestRuntestProtocolInjector` inserts the actual test functions which are responsible for
+    the `PytestRuntestProtocolInjector` inserts the actual test functions which are responsible for
     actually running the setup/call/teardown functions"""
 
-    def __init__(self, session: Session) -> None:
-        self.session = session
+    _robot_suite_key: Final = StashKey[running.TestSuite]()
+
+    def __init__(self, items: list[Item]) -> None:
+        self.items = items
         super().__init__()
 
     extension = "py"
 
     @staticmethod
-    def _create_suite(source: Path) -> running.TestSuite:
+    def _create_suite_from_source(source: Path) -> running.TestSuite:
         return running.TestSuite(running.TestSuite.name_from_source(source), source=source)
 
     @override
     def parse(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
-        suite = self._create_suite(source)
-        # this fake test is required to prevent the suite from being deleted before the
-        # prerunmodifiers are called
-        test_case = running.TestCase(
-            name="fake test you shoud NEVER see this!!!!!!!", tags=(_fake_test_tag,)
-        )
-        test_case.body = [
-            _create_running_keyword(
-                "KEYWORD",
-                internal_error,
-                Cloaked[str]("fake placeholder test appeared. this should never happen :(("),
-            )
-        ]
-        _ = suite.tests.append(test_case)
+        # save the resolved paths for performance reasons
+        if not source.is_absolute():
+            source = source.resolve()
+
+        # unlike `.robot` files, `.py` files can have nested "suites" (ie. using classes). this
+        # means source files do not have a 1:1 relationship to suites unlike what robot's custom
+        # parser API seems to assume, so we need some wacky logic here to traverse the nested items
+        # ourselves
+        stacks: list[list[Node]] = []
+        current_module: ModuleType | None = None
+        for item in self.items:
+            if not isinstance(item, PytestFunction):
+                continue
+            if not item.path.is_absolute():
+                item.path = item.path.resolve()
+            if item.path != source:
+                continue
+            item_stack: list[Node] = []
+            stacks.append(item_stack)
+            found_current_module = False
+            for child in item.listchain():
+                if not found_current_module:
+                    if isinstance(child, Module):
+                        if not child.path.is_absolute():
+                            child.path = child.path.resolve()
+                        if child.path == source:
+                            current_module = child.module
+                            found_current_module = True
+                            continue
+                    else:
+                        continue
+                item_stack.append(child)
+        suite = self._create_suite_from_source(source)
+        if current_module:
+            suite.doc = getdoc(current_module) or ""
+
+        for stack in stacks:
+            for index, child in enumerate(stack):
+                # the last thing added to the stack should always be a test item
+                is_test_case = index == len(stack) - 1
+                parent_suite = (
+                    child.parent.stash.get(self._robot_suite_key, None) if child.parent else None
+                ) or suite
+                documentation = getdoc(cast(PyobjMixin, child).obj) or ""  # pyright:ignore[reportAny]
+                if is_test_case:
+                    if not isinstance(child, PytestFunction):
+                        raise InternalError(
+                            f"expected {PytestFunction.__name__} but got {type(child).__name__}"
+                        )
+                    if running_test_case_key in child.stash:
+                        raise InternalError(f"{child} already visited")
+                    test_case = running.TestCase(
+                        name=child.name,
+                        doc=documentation,
+                        tags=[
+                            ":".join([
+                                marker.name,
+                                *(str(arg) for arg in cast(Tuple[object, ...], marker.args)),
+                            ])
+                            for marker in child.iter_markers()
+                        ],
+                        parent=parent_suite,
+                    )
+                    child.stash[running_test_case_key] = test_case
+                    _ = parent_suite.tests.append(test_case)
+                else:
+                    robot_suite = child.stash.get(self._robot_suite_key, None)
+                    if robot_suite is None:
+                        robot_suite = running.TestSuite(
+                            child.name, source=source, parent=parent_suite, doc=documentation
+                        )
+                        child.stash[self._robot_suite_key] = robot_suite
+                        _ = parent_suite.suites.append(robot_suite)
+
         return suite
 
     @override
     def parse_init(self, source: Path, defaults: TestDefaults) -> running.TestSuite:
-        return self._create_suite(source.parent)
+        return self._create_suite_from_source(source.parent)
 
 
 class _NotRunningTestSuiteError(InternalError):
@@ -138,8 +198,8 @@ class _NotRunningTestSuiteError(InternalError):
 
 @catch_errors
 class RobotSuiteCollector(SuiteVisitor):
-    """runs robot to collect its suites so that pytest items can be created from them in
-    `pytest.robot_file_support`"""
+    """used when running robot during collection to collect its suites so that pytest items can be
+    created from them in `pytest.robot_file_support`"""
 
     def __init__(self, session: Session):
         super().__init__()
@@ -160,7 +220,7 @@ class RobotSuiteCollector(SuiteVisitor):
 
 
 @catch_errors
-class TestFilterer(SuiteVisitor):
+class RobotTestFilterer(SuiteVisitor):
     """
     does the following to prepare the tests for execution:
 
@@ -169,21 +229,17 @@ class TestFilterer(SuiteVisitor):
     added later by `PytestRuntestProtocolInjector`)
     """
 
-    def __init__(self, session: Session, *, item: Item | None = None):
+    def __init__(self, session: Session, *, items: list[Item]):
         super().__init__()
         self.session = session
-        self._item = item
-        self.xdist_run = item is not None
-
-    def items(self):
-        return [self._item] if self._item else self.session.items
+        self.items = items
 
     @override
     # https://github.com/robotframework/robotframework/issues/4940
     def visit_test(  # pyright:ignore[reportIncompatibleMethodOverride]
         self, test: running.TestCase
     ):
-        for item in self.items():
+        for item in self.items:
             if isinstance(item, RobotItem) and full_test_name(test) == full_test_name(
                 item.collected_robot_test
             ):
@@ -191,60 +247,14 @@ class TestFilterer(SuiteVisitor):
                 item.stash[running_test_case_key] = test
 
     @override
-    def start_suite(self, suite: ModelTestSuite):
-        # https://github.com/robotframework/robotframework/issues/4940
-        if not isinstance(suite, running.TestSuite):
-            raise _NotRunningTestSuiteError
-        if not suite.source:
-            return
-        # save the resolved paths for performance reasons
-        if not suite.source.is_absolute():
-            suite.source = suite.source.resolve()
-        for item in self.items():
-            if not item.path.is_absolute():
-                item.path = item.path.resolve()
-            # only include items that are part of this current suite
-            if item.path != suite.source or not isinstance(item, PytestFunction):
-                continue
-            # create robot test case for .py test:
-            test_case = running.TestCase(
-                name=item.name,
-                doc=cast(
-                    PytestFunction,
-                    item.function,  # pyright:ignore[reportUnknownMemberType]
-                ).__doc__
-                or "",
-                tags=[
-                    ":".join([
-                        marker.name,
-                        *(str(arg) for arg in cast(Tuple[object, ...], marker.args)),
-                    ])
-                    for marker in item.iter_markers()
-                ],
-                parent=suite,
-            )
-            test_case.body = Body()
-            item.stash[running_test_case_key] = test_case
-            module = cast(ModuleType, item.module)
-            if module.__doc__ and not suite.doc:
-                suite.doc = module.__doc__
-            _ = suite.tests.append(test_case)
-        # remove the fake placeholder test (there should only ever be 1 fake test):
-        fake_tests = [test for test in suite.tests if _fake_test_tag in test.tags]
-        if fake_tests:
-            # there should never be more than 1 fake test per suite
-            (test,) = fake_tests
-            suite.tests.remove(test)
-
-    @override
     def end_suite(self, suite: ModelTestSuite):
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
 
-        # remove any .robot tests that were filtered out by pytest (and the fake test from
-        # `PythonParser`). we do this in end_suite because that's when all the
-        # running_test_case_keys should be populated:
+        # remove any .robot tests that were filtered out by pytest. we do this in end_suite because
+        # that's when all the running_test_case_keys should be populated:
         for test in suite.tests[:]:
+            # TODO: can all_items_should_have_tests now be True?
             if not get_item_from_robot_test(self.session, test, all_items_should_have_tests=False):
                 suite.tests.remove(test)
 
@@ -308,9 +318,6 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
             item.stash[original_teardown_key] = test.teardown
             test.teardown = _create_running_keyword("TEARDOWN", teardown, cloaked_item)
-
-
-_top_level_suite_name_metadata_prefix: Final = "_pytest_robot_original_suite_name:"
 
 
 _HookWrapper = Generator[None, object, object]

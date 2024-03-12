@@ -829,3 +829,8 @@ def test_set_log_level(pr: PytestRobotTester):
     # on robot 6 this is logged as INFO and on robot 7 it's logged as DEBUG
     assert xml.xpath("//msg[.='Log level changed from INFO to DEBUG.']")
     assert xml.xpath("//msg[@level='DEBUG' and .='hello???']")
+
+
+def test_class_has_separate_suite(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=3)
+    pr.assert_log_file_exists()
