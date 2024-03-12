@@ -109,8 +109,3 @@ def teardown(arg: Cloaked[Item]):
     # mostly copied from the end of `_pytest.runner.runtestprotocol`:
     _call_and_report_robot_edition(item, "teardown", nextitem=item.nextitem)
     cringe_globals._current_item = None  # pyright:ignore[reportPrivateUsage]
-
-
-@keyword
-def internal_error(msg: Cloaked[str]):
-    raise InternalError(msg.value)

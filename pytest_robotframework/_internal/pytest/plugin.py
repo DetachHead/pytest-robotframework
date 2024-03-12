@@ -65,7 +65,7 @@ from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (
     PytestRuntestProtocolInjector,
     PythonParser,
     RobotSuiteCollector,
-    TestFilterer,
+    RobotTestFilterer,
 )
 from pytest_robotframework._internal.robot.utils import (
     InternalRobotOptions,
@@ -270,7 +270,7 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions) -> int:
         # collect or run test specific options:
         robot_options,
         # options that always need to be set:
-        {"extension": "py:robot", "runemptysuite": True, "parser": [PythonParser(session)]},
+        {"extension": "py:robot", "runemptysuite": True},
     )
 
     robot = RobotFramework()
@@ -320,7 +320,8 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
 
     :param xdist_item: if provided, only runs robot for this item.
     """
-    robot_options: InternalRobotOptions = {}
+    items = [xdist_item] if xdist_item else session.items
+    robot_options: InternalRobotOptions = {"parser": [PythonParser(items)]}
     listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
     if not robot_6:
         # this listener is conditionally defined so has to be conditionally imported
@@ -333,7 +334,7 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
         robot_options,
         {
             "prerunmodifier": [
-                TestFilterer(session, item=xdist_item),
+                RobotTestFilterer(session, items=items),
                 PytestRuntestProtocolInjector(session=session, item=xdist_item),
             ],
             "listener": listeners,
