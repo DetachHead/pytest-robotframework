@@ -33,7 +33,7 @@ typecheck = { composite = [
     "basedpyright --verifytypes pytest_robotframework --ignoreexternal",
 ] }
 ruff_check = { composite = ['ruff check', 'ruff format --check --diff'] }
-ruff_fix = { composite = ['ruff check --fix', 'ruff format --fix'] }
+ruff_fix = { composite = ['ruff check --fix', 'ruff format'] }
 pylint = 'pylint pytest_robotframework tests'
 robocop = 'robocop'
 robotidy = 'robotidy --color --check --diff .'
