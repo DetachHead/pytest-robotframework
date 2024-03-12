@@ -20,7 +20,6 @@ from pytest_robotframework import (
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest.exception_getter import exception_key
-from pytest_robotframework._internal.pytest.utils import init_stash
 
 if TYPE_CHECKING:
     from pytest_robotframework._internal.robot.utils import Cloaked
@@ -35,7 +34,7 @@ def _call_and_report_robot_edition(
 ):
     """wrapper for the `call_and_report` function used by `_pytest.runner.runtestprotocol`
     with additional logic to show the result in the robot log"""
-    reports: list[TestReport] = init_stash(_report_key, list, item)
+    reports = item.stash.setdefault(_report_key, [])
     report = call_and_report(item, when, log=True, **kwargs)
     reports.append(report)
     if report.skipped:
