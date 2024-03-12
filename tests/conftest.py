@@ -378,11 +378,11 @@ def pytest_xdist_auto_num_workers(config: Config) -> Generator[None, int, int]:
     """determine how many workers to use based on how many tests were selected in the test explorer
 
     see https://github.com/pytest-dev/pytest-xdist/issues/853#issuecomment-1982444234"""
-    original_default = yield
+    result = yield
     if "vscode_pytest" in config.option.plugins:  # pyright:ignore[reportAny]
-        result = min(original_default, len(config.option.file_or_dir))  # pyright:ignore[reportAny]
+        result = min(result, len(config.option.file_or_dir))  # pyright:ignore[reportAny]
         if result == 1:
             # no point using xdist at all if there's only 1 test. 0 disables xdist entirely
             return 0
         return result
-    return original_default
+    return result
