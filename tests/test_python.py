@@ -834,3 +834,43 @@ def test_set_log_level(pr: PytestRobotTester):
 def test_class_has_separate_suite(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=3)
     pr.assert_log_file_exists()
+    xml = output_xml()
+    top_level_suite = xpath(xml, "//suite[@name='Test Class Has Separate Suite']")
+    assert top_level_suite.count_children() == 3  # suite, test, status
+    assert xpath(top_level_suite, "./test[@name='test_foo']")
+
+    class_suite = xpath(top_level_suite, "./suite[@name='TestBar']")
+    assert class_suite.count_children() == 3  # 2 tests and a status
+    assert xpath(class_suite, "./test[@name='test_fooasdf']")
+    assert xpath(class_suite, "./test[@name='test_bar']")
+
+
+def test_nested_class(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=3)
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    top_level_suite = xpath(xml, "//suite[@name='Test Nested Class']")
+    assert top_level_suite.count_children() == 3  # suite, test, status
+    assert xpath(top_level_suite, "./test[@name='test_foo']")
+
+    class_suite = xpath(top_level_suite, "./suite[@name='TestBar']")
+    assert class_suite.count_children() == 3  # suite, test, status
+    assert xpath(class_suite, "./test[@name='test_bar']")
+
+    nested_class_suite = xpath(class_suite, "./suite[@name='TestBaz']")
+    assert nested_class_suite.count_children() == 2  # test, status
+    assert xpath(nested_class_suite, "./test[@name='test_baz']")
+
+
+def test_class_separate_files(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=4)
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    for file_number in (1, 2):
+        top_level_suite = xpath(xml, f"//suite[@name='Test Suite{file_number}']")
+        assert top_level_suite.count_children() == 3  # suite, test, status
+        assert xpath(top_level_suite, f"./test[@name='test_foo{file_number}']")
+
+        class_suite = xpath(top_level_suite, f"./suite[@name='TestClass{file_number}']")
+        assert class_suite.count_children() == 2  # test and status
+        assert xpath(class_suite, f"./test[@name='test_bar{file_number}']")
