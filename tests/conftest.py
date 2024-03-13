@@ -197,7 +197,7 @@ if TYPE_CHECKING:
         def __init__(self, element: _Element) -> None: ...  # pyright:ignore[reportMissingSuperCall]
 
         def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType]
-            """normally this returns `Tru` only if it has children"""
+            """normally this returns `True` only if it has children"""
 
         @override
         def __len__(self) -> Never:  # pyright:ignore[reportReturnType]
