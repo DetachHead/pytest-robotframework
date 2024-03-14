@@ -292,6 +292,14 @@ class PytestRobotTester:
         # checked by the overloads
         result = self.run_pytest(*pytest_args or [], subprocess=subprocess, plugins=plugins)  # pyright:ignore[reportArgumentType]
 
+        # this is kinda hueristic and gross, but i cant think of a clean way to add this check to
+        # every test so this will do for now
+        if not errors and exit_code != ExitCode.INTERNAL_ERROR:
+            for line in result.errlines:
+                if line.startswith("[ ERROR ] "):
+                    raise Exception(
+                        f"robot error detected in a test that expected no errors: {line}"
+                    )
         if not exit_code:
             if errors:
                 exit_code = ExitCode.INTERNAL_ERROR
