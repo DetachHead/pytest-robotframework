@@ -273,6 +273,11 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions) -> int:
         {"runemptysuite": True},
     )
 
+    # listener gets set to None in collection when we want to override user-defined preferences, but
+    # robot 6 doesn't support that
+    if robot_6 and robot_options["listener"] is None:
+        robot_options["listener"] = []
+
     robot = RobotFramework()
     # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
     # the test is over
