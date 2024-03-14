@@ -874,3 +874,7 @@ def test_class_separate_files(pr: PytestRobotTester):
         class_suite = xpath(top_level_suite, f"./suite[@name='TestClass{file_number}']")
         assert class_suite.count_children() == 2  # test and status
         assert xpath(class_suite, f"./test[@name='test_bar{file_number}']")
+
+
+def test_python_file_doesnt_get_parsed_as_robot_file(pr: PytestRobotTester):
+    pr.run_and_assert_assert_pytest_result("--collect-only", exit_code=ExitCode.NO_TESTS_COLLECTED)
