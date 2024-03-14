@@ -270,7 +270,7 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions) -> int:
         # collect or run test specific options:
         robot_options,
         # options that always need to be set:
-        {"extension": "py:robot", "runemptysuite": True},
+        {"runemptysuite": True},
     )
 
     robot = RobotFramework()
@@ -321,7 +321,7 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
     :param xdist_item: if provided, only runs robot for this item.
     """
     items = [xdist_item] if xdist_item else session.items
-    robot_options: InternalRobotOptions = {"parser": [PythonParser(items)]}
+    robot_options: InternalRobotOptions = {"parser": [PythonParser(items)], "extension": "py:robot"}
     listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
     if not robot_6:
         # this listener is conditionally defined so has to be conditionally imported
