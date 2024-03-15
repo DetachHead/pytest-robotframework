@@ -137,7 +137,6 @@ enable = [
     "overlapping-except",
     "preferred-module",
     "raising-format-tuple",
-    "redeclared-assigned-name",
     "redefined-outer-name",
     "redefined-slots-in-subclass",
     "redundant-returns-doc",
