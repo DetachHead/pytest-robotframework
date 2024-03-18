@@ -5,7 +5,7 @@
 groups = ["default", "lint", "test", "docs"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:78e7e5b74021297b9e6d34f6a1472f367eae04be6a5b58dba7eef7c03eb774fc"
+content_hash = "sha256:12a14f6e00838850c55981d652522ada3b07002fc7a821453c77eb90e27e5317"
 
 [[package]]
 name = "ansi2html"
@@ -45,15 +45,15 @@ files = [
 
 [[package]]
 name = "basedpyright"
-version = "1.5.0"
+version = "1.6.0"
 requires_python = ">=3.8"
 summary = "static type checking for Python (but based)"
 dependencies = [
     "nodejs-bin>=18.4.0a4",
 ]
 files = [
-    {file = "basedpyright-1.5.0-py3-none-any.whl", hash = "sha256:b398dbddf418619f94eda8c564c6725cfdf833a2decc69d803b2d5b5bf94cb5c"},
-    {file = "basedpyright-1.5.0.tar.gz", hash = "sha256:fb3557b07071172223967ad1d6ca6af8616eca455cdfbf57646cfeb76d5e50cb"},
+    {file = "basedpyright-1.6.0-py3-none-any.whl", hash = "sha256:8f757357a03e9cd86f33e9ffa3b8a38f86c449dc64230e87adbce912092fc65e"},
+    {file = "basedpyright-1.6.0.tar.gz", hash = "sha256:7fb82057d83e35f0c7a14ace12cf841c857df7ee20a95c3b67b6db962557d265"},
 ]
 
 [[package]]
