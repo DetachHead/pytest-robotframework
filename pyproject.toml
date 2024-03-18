@@ -42,7 +42,7 @@ clear_pycache = 'python scripts/clear_pycache.py'
 
 [tool.pdm.dev-dependencies]
 lint = [
-    "basedpyright>=1.5.0",
+    "basedpyright>=1.6.0",
     "pylint>=3.0.0a7",
     "ruff>=0.2.0",
     "robotframework-robocop>=4.1.0",
