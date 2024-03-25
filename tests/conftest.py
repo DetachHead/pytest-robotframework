@@ -85,8 +85,7 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
 
 if TYPE_CHECKING:
     # Pytester is final so it's probably a bad idea to rely on extending this at runtime
-    # https://github.com/DetachHead/basedpyright/issues/23
-    class PytesterDir(Pytester):  # pyright:ignore # noqa: PGH003
+    class PytesterDir(Pytester):  # pyright:ignore[reportGeneralTypeIssues]
         """fake subtype of `Pytester` that bans you from using file creation and runpytest methods.
         you should put real life files in `tests/fixtures/[test file path]/[test name]` instead,
         and use the runpytest methods on `PytestRobotTester` since they have handling for the xdist
