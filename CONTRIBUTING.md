@@ -1,6 +1,6 @@
 # contributing
 
-unlike many projects, i try to make mine as easy as possible for other developers to work on by committing IDE config files and using tools such as pyprojectx to automate the installation of all the dev dependencies, so the steps to get set up are quite straightforward:
+unlike many projects, i try to make mine as easy as possible for other developers to work on by committing IDE config files and using tools such as rye to automate the installation of all the dev dependencies, including python itself, so the steps to get set up are quite straightforward:
 
 ## prerequisites
 
@@ -13,8 +13,9 @@ unlike many projects, i try to make mine as easy as possible for other developer
 ## installation steps
 
 1. clone the repo
-2. run `./pw install`
-3. if using vscode, click "Yes" when prompted to use the project venv and when prompted to install the recommended extensions
+2. install [rye](https://rye-up.com/guide/installation/)
+3. in the project root directory, run `rye sync`
+4. if using vscode, click "Yes" when prompted to use the project venv and when prompted to install the recommended extensions
 
 ## tests
 

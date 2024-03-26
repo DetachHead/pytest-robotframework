@@ -37,20 +37,10 @@
   "robot.codeLens.enable": false,
   "robot.testView.enabled": false,
   "explorer.compactFolders": false,
-  "search.exclude": {
-    "pw": true
-  },
   "python.terminal.activateEnvInCurrentTerminal": true,
   // interferes with basedpyright lsp
   "python.languageServer": "None",
   "debugpy.debugJustMyCode": false,
-  "terminal.integrated.env.windows": {
-    "PATH": "${env:PATH};./.pyprojectx/pdm"
-  },
-  "terminal.integrated.env.osx": { "PATH": "${env:PATH};./.pyprojectx/pdm" },
-  "terminal.integrated.env.linux": {
-    "PATH": "${env:PATH};./.pyprojectx/pdm"
-  },
   "python.testing.pytestArgs": ["-n", "auto"],
   "task.problemMatchers.neverPrompt": true
 }

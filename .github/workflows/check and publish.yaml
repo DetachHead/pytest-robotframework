@@ -19,15 +19,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python_version }}
-      - run: ./pw pdm install
-      - run: ./pw pdm add robotframework==${{ matrix.robot_version }}
+      - uses: eifinger/setup-rye@v2
+      - run: rye pin ${{ matrix.python_version }}
+      - run: rye sync --no-lock
+      - run: rye add robotframework==${{ matrix.robot_version }}
         if: ${{ matrix.robot_version != 'from lockfile' }}
-      - run: ./pw pdm add pytest==${{ matrix.pytest_version }}
+      - run: rye add pytest==${{ matrix.pytest_version }}
         if: ${{ matrix.pytest_version != 'from lockfile' }}
-      - run: ./pw pdm test
+      - run: rye test
   static_checks:
     strategy:
       fail-fast: false
@@ -37,16 +36,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python_version }}
-      - run: ./pw pdm lock --check
-      - run: ./pw pdm install
-      - run: ./pw pdm run typecheck
-      - run: ./pw pdm run ruff_check
-      - run: ./pw pdm run pylint
-      - run: ./pw pdm run robocop
-      - run: ./pw pdm run robotidy
+      - uses: eifinger/setup-rye@v2
+      - run: rye pin ${{ matrix.python_version }}
+      # https://github.com/astral-sh/rye/issues/945
+      # - run: rye lock --check
+      - run: rye sync
+      - run: rye run typecheck
+      - run: rye lint
+      - run: rye fmt --check -- --diff
+      - run: rye run pylint_check
+      - run: rye run robocop
+      - run: rye run robotidy_check
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
@@ -60,10 +60,12 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v2
-      - run: ./pw pdm publish
+      - uses: eifinger/setup-rye@v2
+      - run: rye pin 3.12
+      - run: rye publish
       - name: get version number
         id: current-version
-        run: echo ::set-output name=CURRENT_VERSION::$(./pw pdm show --version)
+        run: echo ::set-output name=CURRENT_VERSION::$(rye version)
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}

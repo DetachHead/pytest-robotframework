@@ -1,13 +1,104 @@
 {
   "version": "2.0.0",
   "tasks": [
-    // all tasks should be pdm scripts in pyproject.toml instead, except this one.
-    // https://github.com/pyprojectx/pyprojectx/issues/92
+    // ideally these would only be rye scripts. https://github.com/astral-sh/rye/issues/556
     {
       "label": "install dependencies",
       "type": "shell",
-      "command": "./pw",
-      "args": ["pdm", "sync", "--clean"],
+      "command": "rye",
+      "args": ["sync", "--no-lock"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "update dependencies",
+      "type": "shell",
+      "command": "rye",
+      "args": ["sync", "--update-all"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "typecheck",
+      "type": "shell",
+      "command": "rye",
+      "args": ["run", "typecheck"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "ruff lint - check",
+      "type": "shell",
+      "command": "rye",
+      "args": ["lint"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "ruff lint - fix",
+      "type": "shell",
+      "command": "rye",
+      "args": ["lint", "--fix"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "ruff format",
+      "type": "shell",
+      "command": "rye",
+      "args": ["fmt"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "pylint",
+      "type": "shell",
+      "command": "rye",
+      "args": ["run", "pylint_check"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "robocop",
+      "type": "shell",
+      "command": "rye",
+      "args": ["run", "robocop"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "robotidy",
+      "type": "shell",
+      "command": "rye",
+      "args": ["run", "robotidy_fix"],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "open docs",
+      "type": "shell",
+      "command": "rye",
+      "args": ["run", "open_docs"],
+      "isBackground": true,
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "clear pycache",
+      "type": "shell",
+      "command": "rye",
+      "args": ["run", "clear_pycache"],
+      "isBackground": true,
       "presentation": {
         "clear": true
       }
