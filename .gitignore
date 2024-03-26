@@ -3,8 +3,6 @@
 /dist/
 /docs/
 *.log
-.pyprojectx
-.pdm-python
 output.xml
 log.html
 report.html

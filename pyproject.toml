@@ -21,40 +21,41 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 [project.entry-points.pytest11]
 robotframework = "pytest_robotframework._internal.pytest.plugin"
 
-[tool.pyprojectx]
-pdm = "pdm==2.12.4"
-
-[tool.pdm.scripts]
-update = "pdm update"
-refresh_lockfile = "pdm lock --update-reuse"
-test = "pytest -n auto"
-typecheck = { composite = [
+[tool.rye.scripts]
+refresh_lockfile = "rye lock"
+typecheck = { chain = [
     "basedpyright",
     "basedpyright --verifytypes pytest_robotframework --ignoreexternal",
 ] }
-ruff_check = { composite = ['ruff check', 'ruff format --check --diff'] }
-ruff_fix = { composite = ['ruff check --fix', 'ruff format'] }
-pylint = 'pylint pytest_robotframework tests'
-robocop = 'robocop'
-robotidy = 'robotidy --color --check --diff .'
+pylint_check = 'pylint pytest_robotframework tests'
+robotidy_check = 'robotidy --color --check --diff .'
+robotidy_fix = 'robotidy .'
 open_docs = 'pdoc pytest_robotframework'
-clear_pycache = 'python scripts/clear_pycache.py'
+clear_pycache = { call = 'scripts.clear_pycache' }
 
-[tool.pdm.dev-dependencies]
-lint = [
+[tool.rye]
+managed = true
+dev-dependencies = [
     "basedpyright>=1.6.0",
     "pylint>=3.0.0a7",
     "ruff>=0.2.0",
     "robotframework-robocop>=4.1.0",
     "robotframework-tidy>=4.5.0",
+    "lxml>=4.9.3",
+    "lxml-stubs>=0.4.0",
+    "pytest-xdist>=3.5.0",
+    "pdoc>=14.1.0",
 ]
-test = ["lxml>=4.9.3", "lxml-stubs>=0.4.0", "pytest-xdist>=3.5.0"]
-docs = ["pdoc>=14.1.0"]
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["pytest_robotframework"]
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
@@ -169,12 +170,18 @@ score = "no"
 max-line-length = 200
 
 [tool.pytest.ini_options]
-addopts = ['-p', 'no:robotframework', '--ignore=tests/fixtures', '-vv']
+addopts = [
+    '-n',
+    'auto',
+    '-p',
+    'no:robotframework',
+    '--ignore=tests/fixtures',
+    '-vv',
+]
 xfail_strict = true
 enable_assertion_pass_hook = true
 
 [tool.basedpyright]
-ignore = ["pw"]
 pythonVersion = "3.8"
 pythonPlatform = "All"
 typeCheckingMode = "all"
@@ -190,7 +197,6 @@ target-version = "py38"
 respect-gitignore = true
 line-length = 100
 preview = true
-extend-exclude = ["pw"]
 
 [tool.ruff.lint]
 extend-select = ["ALL"]
