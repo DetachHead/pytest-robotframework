@@ -7,7 +7,7 @@ from pytest import Item, Session, StashKey, hookimpl
 run_key = StashKey[int]()
 
 
-@hookimpl(hookwrapper=True)
+@hookimpl(wrapper=True)
 def pytest_runtest_protocol(item: Item) -> Iterator[None]:
     item.session.stash[run_key] = 1
     yield
