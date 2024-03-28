@@ -13,7 +13,6 @@ from _pytest.assertion.rewrite import (
     traverse_node,
 )
 from _pytest.main import resolve_collection_argument
-from pluggy import Result
 from pytest import (
     Collector,
     StashKey,
@@ -50,7 +49,7 @@ from pytest_robotframework import (
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.cringe_globals import current_item
 from pytest_robotframework._internal.errors import InternalError
-from pytest_robotframework._internal.pytest.exception_getter import save_exception_to_item
+from pytest_robotframework._internal.pytest.exception_getter import exception_key
 from pytest_robotframework._internal.pytest.robot_file_support import RobotFile, RobotItem
 from pytest_robotframework._internal.pytest.xdist_utils import (
     is_xdist,
@@ -179,7 +178,7 @@ def visit_Assert(  # noqa: N802
     return result
 
 
-HookWrapperResult = Generator[None, Result[object], None]
+HookWrapperResult = Generator[None, object, None]
 
 
 def _xdist_temp_dir(session: Session) -> Path:
@@ -556,7 +555,7 @@ def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
     return None
 
 
-@hookimpl(hookwrapper=True)
+@hookimpl(wrapper=True)
 def pytest_runtest_setup(item: Item) -> HookWrapperResult:
     if not isinstance(item, RobotItem):
         # `set_variables` and `import_resource` is only supported in python files.
@@ -570,20 +569,29 @@ def pytest_runtest_setup(item: Item) -> HookWrapperResult:
         del _suite_variables[item.path]
         for resource in _resources:
             import_resource(resource)
-    result = yield
-    save_exception_to_item(item, result)
+    try:
+        yield
+    except BaseException as exception:
+        item.stash[exception_key] = exception
+        raise
 
 
-@hookimpl(hookwrapper=True)
+@hookimpl(wrapper=True)
 def pytest_runtest_call(item: Item) -> HookWrapperResult:
-    result = yield
-    save_exception_to_item(item, result)
+    try:
+        yield
+    except BaseException as exception:
+        item.stash[exception_key] = exception
+        raise
 
 
-@hookimpl(hookwrapper=True)
+@hookimpl(wrapper=True)
 def pytest_runtest_teardown(item: Item) -> HookWrapperResult:
-    result = yield
-    save_exception_to_item(item, result)
+    try:
+        yield
+    except BaseException as exception:
+        item.stash[exception_key] = exception
+        raise
 
 
 def _keywordify_pytest_functions():
