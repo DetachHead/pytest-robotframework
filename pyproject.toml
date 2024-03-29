@@ -42,8 +42,9 @@ clear_pycache = 'python scripts/clear_pycache.py'
 
 [tool.pdm.dev-dependencies]
 lint = [
-    "basedpyright>=1.6.0",
-    "pylint>=3.0.0a7",
+    "basedpyright@git+https://github.com/DetachHead/basedpyright@50e4a901e9348fc2ad6d255a430994811178665f",
+    # https://github.com/pylint-dev/pylint/pull/9484 isn't released yet
+    "pylint@git+https://github.com/pylint-dev/pylint@e5e6ca713b3e8ce8037ca8bd2d39154b1df016e7",
     "ruff>=0.2.0",
     "robotframework-robocop>=4.1.0",
     "robotframework-tidy>=4.5.0",
@@ -117,7 +118,6 @@ enable = [
     "logging-unsupported-format",
     "method-hidden",
     "modified-iterating-dict",
-    "modified-iterating-set",
     "potential-index-error",
     "relative-beyond-top-level",
     "abstract-method",
