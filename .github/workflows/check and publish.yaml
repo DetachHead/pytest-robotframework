@@ -49,12 +49,15 @@ jobs:
       - run: ./pw pdm run typecheck
 
       - name: ruff check
+        if: always()
         run: ./pw pdm run ruff check --output-format github
 
       - name: ruff format
+        if: always()
         run: ./pw pdm run ruff format --check --diff
 
       - run: ./pw pdm run pylint -- --output-format=github
+        if: always()
 
       - run: ./pw pdm run robocop
         if: always()
