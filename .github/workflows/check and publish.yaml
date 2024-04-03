@@ -37,15 +37,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python_version }}
+
       - run: ./pw pdm lock --check
+
       - run: ./pw pdm install
+
       - run: ./pw pdm run typecheck
-      - run: ./pw pdm run ruff_check
-      - run: ./pw pdm run pylint
+
+      - name: ruff check
+        run: ./pw pdm run ruff check --output-format github
+
+      - name: ruff format
+        run: ./pw pdm run ruff format --check --diff
+
+      - run: ./pw pdm run pylint -- --output-format=github
+
       - run: ./pw pdm run robocop
+        if: always()
+
       - run: ./pw pdm run robotidy
   publish:
     runs-on: "ubuntu-latest"
