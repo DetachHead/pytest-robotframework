@@ -150,7 +150,7 @@ def test_tags_in_settings(pr: PytestRobotTester):
 
 def test_warning_on_unknown_tag(pr: PytestRobotTester):
     result = pr.run_pytest("--strict-markers", "-m", "m1")
-    result.assert_outcomes(errors=pr.xdist if pr.xdist else 1)
+    result.assert_outcomes(errors=pr.xdist or 1)
     assert result.ret == ExitCode.TESTS_FAILED
     assert "'m1' not found in `markers` configuration option" in result.outlines
 

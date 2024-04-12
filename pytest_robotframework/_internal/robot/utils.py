@@ -241,8 +241,8 @@ def cli_defaults(settings_class: Callable[[dict[str, object]], _BaseSettings]) -
     # the cwd gets updated, robot will still run with the outdated cwd.
     # we set it in this wacky way to make sure it never overrides user preferences
     _BaseSettings._cli_opts["OutputDir"] = ("outputdir", ".")  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage]
-
-    return cast(
+    # https://github.com/DetachHead/basedpyright#note-about-casting-with-typeddicts
+    return cast(  # pyright:ignore[reportInvalidCast]
         RobotOptions,
         dict(
             # instantiate the class because _BaseSettings.__init__ adds any additional opts
