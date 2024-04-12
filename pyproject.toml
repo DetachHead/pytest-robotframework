@@ -42,7 +42,7 @@ clear_pycache = 'python scripts/clear_pycache.py'
 
 [tool.pdm.dev-dependencies]
 lint = [
-    "basedpyright@git+https://github.com/DetachHead/basedpyright@50e4a901e9348fc2ad6d255a430994811178665f",
+    "basedpyright>=1.10.1",
     # https://github.com/pylint-dev/pylint/pull/9484 isn't released yet
     "pylint@git+https://github.com/pylint-dev/pylint@e5e6ca713b3e8ce8037ca8bd2d39154b1df016e7",
     "ruff>=0.2.0",
@@ -155,7 +155,6 @@ enable = [
     "use-implicit-booleaness-not-comparison",
     "chained-comparison",
     "confusing-consecutive-elif",
-    "consider-using-augmented-assign",
     "consider-using-join",
     "consider-using-max-builtin",
     "consider-using-min-builtin",

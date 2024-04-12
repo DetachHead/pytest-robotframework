@@ -254,8 +254,8 @@ def _get_robot_args(session: Session) -> RobotOptions:
             )[0],
         ),
     )
-
-    result = cast(RobotOptions, options)
+    # https://github.com/DetachHead/basedpyright#note-about-casting-with-typeddicts
+    result = cast(RobotOptions, options)  # pyright:ignore[reportInvalidCast]
     session.config.hook.pytest_robot_modify_options(options=result, session=session)
     session.stash[_robot_args_key] = result
     return result
