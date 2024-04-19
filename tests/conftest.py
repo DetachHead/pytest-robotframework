@@ -158,7 +158,8 @@ class _XmlElement(Iterable["_XmlElement"]):
     def __bool__(self) -> Literal[True]:
         return True
 
-    def __len__(self) -> Never:
+    # https://github.com/astral-sh/ruff/issues/11023
+    def __len__(self) -> Never:  # noqa: PLE0303
         raise Exception(
             "cannot call `len()` on `XmlElement` to count its children, use `count_children` "
             + "instead"
