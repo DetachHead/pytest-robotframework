@@ -30,10 +30,7 @@ def worker_id(session: Session) -> str | None:
     xdist = get_xdist()
     if xdist is None:
         return None
-    result = cast(
-        str,
-        xdist.get_xdist_worker_id(session),  # pyright:ignore[reportUnknownMemberType]
-    )
+    result = xdist.get_xdist_worker_id(session)
     return None if result == "master" else result
 
 
