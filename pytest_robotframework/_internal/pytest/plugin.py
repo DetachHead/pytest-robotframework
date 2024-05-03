@@ -261,7 +261,7 @@ def _get_robot_args(session: Session) -> RobotOptions:
     return result
 
 
-def _run_robot(session: Session, robot_options: InternalRobotOptions) -> int:
+def _run_robot(session: Session, robot_options: InternalRobotOptions):
     """runs robot with the specified `robot_options`"""
     robot_options = merge_robot_options(
         # user-specified options:
@@ -293,7 +293,12 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions) -> int:
     robot_errors = report_robot_errors(session)
     if robot_errors:
         raise Exception(robot_errors)
-    return exit_code
+    if exit_code and not session.testsfailed:
+        raise Exception(
+            f"pytest-robotframework detected that robot failed with exit code {exit_code} despite"
+            + " no tests failing. this was may have been caused by a robot error that occurred"
+            + " before any tests started."
+        )
 
 
 def _robot_collect(session: Session):
@@ -310,12 +315,7 @@ def _robot_collect(session: Session):
         "prerunmodifier": [RobotSuiteCollector(session)],
         "listener": None,
     }
-    exit_code = _run_robot(session, robot_options)
-    if exit_code:
-        # robot should never fail during collection because we prevent it from running any tests, so
-        # any failure would mean one of our suite visitors or something messed up, or it tried to
-        # run tests
-        raise InternalError(f"robot failed during collection ({exit_code=})")
+    _run_robot(session, robot_options)
 
 
 def _robot_run_tests(session: Session, xdist_item: Item | None = None):

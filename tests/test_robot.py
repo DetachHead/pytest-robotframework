@@ -287,3 +287,8 @@ def test_nested_keyword_that_fails(pr: PytestRobotTester):
     # make sure the error was only logged once, since the exception gets re-raised after the
     # keyword is over we want to make sure it's not printed multiple times
     assert xpath(xml, "//msg[@level='FAIL']")
+
+
+def test_fails_when_import_error_and_exit_on_error(pr: PytestRobotTester):
+    pr.run_and_assert_assert_pytest_result("--robot-exitonerror", exit_code=ExitCode.INTERNAL_ERROR)
+    assert_robot_total_stats(failed=1)
