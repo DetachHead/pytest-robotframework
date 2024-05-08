@@ -5,19 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      // https://github.com/microsoft/vscode-python-debugger/issues/112#issuecomment-1817057920
-      "name": "pytest",
-      "purpose": ["debug-test"],
-      "presentation": {
-        "hidden": true
-      },
-      "type": "python",
-      "request": "launch",
-      "program": "${file}",
-      "console": "internalConsole",
-      "justMyCode": false
-    },
-    {
       "name": "pytest with args",
       "type": "debugpy",
       "request": "launch",
