@@ -193,7 +193,7 @@ if TYPE_CHECKING:
         """proxy for lxml's `_Element` that disables its stupid nonsense `__bool__` and `__len__`
         behavior"""
 
-        def __init__(self, element: _Element) -> None: ...  # pyright:ignore[reportMissingSuperCall]
+        def __init__(self, element: _Element) -> None: ...
 
         def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType]
             """normally this returns `True` only if it has children"""
