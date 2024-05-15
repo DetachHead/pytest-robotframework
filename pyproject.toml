@@ -43,8 +43,7 @@ clear_pycache = 'python scripts/clear_pycache.py'
 [tool.pdm.dev-dependencies]
 lint = [
     "basedpyright>=1.10.1",
-    # https://github.com/pylint-dev/pylint/pull/9484 isn't released yet
-    "pylint@git+https://github.com/pylint-dev/pylint@e5e6ca713b3e8ce8037ca8bd2d39154b1df016e7",
+    "pylint>=3.2.0",
     "ruff>=0.2.0",
     "robotframework-robocop>=4.1.0",
     "robotframework-tidy>=4.5.0",
@@ -159,6 +158,7 @@ enable = [
     "consider-using-tuple",
     "simplifiable-condition",
     "simplify-boolean-expression",
+    "contextmanager-generator-missing-cleanup",
 ]
 
 [tool.pylint.REPORTS]
