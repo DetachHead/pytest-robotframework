@@ -25,7 +25,7 @@ from ansi2html import Ansi2HTMLConverter
 from basedtyping import Function, P, T
 from pluggy import HookCaller, HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
-from pytest import Function as PytestFunction, Item, Module, Session, StashKey
+from pytest import Class, Function as PytestFunction, Item, Module, Session, StashKey
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
 from robot.errors import HandlerExecutionFailed
@@ -181,6 +181,14 @@ class PythonParser(Parser):
                         )
                         child.stash[self._robot_suite_key] = robot_suite
                         _ = parent_suite.suites.append(robot_suite)
+
+        # need to delete the stashed robot suites now, because otherwise if the same worker gets
+        # reused for another test in the same module, the stashed values from the previous test will
+        # still be present, which screws it up
+        for item in self.items:
+            for node in item.listchain():
+                if isinstance(node, Class) and self._robot_suite_key in node.stash:
+                    del node.stash[self._robot_suite_key]
 
         return suite
 

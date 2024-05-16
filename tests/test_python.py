@@ -878,3 +878,9 @@ def test_class_separate_files(pr: PytestRobotTester):
 
 def test_python_file_doesnt_get_parsed_as_robot_file(pr: PytestRobotTester):
     pr.run_and_assert_assert_pytest_result("--collect-only", exit_code=ExitCode.NO_TESTS_COLLECTED)
+
+
+def test_class_three_tests_one_fail(pr: PytestRobotTester):
+    """this test is for an xdist issue. needs to have one more tests than there are workers"""
+    pr.run_and_assert_result(passed=2, failed=1)
+    pr.assert_log_file_exists()
