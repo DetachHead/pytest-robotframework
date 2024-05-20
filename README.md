@@ -154,6 +154,8 @@ running tests in parallel using [pytest-xdist](https://pytest-xdist.readthedocs.
 
 # config
 
+pass `--capture=no` to make `logger.console` work properly. 
+
 since this is a pytest plugin, you should avoid using robot options that have pytest equivalents:
 
 | instead of...                           | use...                                | notes                                                                                                                                                   |

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import re
+import sys
 from pathlib import Path
 from re import search
 from typing import TYPE_CHECKING, List, cast
 
+from _pytest.assertion.util import running_on_ci
 from pytest import ExitCode, MonkeyPatch
 
+from pytest_robotframework._internal.robot.utils import robot_6
 from tests.conftest import (
     PytestRobotTester,
     XmlElement,
@@ -884,3 +888,45 @@ def test_class_three_tests_one_fail(pr: PytestRobotTester):
     """this test is for an xdist issue. needs to have one more tests than there are workers"""
     pr.run_and_assert_result(passed=2, failed=1)
     pr.assert_log_file_exists()
+
+
+def test_console_summary(pr: PytestRobotTester):
+    result = pr.run_pytest(subprocess=True)
+    path = pr.pytester.path / "log.html"
+    assert re.search(
+        rf"""
+
+Robot Framework Output Files:
+Log:     {re.escape(str(path))}
+Log URI: {re.escape(path.as_uri())}
+""",
+        "\n".join(result.outlines),
+    )
+
+
+def test_console_output(pr: PytestRobotTester):
+    if pr.xdist:
+        result = pr.run_pytest("--capture=no")
+        assert "Output:" not in "\n".join(result.outlines)
+    else:
+        result = pr.run_pytest("--collect-only")
+        assert "0 tests, 0 passed, 0 failed" not in result.outlines
+        assert "Output:  None" not in result.outlines
+
+        result = pr.run_pytest("--capture=no", "--collect-only")
+        assert "0 tests, 0 passed, 0 failed" not in result.outlines
+        assert "Output:  None" not in result.outlines
+
+        result = pr.run_pytest("--capture=no")
+        if sys.platform == "win32" and running_on_ci():
+            # don't ask
+            assert "I'm console ?" in result.outlines
+        else:
+            assert "I'm console 🚽" in result.outlines
+        assert "[ WARN ] I'm warning" in result.errlines
+
+        result = pr.run_pytest("--quiet", "--capture=no", "--robot-console=verbose")
+        if robot_6:
+            assert f"Output:  {pr.pytester.path / 'output.xml'}" in result.outlines
+        else:
+            assert "Output:  output.xml" in result.outlines

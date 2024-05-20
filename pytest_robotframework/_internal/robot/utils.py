@@ -20,7 +20,7 @@ from basedtyping import T
 from pytest import Item, Session, StashKey
 from robot import model, running
 from robot.api.interfaces import ListenerV2, ListenerV3, Parser
-from robot.conf.settings import _BaseSettings  # pyright:ignore[reportPrivateUsage]
+from robot.conf.settings import RobotSettings, _BaseSettings  # pyright:ignore[reportPrivateUsage]
 from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 from robot.version import VERSION
 from typing_extensions import override
@@ -98,6 +98,8 @@ class RobotOptions(TypedDict):
     prerebotmodifier: list[str | model.SuiteVisitor]
     randomize: Literal["ALL", "SUITES", "TESTS", "NONE"]
     console: Literal["verbose", "dotted", "quiet", "none"]
+    """the default in robot is `"verbose", however pytest-robotframework changes the default to
+    `"quiet"`, if you change this, then pytest and robot outputs will overlap."""
     dotted: bool
     quiet: bool
     consolewidth: int
@@ -241,6 +243,8 @@ def cli_defaults(settings_class: Callable[[dict[str, object]], _BaseSettings]) -
     # the cwd gets updated, robot will still run with the outdated cwd.
     # we set it in this wacky way to make sure it never overrides user preferences
     _BaseSettings._cli_opts["OutputDir"] = ("outputdir", ".")  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage]
+    # Need to set this so that there aren't two competing frameworks dumping into the console
+    RobotSettings._extra_cli_opts["ConsoleType"] = ("console", "quiet")  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage,reportArgumentType]
     # https://github.com/DetachHead/basedpyright#note-about-casting-with-typeddicts
     return cast(  # pyright:ignore[reportInvalidCast]
         RobotOptions,
