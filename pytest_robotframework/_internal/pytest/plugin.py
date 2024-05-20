@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import contextlib
+import os
 from ast import Assert, Call, Constant, Expr, If, Raise, copy_location, stmt
 from pathlib import Path
+from typing import IO
 
 import pytest
 from _pytest.assertion import rewrite
@@ -15,6 +18,7 @@ from _pytest.assertion.rewrite import (
 from _pytest.main import resolve_collection_argument
 from pytest import (
     Collector,
+    Config,
     StashKey,
     TempPathFactory,
     TestReport,
@@ -81,6 +85,7 @@ from pytest_robotframework._internal.utils import patch_method
 if TYPE_CHECKING:
     from types import TracebackType
 
+    from _pytest.terminal import TerminalReporter
     from pluggy import PluginManager
     from pytest import CallInfo, Item, Parser, Session
 
@@ -314,6 +319,7 @@ def _robot_collect(session: Session):
         "exitonerror": True,
         "prerunmodifier": [RobotSuiteCollector(session)],
         "listener": None,
+        "console": "none",
     }
     _run_robot(session, robot_options)
 
@@ -436,53 +442,67 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
             # if there were no outputs there were probably no tests run or some other error occured,
             # so silently skip this
             if outputs:
-                rebot = Rebot()
-                # if tests from different suites were run, the top level suite can have a different
-                # name. rebot will refuse to merge if the top level suite names don't match, so we
-                # need to set them all to the same name before merging them.
-                if len(outputs) > 1:
-                    merged_suite_name = cast(str, ExecutionResult(*outputs).suite.name)  # pyright:ignore[reportUnknownMemberType]
-                    for output in outputs:
-                        _ = cast(int, rebot.main([output], output=output, name=merged_suite_name))  # pyright:ignore[reportUnknownMemberType]
-                rebot_options = merge_robot_options(
-                    {
-                        # rebot doesn't recreate the output.xml unless you sepecify it
-                        # explicitly. we want to do this because our usage of rebot is an
-                        # implementation detail and we want the output to appear the same
-                        # regardless of whether the user is running with xdist
-                        "output": "output.xml"
-                    },
-                    {
-                        # filter out any robot args that aren't valid rebot args
-                        key: value
-                        for key, value in robot_args.items()
-                        if key
-                        in option_names(
-                            RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
-                        )
-                        or key
-                        in option_names(
-                            _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
-                        )
-                    },
-                )
 
-                # we need to always set the loglevel to TRACE, despite whatever it was set to
-                # when running robot. otherwise if the loglevel was changed to DEBUG or TRACE
-                # programmatically inside a test, they would not appear in the merged output
-                log_level_value = robot_args["loglevel"]
-                default_log_level = (
-                    log_level_value.split(":")[1] if ":" in log_level_value else "INFO"
-                )
-                rebot_options["loglevel"] = f"TRACE:{default_log_level}"
+                def redirector(file: IO[str]) -> contextlib._RedirectStream[IO[str]]:  # pyright: ignore[reportPrivateUsage]
+                    # Here we create a jenkem huffer because you can't control rebots console output
+                    #  Rebot uses __stdout__, which doesn't have an implementation in contextlib
+                    result = contextlib._RedirectStream(file)  # pyright: ignore[reportPrivateUsage]
+                    result._stream = "__stdout__"  # pyright: ignore[reportAttributeAccessIssue]
+                    return result
 
-                _ = rebot.main(  # pyright:ignore[reportUnknownVariableType,reportUnknownMemberType]
-                    outputs,
-                    # merge is deliberately specified here instead of in the merged dict because it
-                    # should never be overwritten
-                    merge=True,
-                    **rebot_options,
-                )
+                with Path(os.devnull).open("w", encoding="UTF8") as devull, redirector(devull):
+                    rebot = Rebot()
+                    # if tests from different suites were run, the top level suite can have a
+                    # different name. rebot will refuse to merge if the top level suite names
+                    # don't match, so we need to set them all to the same name before merging them.
+                    if len(outputs) > 1:
+                        merged_suite_name = cast(str, ExecutionResult(*outputs).suite.name)  # pyright:ignore[reportUnknownMemberType]
+                        for output in outputs:
+                            _ = cast(
+                                int,
+                                rebot.main(  # pyright:ignore[reportUnknownMemberType]
+                                    [output], output=output, name=merged_suite_name, stdout=None
+                                ),
+                            )
+                    rebot_options = merge_robot_options(
+                        {
+                            # rebot doesn't recreate the output.xml unless you sepecify it
+                            # explicitly. we want to do this because our usage of rebot is an
+                            # implementation detail and we want the output to appear the same
+                            # regardless of whether the user is running with xdist
+                            "output": "output.xml"
+                        },
+                        {
+                            # filter out any robot args that aren't valid rebot args
+                            key: value
+                            for key, value in robot_args.items()
+                            if key
+                            in option_names(
+                                RebotSettings._extra_cli_opts  # pyright:ignore[reportPrivateUsage]
+                            )
+                            or key
+                            in option_names(
+                                _BaseSettings._cli_opts  # pyright:ignore[reportPrivateUsage,reportUnknownArgumentType,reportUnknownMemberType]
+                            )
+                        },
+                    )
+
+                    # we need to always set the loglevel to TRACE, despite whatever it was set to
+                    # when running robot. otherwise if the loglevel was changed to DEBUG or TRACE
+                    # programmatically inside a test, they would not appear in the merged output
+                    log_level_value = robot_args["loglevel"]
+                    default_log_level = (
+                        log_level_value.split(":")[1] if ":" in log_level_value else "INFO"
+                    )
+                    rebot_options["loglevel"] = f"TRACE:{default_log_level}"
+
+                    _ = rebot.main(  # pyright:ignore[reportUnknownVariableType,reportUnknownMemberType]
+                        outputs,
+                        # merge is deliberately specified here instead of in the merged dict because
+                        # it should never be overwritten
+                        merge=True,
+                        **rebot_options,
+                    )
             else:
                 # this means robot was never run in any of the workers because there was no items,
                 # so we run it here to generate an empty log file to be consistent with what would
@@ -628,6 +648,15 @@ def pytest_runtest_protocol(item: Item):
         _robot_run_tests(item.session, xdist_item=item)
         return True
     return None
+
+
+@hookimpl(tryfirst=True)
+def pytest_terminal_summary(terminalreporter: TerminalReporter, config: Config):
+    log_file = config.rootpath / cast(str, config.option.robot_log)  # pyright: ignore[reportAny]
+    terminalreporter.line("")
+    terminalreporter.line("Robot Framework Output Files:", bold=True)
+    terminalreporter.line(f"Log:     {log_file}")
+    terminalreporter.line(f"Log URI: {log_file.as_uri()}")
 
 
 @patch_method(ErrorDetails)
