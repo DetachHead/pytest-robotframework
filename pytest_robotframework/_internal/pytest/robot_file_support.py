@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import dataclasses
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Iterator, List, cast
+from typing import TYPE_CHECKING, Callable, Iterator, List, cast
 
-from pytest import Config, File, Item, MarkDecorator, Session, StashKey, mark, skip
+from _pytest._code.code import ReprFileLocation, TerminalRepr
+from pytest import Config, ExceptionInfo, File, Item, MarkDecorator, Session, StashKey, mark, skip
 from robot import model
-from robot.errors import ExecutionFailed
+from robot.errors import ExecutionFailed, ExecutionFailures, RobotError
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
 from robot.running.model import Body
-from typing_extensions import override
+from robot.running.statusreporter import StatusReporter
+from typing_extensions import Never, override
 
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot.utils import (
@@ -20,16 +23,36 @@ from pytest_robotframework._internal.robot.utils import (
     robot_6,
     running_test_case_key,
 )
+from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from os import PathLike
+
+    from _pytest._code.code import _TracebackStyle  # pyright: ignore[reportPrivateUsage]
+    from _pytest._io import TerminalWriter
 
 
 collected_robot_tests_key = StashKey[List[ModelTestCase]]()
 original_setup_key = StashKey[model.Keyword]()
 original_body_key = StashKey[Body]()
 original_teardown_key = StashKey[model.Keyword]()
+
+
+@patch_method(StatusReporter)
+def _get_failure(  # pyright: ignore[reportUnusedFunction]  # noqa: PLR0917
+    og: Callable[[StatusReporter, type[BaseException], BaseException, Never, Never], object],
+    self: StatusReporter,
+    exc_type: type[BaseException],
+    exc_value: BaseException,
+    exc_tb: Never,
+    context: Never,
+):
+    # robot discards the original error, so save it explicitly
+    result = og(self, exc_type, exc_value, exc_tb, context)
+    if result:
+        result.error = exc_value  # pyright: ignore[reportAttributeAccessIssue]
+    return result
 
 
 class RobotFile(File):
@@ -137,3 +160,28 @@ class RobotItem(Item):
     @override
     def reportinfo(self) -> tuple[PathLike[str] | str, int | None, str]:
         return (self.path, None if self.line_number is None else self.line_number - 1, self.name)
+
+    @override
+    def repr_failure(
+        self, excinfo: ExceptionInfo[BaseException], style: _TracebackStyle | None = None
+    ) -> str | TerminalRepr:
+        if isinstance(excinfo.value, ExecutionFailures):
+            error = cast(BaseException, excinfo.value._errors[-1].error)  # pyright: ignore[reportPrivateUsage, reportUnknownMemberType]
+            if isinstance(error, RobotError) or not error.__traceback__:
+                return RobotToiletRepr(excinfo.value)
+            return super().repr_failure(ExceptionInfo[BaseException].from_exception(error), style)
+        return super().repr_failure(excinfo, style)
+
+
+@dataclasses.dataclass(eq=False)
+class RobotToiletRepr(TerminalRepr):
+    value: object
+    reprcrash: ReprFileLocation = dataclasses.field(init=False)
+
+    def __post_init__(self):
+        # To support 'short test summary info'
+        self.reprcrash = ReprFileLocation("", -1, str(self.value))
+
+    @override
+    def toterminal(self, tw: TerminalWriter):
+        tw.line(f"E   {self.value}", red=True, bold=True)
