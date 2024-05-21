@@ -292,3 +292,12 @@ def test_nested_keyword_that_fails(pr: PytestRobotTester):
 def test_fails_when_import_error_and_exit_on_error(pr: PytestRobotTester):
     pr.run_and_assert_assert_pytest_result("--robot-exitonerror", exit_code=ExitCode.INTERNAL_ERROR)
     assert_robot_total_stats(failed=1)
+
+
+def test_traceback(pr: PytestRobotTester):
+    result = pr.run_pytest("--tb=short")
+    assert """
+util.py:5: in thing
+    raise Exception("asdf")
+E   Exception: asdf
+""" in "\n".join(result.outlines)

@@ -46,5 +46,8 @@
     "PATH": "${env:PATH};./.pyprojectx/pdm"
   },
   "python.testing.pytestArgs": ["-n", "auto"],
-  "task.problemMatchers.neverPrompt": true
+  "task.problemMatchers.neverPrompt": true,
+  "python.experiments.optInto": [
+    "pythonTestAdapter"
+  ]
 }
