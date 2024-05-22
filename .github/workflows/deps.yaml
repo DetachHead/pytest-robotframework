@@ -16,3 +16,4 @@ jobs:
           commit-message: "Update pdm.lock"
           pr-title: "Update dependencies"
           update-strategy: eager
+          token: ${{ secrets.GH_TOKEN }}
