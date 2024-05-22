@@ -1,0 +1,18 @@
+name: Update dependencies
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Update dependencies
+        uses: pdm-project/update-deps-action@1.8
+        with:
+          commit-message: "Update pdm.lock"
+          pr-title: "Update dependencies"
+          update-strategy: eager
