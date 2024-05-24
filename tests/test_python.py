@@ -50,6 +50,11 @@ def test_two_tests_two_files_one_fail_one_pass(pr: PytestRobotTester):
     pr.assert_log_file_exists()
 
 
+def test_run_two_files(pr: PytestRobotTester):
+    pr.run_and_assert_result("test_a.py", "test_b.py", passed=2)
+    pr.assert_log_file_exists()
+
+
 def test_two_tests_with_same_name_one_fail_one_pass(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1, failed=1)
     pr.assert_log_file_exists()

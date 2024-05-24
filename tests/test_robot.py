@@ -132,6 +132,11 @@ def test_two_files_run_test_from_second_suite(pr: PytestRobotTester):
     assert not xml.xpath("./suite//test[@name='Bar']")
 
 
+def test_run_two_files(pr: PytestRobotTester):
+    pr.run_and_assert_result("a.robot", "b.robot", passed=2)
+    pr.assert_log_file_exists()
+
+
 def test_tags(pr: PytestRobotTester):
     pr.run_and_assert_result("-m", "m1", passed=1)
     pr.assert_log_file_exists()

@@ -23,3 +23,8 @@ def test_robot_options_type_is_up_to_date():
     assert {key for key in cli_defaults(RobotSettings) if key not in banned_options} == set(
         RobotOptions.__annotations__.keys()
     )
+
+
+def test_robot_file_and_python_file(pr: PytestRobotTester):
+    pr.run_and_assert_result("foo.robot", "test_bar.py", passed=2)
+    pr.assert_log_file_exists()
