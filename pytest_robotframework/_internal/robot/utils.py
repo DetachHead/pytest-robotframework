@@ -180,7 +180,9 @@ def get_item_from_robot_test(
 
 
 def full_test_name(test: ModelTestCase) -> str:
-    return test.name if robot_6 else test.full_name
+    # we cut out the top level suite name because it seems to change dynamically as more suites get
+    # collected, or something
+    return test.name if robot_6 else test.full_name.split(".", 1)[1]
 
 
 robot_errors_key = StashKey[List[str]]()
