@@ -116,7 +116,7 @@ class RobotItem(Item):
             raise
 
     def _run_keyword(self, keyword: model.Keyword | None):
-        if keyword:
+        if keyword and keyword.name is not None and keyword.name.lower() != "none":
             with self._check_skipped():
                 BuiltIn().run_keyword(  # pyright:ignore[reportUnknownMemberType]
                     keyword.name, *keyword.args

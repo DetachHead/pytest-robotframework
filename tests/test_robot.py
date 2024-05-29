@@ -306,3 +306,21 @@ util.py:5: in thing
     raise Exception("asdf")
 E   Exception: asdf
 """ in "\n".join(result.outlines)
+
+
+def test_empty_setup_or_teardown(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=3)
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xpath(
+        xml,
+        "//test[@name='Runs globally defined setup and teardown']/kw[@name='Setup']/kw[@name='Log']"
+        + "/msg[.='setup ran']",
+    )
+    assert xpath(
+        xml,
+        "//test[@name='Runs globally defined setup and teardown']/kw[@name='Teardown']"
+        + "/kw[@name='Log']/msg[.='teardown ran']",
+    )
+    assert not xml.xpath("//test[@name='Disable setup']/kw[@name='Setup']/kw[@name='Log']")
+    assert not xml.xpath("//test[@name='Disable teardown']/kw[@name='Teardown']/kw[@name='Log']")
