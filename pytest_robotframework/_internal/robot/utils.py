@@ -246,7 +246,7 @@ def cli_defaults(settings_class: Callable[[dict[str, object]], _BaseSettings]) -
     # we set it in this wacky way to make sure it never overrides user preferences
     _BaseSettings._cli_opts["OutputDir"] = ("outputdir", ".")  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage]
     # Need to set this so that there aren't two competing frameworks dumping into the console
-    RobotSettings._extra_cli_opts["ConsoleType"] = ("console", "quiet")  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage,reportArgumentType]
+    RobotSettings._extra_cli_opts["ConsoleType"] = ("console", "quiet")  # pyright:ignore[reportUnknownMemberType,reportPrivateUsage]
     # https://github.com/DetachHead/basedpyright#note-about-casting-with-typeddicts
     return cast(  # pyright:ignore[reportInvalidCast]
         RobotOptions,
