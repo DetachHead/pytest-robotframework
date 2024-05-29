@@ -652,8 +652,8 @@ def pytest_runtest_protocol(item: Item):
 
 @hookimpl(tryfirst=True)
 def pytest_terminal_summary(terminalreporter: TerminalReporter, config: Config):
-    args = config.stash[_robot_args_key]
-    if not args["log"]:
+    args = config.stash.get(_robot_args_key, None)
+    if not args or not args["log"]:
         return
     log_file = Path(args["outputdir"], args["log"]).absolute()
     terminalreporter.line("")
