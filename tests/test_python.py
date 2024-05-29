@@ -896,8 +896,8 @@ def test_class_three_tests_one_fail(pr: PytestRobotTester):
 
 
 def test_console_summary(pr: PytestRobotTester):
-    result = pr.run_pytest(subprocess=True)
-    path = pr.pytester.path / "log.html"
+    result = pr.run_pytest("--robot-outputdir=a", "--robot-log=b", subprocess=True)
+    path = pr.pytester.path / "a" / "b"
     assert re.search(
         rf"""
 
@@ -907,6 +907,8 @@ Log URI: {re.escape(path.as_uri())}
 """,
         "\n".join(result.outlines),
     )
+    result = pr.run_pytest("--robot-log=", subprocess=True)
+    assert "Robot Framework Output Files:" not in result.outlines
 
 
 def test_console_output(pr: PytestRobotTester):

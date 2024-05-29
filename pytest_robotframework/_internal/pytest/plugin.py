@@ -226,7 +226,7 @@ _robot_args_key = StashKey[RobotOptions]()
 
 
 def _get_robot_args(session: Session) -> RobotOptions:
-    result: RobotOptions | None = session.stash.get(_robot_args_key, None)
+    result: RobotOptions | None = session.config.stash.get(_robot_args_key, None)
     if result is not None:
         return result
     options: dict[str, object] = {}
@@ -262,7 +262,7 @@ def _get_robot_args(session: Session) -> RobotOptions:
     # https://github.com/DetachHead/basedpyright#note-about-casting-with-typeddicts
     result = cast(RobotOptions, options)  # pyright:ignore[reportInvalidCast]
     session.config.hook.pytest_robot_modify_options(options=result, session=session)
-    session.stash[_robot_args_key] = result
+    session.config.stash[_robot_args_key] = result
     return result
 
 
@@ -652,7 +652,10 @@ def pytest_runtest_protocol(item: Item):
 
 @hookimpl(tryfirst=True)
 def pytest_terminal_summary(terminalreporter: TerminalReporter, config: Config):
-    log_file = config.rootpath / cast(str, config.option.robot_log)  # pyright: ignore[reportAny]
+    args = config.stash[_robot_args_key]
+    if not args["log"]:
+        return
+    log_file = Path(args["outputdir"], args["log"]).absolute()
     terminalreporter.line("")
     terminalreporter.line("Robot Framework Output Files:", bold=True)
     terminalreporter.line(f"Log:     {log_file}")
