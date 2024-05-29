@@ -49,5 +49,6 @@
   "task.problemMatchers.neverPrompt": true,
   "python.experiments.optInto": [
     "pythonTestAdapter"
-  ]
+  ],
+  "ruff.nativeServer": true
 }
