@@ -652,12 +652,14 @@ def pytest_runtest_protocol(item: Item):
 
 @hookimpl(tryfirst=True)
 def pytest_terminal_summary(terminalreporter: TerminalReporter, config: Config):
+    if config.option.collectonly:  # pyright:ignore[reportAny]
+        return
     args = config.stash.get(_robot_args_key, None)
     if not args or not args["log"]:
         return
     log_file = Path(args["outputdir"], args["log"]).absolute()
     terminalreporter.line("")
-    terminalreporter.line("Robot Framework Output Files:", bold=True)
+    terminalreporter.line("Robot Framework Log File:", bold=True)
     terminalreporter.line(f"Log:     {log_file}")
     terminalreporter.line(f"Log URI: {log_file.as_uri()}")
 
