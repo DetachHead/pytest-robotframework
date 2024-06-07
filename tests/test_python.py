@@ -901,7 +901,7 @@ def test_console_summary(pr: PytestRobotTester):
     assert re.search(
         rf"""
 
-Robot Framework Output Files:
+Robot Framework Log File:
 Log:     {re.escape(str(path))}
 Log URI: {re.escape(path.as_uri())}
 """,
@@ -909,6 +909,11 @@ Log URI: {re.escape(path.as_uri())}
     )
     result = pr.run_pytest("--robot-log=", subprocess=True)
     assert "Robot Framework Output Files:" not in result.outlines
+
+
+def test_console_summary_collect_only(pr: PytestRobotTester):
+    result = pr.run_pytest("--robot-outputdir=a", "--robot-log=b", "--collect-only")
+    assert "Robot Framework Log File" not in "\n".join(result.outlines)
 
 
 def test_console_output(pr: PytestRobotTester):
