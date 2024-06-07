@@ -41,14 +41,19 @@
   "terminal.integrated.env.windows": {
     "PATH": "${env:PATH};./.pyprojectx/pdm"
   },
-  "terminal.integrated.env.osx": { "PATH": "${env:PATH};./.pyprojectx/pdm" },
+  "terminal.integrated.env.osx": {
+    "PATH": "${env:PATH};./.pyprojectx/pdm"
+  },
   "terminal.integrated.env.linux": {
     "PATH": "${env:PATH};./.pyprojectx/pdm"
   },
-  "python.testing.pytestArgs": ["-n", "auto"],
+  "python.testing.pytestArgs": [
+    "-n",
+    "auto"
+  ],
   "task.problemMatchers.neverPrompt": true,
   "python.experiments.optInto": [
     "pythonTestAdapter"
   ],
-  "ruff.nativeServer": true
+  "ruff.nativeServer": false // https://github.com/astral-sh/ruff/issues/11751
 }
