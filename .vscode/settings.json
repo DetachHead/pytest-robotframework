@@ -55,6 +55,6 @@
   "python.experiments.optInto": [
     "pythonTestAdapter"
   ],
-  "ruff.nativeServer": false, // https://github.com/astral-sh/ruff/issues/11751
+  "ruff.nativeServer": true,
   "editor.suggest.showWords": false
 }
