@@ -22,7 +22,7 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 robotframework = "pytest_robotframework._internal.pytest.plugin"
 
 [tool.pyprojectx]
-pdm = "pdm==2.15.1"
+pdm = "pdm==2.15.4"
 
 [tool.pdm.scripts]
 update = "pdm update"
