@@ -237,7 +237,8 @@ class _KeywordDecorator:
 
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
-            return fn
+            # https://github.com/DetachHead/basedpyright/issues/452
+            return fn  # pyright:ignore[reportUnreachable]
         keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness

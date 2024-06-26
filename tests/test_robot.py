@@ -161,7 +161,9 @@ def test_warning_on_unknown_tag(pr: PytestRobotTester):
 
 
 def test_parameterized_tags(pr: PytestRobotTester):
-    markers: list[Mark] | None = None
+    # cast because it gets narrowed on assignment but widened non-locally
+    # https://github.com/DetachHead/basedpyright/issues/439
+    markers = cast(Optional[List[Mark]], None)
 
     class TagGetter:
         @staticmethod
