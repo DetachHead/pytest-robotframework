@@ -7,7 +7,7 @@ from re import search
 from typing import TYPE_CHECKING, List, cast
 
 from _pytest.assertion.util import running_on_ci
-from pytest import ExitCode, MonkeyPatch
+from pytest import ExitCode, MonkeyPatch, skip
 
 from pytest_robotframework._internal.robot.utils import robot_6
 from tests.conftest import (
@@ -943,3 +943,19 @@ def test_console_output(pr: PytestRobotTester):
             assert f"Output:  {pr.pytester.path / 'output.xml'}" in result.outlines
         else:
             assert "Output:  output.xml" in result.outlines
+
+
+def test_exitfirst(pr: PytestRobotTester):
+    if pr.xdist:
+        skip(
+            "--exitfirst doesn't work with xdist. https://github.com/pytest-dev/pytest-xdist/issues/420"
+        )
+    pr.run_and_assert_result("-x", failed=1, skipped=1)
+
+
+def test_maxfail(pr: PytestRobotTester):
+    if pr.xdist:
+        skip(
+            "--maxfail doesn't work with xdist. https://github.com/pytest-dev/pytest-xdist/issues/868"
+        )
+    pr.run_and_assert_result("--maxfail=2", failed=2, skipped=1)
