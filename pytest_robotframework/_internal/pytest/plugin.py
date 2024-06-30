@@ -23,6 +23,7 @@ from pytest import (
     TempPathFactory,
     TestReport,
     hookimpl,
+    skip,
     version_tuple as pytest_version,
 )
 from robot.api import logger
@@ -577,6 +578,16 @@ def pytest_collect_file(parent: Collector, file_path: Path) -> Collector | None:
 
 @hookimpl(wrapper=True)
 def pytest_runtest_setup(item: Item) -> HookWrapperResult:
+    should_fail = item.session.shouldfail
+    if should_fail:
+        # this is usually handled in `pytest_runtestloop`, but since we replace it we need to
+        # re-implement it here. ideally it would just stop the execution entirely instead of
+        # skipping to match what pytest does by default, but we still want to generate a robot log
+        skip(
+            "shouldfail was set to `True`, skipping the rest of the tests"
+            if isinstance(should_fail, bool)
+            else should_fail
+        )
     if not isinstance(item, RobotItem):
         # `set_variables` and `import_resource` is only supported in python files.
         # when running robot files, suite variables should be set using the `*** Variables ***`
