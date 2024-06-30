@@ -36,7 +36,8 @@ def test_one_test_skipped(pr: PytestRobotTester):
     pr.run_and_assert_result(skipped=1)
     pr.assert_log_file_exists()
     assert output_xml().xpath(
-        "./suite//test[@name='test_one_test_skipped']/kw[@type='SETUP']/msg[@level='SKIP']"
+        "./suite//test[@name='test_one_test_skipped']/kw[@type='SETUP']/msg[@level='SKIP' and "
+        + ".='Skipped: foo']"
     )
 
 

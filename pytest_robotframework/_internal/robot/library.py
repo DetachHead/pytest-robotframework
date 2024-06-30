@@ -40,13 +40,11 @@ def _call_and_report_robot_edition(
     if report.skipped:
         # empty string means xfail with no reason, None means it was not an xfail
         xfail_reason = report.wasxfail if hasattr(report, "wasxfail") else None
-        BuiltIn().skip(
-            # TODO: is there a reliable way to get the reason when skipped by a skip/skipif marker?
-            # https://github.com/DetachHead/pytest-robotframework/issues/51
-            ""
-            if xfail_reason is None
-            else ("xfail" + (f": {xfail_reason}" if xfail_reason else ""))
-        )
+        if xfail_reason is None:
+            skip_reason = report.longrepr[2] if isinstance(report.longrepr, tuple) else ""
+        else:
+            skip_reason = "xfail" + (f": {xfail_reason}" if xfail_reason else "")
+        BuiltIn().skip(skip_reason)
     elif report.failed:
         # make robot show the exception:
         exception = item.stash.get(exception_key, None)
