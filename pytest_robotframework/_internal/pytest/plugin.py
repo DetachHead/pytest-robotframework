@@ -350,7 +350,7 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
             "listener": listeners,
         },
     )
-    # if item_context is not set then it's being run from pytest_runtest_protocol instead of
+    # if xdist_item is not set then it's being run from pytest_runtest_protocol instead of
     # pytest_runtestloop so we don't need to re-implement pytest_runtest_protocol
     if xdist_item:
         robot_options = merge_robot_options(
