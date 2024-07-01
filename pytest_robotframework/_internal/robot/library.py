@@ -3,7 +3,7 @@ library by `robot_classes.PytestRuntestProtocolInjector`"""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, List, Literal
+from typing import TYPE_CHECKING, Final, Literal
 
 from _pytest._code.code import TerminalRepr
 from _pytest.runner import (
@@ -24,7 +24,7 @@ from pytest_robotframework._internal.pytest.exception_getter import exception_ke
 if TYPE_CHECKING:
     from pytest_robotframework._internal.robot.utils import Cloaked
 
-_report_key = StashKey[List[TestReport]]()
+_report_key = StashKey[list[TestReport]]()
 
 ROBOT_AUTO_KEYWORDS: Final = False
 
