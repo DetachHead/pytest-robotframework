@@ -8,28 +8,13 @@ useful helpers for you to use in your pytest tests and `conftest.py` files
 from __future__ import annotations
 
 import inspect
-from contextlib import contextmanager, nullcontext
+from collections import defaultdict
+from contextlib import AbstractContextManager, contextmanager, nullcontext
 from functools import wraps
 from pathlib import Path
 from traceback import format_stack
 from types import TracebackType
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    ContextManager,
-    DefaultDict,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
 
 from basedtyping import Function, P, T
 from pytest import StashKey
@@ -63,12 +48,14 @@ from pytest_robotframework._internal.robot.utils import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator, Mapping
+
     from pytest_robotframework._internal.utils import SuppressableContextManager
 
-RobotVariables: TypeAlias = Dict[str, object]
+RobotVariables: TypeAlias = dict[str, object]
 """variable names and values to be set on the suite level. see the `set_variables` function"""
 
-_suite_variables = DefaultDict[Path, RobotVariables](dict)
+_suite_variables = defaultdict[Path, RobotVariables](dict)
 
 
 def set_variables(variables: RobotVariables) -> None:
@@ -332,7 +319,7 @@ class _FunctionKeywordDecorator(_KeywordDecorator):
         + " context manager"
     )
     @overload
-    def __call__(self, fn: Callable[P, ContextManager[T]]) -> Never: ...
+    def __call__(self, fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
 
     @overload
     def __call__(self, fn: Callable[P, T]) -> Callable[P, T]: ...
@@ -341,7 +328,7 @@ class _FunctionKeywordDecorator(_KeywordDecorator):
         return self.call(fn)
 
 
-_T_ContextManager = TypeVar("_T_ContextManager", bound=ContextManager[object])
+_T_ContextManager = TypeVar("_T_ContextManager", bound=AbstractContextManager[object])
 
 
 class _NonWrappedContextManagerKeywordDecorator(_KeywordDecorator):
@@ -363,21 +350,21 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
     def inner(
         cls,
         fn: Callable[P, T],
-        status_reporter: ContextManager[object],
+        status_reporter: AbstractContextManager[object],
         /,
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> T:
         T_WrappedContextManager = TypeVar("T_WrappedContextManager")
 
-        class WrappedContextManager(ContextManager[object]):
+        class WrappedContextManager(AbstractContextManager[object]):
             """defers exiting the status reporter until after the wrapped context
             manager is finished"""
 
             def __init__(
                 self,
-                wrapped: ContextManager[T_WrappedContextManager],
-                status_reporter: ContextManager[object],
+                wrapped: AbstractContextManager[T_WrappedContextManager],
+                status_reporter: AbstractContextManager[object],
             ) -> None:
                 super().__init__()
                 self.wrapped = wrapped
@@ -414,7 +401,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                 return suppress or False
 
         fn_result = fn(*args, **kwargs)
-        if not isinstance(fn_result, ContextManager):
+        if not isinstance(fn_result, AbstractContextManager):
             raise TypeError(
                 f"keyword decorator expected a context manager but instead got {fn_result!r}"
             )
@@ -424,7 +411,9 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
             status_reporter,
         )
 
-    def __call__(self, fn: Callable[P, ContextManager[T]]) -> Callable[P, ContextManager[T]]:
+    def __call__(
+        self, fn: Callable[P, AbstractContextManager[T]]
+    ) -> Callable[P, AbstractContextManager[T]]:
         return self.call(fn)
 
 
@@ -467,7 +456,7 @@ def keyword(fn: Callable[P, Never]) -> Callable[P, Never]: ...
     "you must explicitly pass `wrap_context_manager` when using `keyword` with a context manager"
 )
 @overload
-def keyword(fn: Callable[P, ContextManager[T]]) -> Never: ...
+def keyword(fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
 
 
 @overload
@@ -520,7 +509,7 @@ def as_keyword(
     tags: tuple[str, ...] | None = None,
     args: Iterable[str] | None = None,
     kwargs: Mapping[str, str] | None = None,
-) -> ContextManager[None]:
+) -> AbstractContextManager[None]:
     """runs the body as a robot keyword.
 
     example:
@@ -583,7 +572,7 @@ def keywordify(
 
 
 _T_ListenerOrSuiteVisitor = TypeVar(
-    "_T_ListenerOrSuiteVisitor", bound=Type[Union["Listener", SuiteVisitor]]
+    "_T_ListenerOrSuiteVisitor", bound=type[Union["Listener", SuiteVisitor]]
 )
 
 
@@ -621,7 +610,7 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
         return inner
 
     for name, method in cast(
-        List[Tuple[str, Function]],
+        list[tuple[str, Function]],
         inspect.getmembers(
             cls,
             predicate=lambda attr: inspect.isfunction(attr)  # pyright:ignore[reportAny]

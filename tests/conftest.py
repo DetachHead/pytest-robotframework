@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator
 from copy import copy as copy_object
 from os import PathLike, symlink
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
-from typing import TYPE_CHECKING, Iterable, Iterator, Literal, cast, overload
+from typing import TYPE_CHECKING, Literal, cast, overload
 
 from lxml.etree import (
     XML,

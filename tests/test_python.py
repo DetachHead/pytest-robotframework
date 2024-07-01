@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 from re import search
-from typing import TYPE_CHECKING, List, cast
+from typing import TYPE_CHECKING, cast
 
 from _pytest.assertion.util import running_on_ci
 from pytest import ExitCode, MonkeyPatch, skip
@@ -632,7 +632,7 @@ def test_assertion_passes_hide_asserts_context_manager(pr: PytestRobotTester):
     assert xml.xpath("//kw[@name='assert']/arg[.='1']")
     assert xml.xpath("//kw[@name='assert']/arg[.='right == left']")
     assert xml.xpath("//kw[@name='assert']/arg[.='2']")
-    assert len(cast(List[XmlElement], xml.xpath("//kw[@name='assert']"))) == 3
+    assert len(cast(list[XmlElement], xml.xpath("//kw[@name='assert']"))) == 3
 
 
 def test_assertion_pass_hook_multiple_tests(pr: PytestRobotTester):

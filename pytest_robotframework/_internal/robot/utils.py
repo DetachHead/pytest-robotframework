@@ -1,15 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from functools import reduce
 from typing import (
     TYPE_CHECKING,
     Callable,
-    Dict,
     Final,
     Generic,
-    List,
     Literal,
-    Mapping,
     Optional,
     TypedDict,
     Union,
@@ -199,7 +197,7 @@ def full_test_name(test: ModelTestCase) -> str:
     return test.name if robot_6 else test.full_name.split(".", 1)[1]
 
 
-robot_errors_key = StashKey[List[str]]()
+robot_errors_key = StashKey[list[str]]()
 
 
 def add_robot_error(item_or_session: Item | Session, message: str):
@@ -232,9 +230,9 @@ def _merge_robot_options(
     result: dict[str, object] = {}
     for key, value in dict1.items():
         if isinstance(value, list):
-            other_value = cast(Optional[List[object]], dict2.get(key, []))
+            other_value = cast(Optional[list[object]], dict2.get(key, []))
             new_value = cast(
-                Optional[List[object]],
+                Optional[list[object]],
                 other_value if other_value is None else [*value, *other_value],
             )
         elif key in dict2:
@@ -285,7 +283,7 @@ def is_robot_traceback(tb: TracebackType) -> bool | str | None:
     import robot  # noqa: PLC0415
 
     module_name = cast(
-        Optional[str], cast(Dict[str, object], tb.tb_frame.f_globals).get("__name__")
+        Optional[str], cast(dict[str, object], tb.tb_frame.f_globals).get("__name__")
     )
     # not importing pytest_robotframework itself because it would cause circular imports
     return module_name == main_package_name or (
