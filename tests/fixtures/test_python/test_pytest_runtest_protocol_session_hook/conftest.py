@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Iterator
+from typing import TYPE_CHECKING
 
 from pytest import Item, Session, StashKey, hookimpl
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 run_key = StashKey[int]()
 

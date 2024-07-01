@@ -3,21 +3,12 @@ robot (some of them are not activated when running pytest in `--collect-only` mo
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from contextlib import suppress
 from functools import wraps
 from inspect import getdoc
 from re import sub
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Final,
-    Generator,
-    Generic,
-    Literal,
-    Optional,
-    Tuple,
-    cast,
-)
+from typing import TYPE_CHECKING, Callable, Final, Generic, Literal, Optional, cast
 
 from _pytest import runner
 from _pytest.python import PyobjMixin
@@ -165,7 +156,7 @@ class PythonParser(Parser):
                         tags=[
                             ":".join([
                                 marker.name,
-                                *(str(arg) for arg in cast(Tuple[object, ...], marker.args)),
+                                *(str(arg) for arg in cast(tuple[object, ...], marker.args)),
                             ])
                             for marker in child.iter_markers()
                         ],

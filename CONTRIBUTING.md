@@ -4,7 +4,7 @@ unlike many projects, i try to make mine as easy as possible for other developer
 
 ## prerequisites
 
-- python (>=3.8)
+- python (>=3.9)
 - vscode (optional)
   - shows inline errors for all linters used in the CI
   - applies formatting fixes on save to prevent formatting errors from occurring in the CI

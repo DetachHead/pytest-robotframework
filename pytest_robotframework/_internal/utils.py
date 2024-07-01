@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from contextlib import AbstractContextManager
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, ContextManager, Protocol, cast
+from typing import TYPE_CHECKING, Callable, Protocol, cast
 
 from basedtyping import P, T, out_T
 from typing_extensions import override
@@ -49,7 +50,7 @@ def patch_method(
     return decorator
 
 
-class SuppressableContextManager(ContextManager[out_T], Protocol[out_T]):
+class SuppressableContextManager(AbstractContextManager[out_T], Protocol[out_T]):
     """removes `None` from the return type of `AbstractContextManager.__exit__` to prevent code
     from being incorrectly marked as unreachable by pyright. see https://github.com/microsoft/pyright/issues/6034
     """

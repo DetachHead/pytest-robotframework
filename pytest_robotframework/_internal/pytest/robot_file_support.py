@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Callable, Iterator, List, cast
+from typing import TYPE_CHECKING, Callable, cast
 
 from _pytest._code.code import ReprFileLocation, TerminalRepr
 from pytest import Config, ExceptionInfo, File, Item, MarkDecorator, Session, StashKey, mark, skip
@@ -26,14 +26,14 @@ from pytest_robotframework._internal.robot.utils import (
 from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Iterator
     from os import PathLike
 
     from _pytest._code.code import _TracebackStyle  # pyright: ignore[reportPrivateUsage]
     from _pytest._io import TerminalWriter
 
 
-collected_robot_tests_key = StashKey[List[ModelTestCase]]()
+collected_robot_tests_key = StashKey[list[ModelTestCase]]()
 original_setup_key = StashKey[model.Keyword]()
 original_body_key = StashKey[Body]()
 original_teardown_key = StashKey[model.Keyword]()
