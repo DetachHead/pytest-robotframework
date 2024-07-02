@@ -961,7 +961,9 @@ def test_maxfail(pr: PytestRobotTester):
     pr.run_and_assert_result("--maxfail=2", failed=2, skipped=1)
 
 
-def test_assert_verbosity_overrides(pr: PytestRobotTester):
+def test_assert_verbosity_overrides(pr: PytestRobotTester, monkeypatch: MonkeyPatch):
+    # https://github.com/pytest-dev/pytest/issues/12009#issuecomment-2201710676
+    monkeypatch.delenv("CI", raising=False)
     pr.run_and_assert_result("-o", "enable_assertion_pass_hook=true", failed=3)
     xml = output_xml()
     assert xml.xpath("//test[@name='test_default']//msg[contains(., 'Use -v to get more diff')]")
