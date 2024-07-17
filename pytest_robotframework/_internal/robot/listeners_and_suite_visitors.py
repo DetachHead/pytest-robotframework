@@ -7,17 +7,7 @@ from contextlib import suppress
 from functools import wraps
 from inspect import getdoc
 from re import sub
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Final,
-    Generator,
-    Generic,
-    Literal,
-    Optional,
-    Tuple,
-    cast,
-)
+from typing import TYPE_CHECKING, Callable, Final, Generator, Literal, Optional, Tuple, cast
 
 from _pytest import runner
 from _pytest.python import PyobjMixin
@@ -618,7 +608,7 @@ else:
     from robot.running.librarykeyword import StaticKeyword
 
     @catch_errors
-    class KeywordUnwrapper(ListenerV3, Generic[P, T]):
+    class KeywordUnwrapper(ListenerV3):
         """prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
         two status reporters when called from `.robot` tests, and prevents exceptions from being
         printed a second time since they would already have been printed in a child keyword"""
@@ -632,7 +622,7 @@ else:
         ):
             if not isinstance(implementation, StaticKeyword):
                 return
-            unwrapped_method: Callable[P, T] | None = getattr(
+            unwrapped_method: Function | None = getattr(
                 implementation.method, _keyword_original_function_attr, None
             )
             if unwrapped_method is None:
