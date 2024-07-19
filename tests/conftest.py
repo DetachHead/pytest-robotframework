@@ -193,6 +193,7 @@ if TYPE_CHECKING:
             call `count_children` instead"""
 
         def count_children(self) -> int: ...
+
 else:
     XmlElement = _XmlElement
 

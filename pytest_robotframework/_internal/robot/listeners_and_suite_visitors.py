@@ -604,6 +604,7 @@ if robot_6:
             cast(Function, getattr(handler, _keyword_original_function_attr, handler))
         )
         return old_method(self, context, handler, positional, named)
+
 else:
     from robot.running.librarykeyword import StaticKeyword
 
