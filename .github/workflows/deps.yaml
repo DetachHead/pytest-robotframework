@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Update dependencies
-        uses: pdm-project/update-deps-action@v1.8
+        uses: pdm-project/update-deps-action@v1.9
         with:
           commit-message: "Update pdm.lock"
           pr-title: "Update dependencies"
