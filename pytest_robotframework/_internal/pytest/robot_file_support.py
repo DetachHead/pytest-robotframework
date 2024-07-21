@@ -29,7 +29,9 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from os import PathLike
 
-    from _pytest._code.code import _TracebackStyle  # pyright: ignore[reportPrivateUsage]
+    # this type only exists in pytest 8.3+ so it should not be imported at runtime to maintain
+    # compatibility with older versions
+    from _pytest._code.code import TracebackStyle
     from _pytest._io import TerminalWriter
 
 
@@ -163,7 +165,7 @@ class RobotItem(Item):
 
     @override
     def repr_failure(
-        self, excinfo: ExceptionInfo[BaseException], style: _TracebackStyle | None = None
+        self, excinfo: ExceptionInfo[BaseException], style: TracebackStyle | None = None
     ) -> str | TerminalRepr:
         if isinstance(excinfo.value, ExecutionFailures):
             error = cast(BaseException, excinfo.value._errors[-1].error)  # pyright: ignore[reportPrivateUsage, reportUnknownMemberType]
