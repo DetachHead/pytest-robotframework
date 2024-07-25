@@ -153,10 +153,7 @@ def execution_context() -> _ExecutionContext | None:
     # need to import it every time because it changes
     from robot.running import EXECUTION_CONTEXTS  # noqa: PLC0415
 
-    return cast(
-        Union[_ExecutionContext, None],
-        EXECUTION_CONTEXTS.current,  # pyright:ignore[reportUnknownMemberType]
-    )
+    return cast(Union[_ExecutionContext, None], EXECUTION_CONTEXTS.current)
 
 
 running_test_case_key = StashKey[running.TestCase]()

@@ -45,7 +45,7 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
     `tests/fixtures/[test file]/[test name].py` to the pytester temp dir for the current test, so
     you don't have to write your test files as strings with the `makefile`/`makepyfile` methods
     """
-    test = cast(Function, request.node)  # pyright:ignore[reportUnknownMemberType]
+    test = cast(Function, request.node)
     test_name = test.originalname
     fixtures_folder = Path(__file__).parent / "fixtures"
     test_file_fixture_dir = (

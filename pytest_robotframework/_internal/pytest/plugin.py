@@ -191,7 +191,7 @@ def _xdist_temp_dir(session: Session) -> Path:
     return Path(
         cast(
             TempPathFactory,
-            session.config._tmp_path_factory,  # pyright:ignore[reportUnknownMemberType,reportAttributeAccessIssue]
+            session.config._tmp_path_factory,  # pyright:ignore[reportAttributeAccessIssue]
         ).getbasetemp()
     )
 
@@ -227,7 +227,7 @@ _robot_args_key = StashKey[RobotOptions]()
 
 
 def _get_robot_args(session: Session) -> RobotOptions:
-    result: RobotOptions | None = session.config.stash.get(_robot_args_key, None)
+    result = session.config.stash.get(_robot_args_key, None)
     if result is not None:
         return result
     options: dict[str, object] = {}

@@ -20,8 +20,7 @@ def is_xdist_master(session: Session):
         cast(
             # 0 or None both mean xdist is disabled
             Optional[int],
-            # https://github.com/DetachHead/basedpyright/issues/84
-            session.config.option.numprocesses,  # pyright:ignore[reportAny]
+            session.config.option.numprocesses,
         )
     )
 
