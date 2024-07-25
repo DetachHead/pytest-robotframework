@@ -52,15 +52,15 @@ files = [
 
 [[package]]
 name = "basedpyright"
-version = "1.14.0"
+version = "1.15.0"
 requires_python = ">=3.8"
 summary = "static type checking for Python (but based)"
 dependencies = [
     "nodejs-wheel-binaries>=20.13.1",
 ]
 files = [
-    {file = "basedpyright-1.14.0-py3-none-any.whl", hash = "sha256:ca29ae9c9dd04d718866b9d3cc737a31f084ce954a9afc9f00eafac9419e0046"},
-    {file = "basedpyright-1.14.0.tar.gz", hash = "sha256:ebbbb44484e269c441d48129bf43619aa8ff54966706e13732cd4412408d1477"},
+    {file = "basedpyright-1.15.0-py3-none-any.whl", hash = "sha256:6eac46689ced3094d775f13ce839315ec04e167eb3a7d3fd5f1b61202556f067"},
+    {file = "basedpyright-1.15.0.tar.gz", hash = "sha256:3f268d7909a17df5a01f380693c91ef389f8471b720641b9a829f1aa45798aca"},
 ]
 
 [[package]]
@@ -389,17 +389,17 @@ files = [
 
 [[package]]
 name = "nodejs-wheel-binaries"
-version = "20.15.1"
+version = "20.16.0"
 requires_python = ">=3.7"
 summary = "unoffical Node.js package"
 files = [
-    {file = "nodejs_wheel_binaries-20.15.1-py2.py3-none-macosx_10_15_x86_64.whl", hash = "sha256:a04537555f59e53021f8a2b07fa7aaac29d7793b7fae7fbf561bf9a859f4c67a"},
-    {file = "nodejs_wheel_binaries-20.15.1-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:b5ff04efa56a3fcd1fd09b30f5236c12bd84c10fcb222f3c0e04e1d497342b70"},
-    {file = "nodejs_wheel_binaries-20.15.1-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:29c3e172e3fde3c13e7509312c81700736304dbd250745d87f00e7506065f3a5"},
-    {file = "nodejs_wheel_binaries-20.15.1-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9740f7456a43cb09521a1ac93a4355dc8282c41420f2d61ff631a01f39e2aa18"},
-    {file = "nodejs_wheel_binaries-20.15.1-py2.py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:bf5e239676efabb2fbaeff2f36d0bad8e2379f260ef44e13ef2151d037e40af3"},
-    {file = "nodejs_wheel_binaries-20.15.1-py2.py3-none-win_amd64.whl", hash = "sha256:624936171b1aa2e1cc6d1718b1caa089e943b54df16568fa2f4576d145ac279a"},
-    {file = "nodejs_wheel_binaries-20.15.1.tar.gz", hash = "sha256:b2f25b4f0e9a827ae1af8218ab13a385e279c236faf7b7c821e969bb8f6b25e8"},
+    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-macosx_10_15_x86_64.whl", hash = "sha256:5f36c3e2ad9d76505e685811ff838c69163a820bf424e96ed7cff40d845ee394"},
+    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:8e23925f2fbe60a8439742de2a58e08b16a8e14235d066663b9f8d9c1d99026a"},
+    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3810a1faca9ad48e1be479f921f38b47b6f6554a4f1f7f17190d0b0ba02d9789"},
+    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e5efb3d07c30d61f91221710ce838aaf965d46d9f9eee751121abf020bc5da7c"},
+    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:338f36039d76381ce66aa24e1b7092192897b97230b631bc11aeebad217383ec"},
+    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-win_amd64.whl", hash = "sha256:70f7da760bded1b86581ee5d4cd0e57d77c67f8ee0d969cd906db2a6a02ecffb"},
+    {file = "nodejs_wheel_binaries-20.16.0.tar.gz", hash = "sha256:85649da01bb3d0d3c9237d28545180254cda5417b4e2c219f53face0103fb2bf"},
 ]
 
 [[package]]
@@ -424,7 +424,7 @@ files = [
 
 [[package]]
 name = "pdoc"
-version = "14.5.1"
+version = "14.6.0"
 requires_python = ">=3.8"
 summary = "API Documentation for Python Projects"
 dependencies = [
@@ -434,8 +434,8 @@ dependencies = [
     "pygments>=2.12.0",
 ]
 files = [
-    {file = "pdoc-14.5.1-py3-none-any.whl", hash = "sha256:fda6365a06e438b43ca72235b58a2e2ecd66445fcc444313f6ebbde4b0abd94b"},
-    {file = "pdoc-14.5.1.tar.gz", hash = "sha256:4ddd9c5123a79f511cedffd7231bf91a6e0bd0968610f768342ec5d00b5eefee"},
+    {file = "pdoc-14.6.0-py3-none-any.whl", hash = "sha256:36c42c546a317d8e3e8c0b39645f24161374de0c7066ccaae76628d721e49ba5"},
+    {file = "pdoc-14.6.0.tar.gz", hash = "sha256:6e98a24c5e0ca5d188397969cf82581836eaef13f172fc3820047bfe15c61c9a"},
 ]
 
 [[package]]
@@ -470,11 +470,11 @@ files = [
 
 [[package]]
 name = "pylint"
-version = "3.2.5"
+version = "3.2.6"
 requires_python = ">=3.8.0"
 summary = "python code static checker"
 dependencies = [
-    "astroid<=3.3.0-dev0,>=3.2.2",
+    "astroid<=3.3.0-dev0,>=3.2.4",
     "colorama>=0.4.5; sys_platform == \"win32\"",
     "dill>=0.2; python_version < \"3.11\"",
     "dill>=0.3.6; python_version >= \"3.11\"",
@@ -487,8 +487,8 @@ dependencies = [
     "typing-extensions>=3.10.0; python_version < \"3.10\"",
 ]
 files = [
-    {file = "pylint-3.2.5-py3-none-any.whl", hash = "sha256:32cd6c042b5004b8e857d727708720c54a676d1e22917cf1a2df9b4d4868abd6"},
-    {file = "pylint-3.2.5.tar.gz", hash = "sha256:e9b7171e242dcc6ebd0aaa7540481d1a72860748a0a7816b8fe6cf6c80a6fe7e"},
+    {file = "pylint-3.2.6-py3-none-any.whl", hash = "sha256:03c8e3baa1d9fb995b12c1dbe00aa6c4bcef210c2a2634374aedeb22fb4a8f8f"},
+    {file = "pylint-3.2.6.tar.gz", hash = "sha256:a5d01678349454806cff6d886fb072294f56a58c4761278c97fb557d708e1eb3"},
 ]
 
 [[package]]
