@@ -414,8 +414,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
             try:
                 next(self.hookwrappers[hook])
             except StopIteration as e:
-                # https://github.com/DetachHead/basedpyright/issues/84
-                return cast(object, e.value)  # pyright:ignore[reportAny]
+                return cast(object, e.value)
             raise InternalError(
                 f"pytest_runtest_protocol hookwrapper {hook} didn't raise StopIteration"
             )
