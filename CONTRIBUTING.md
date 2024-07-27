@@ -18,7 +18,7 @@ unlike many projects, i try to make mine as easy as possible for other developer
 
 ## tests
 
-since this is a pytest plugin, we have are two types of tests:
+since this is a pytest plugin, we have two types of tests:
 
 - the plugin tests (located in [`./tests/test_python.py`](./tests/test_python.py) and [`./tests/test_robot.py`](./tests/test_robot.py)) - these use pytester to run pytest against the fixture tests
 - the "fixture" tests ([`./tests/fixtures`](./tests/fixtures)) - the tests that the plugin tests run and validate the results of
