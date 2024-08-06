@@ -245,6 +245,8 @@ ignore = [
     "W293",    # modifies strings (https://github.com/astral-sh/ruff/issues/10038)
     "PLE1507", # invalid-envvar-value (covered by pyright)
     "D200",    # fits-on-one-line (https://github.com/astral-sh/ruff/issues/6269)
+    "DOC201",  # docstring-missing-returns
+    "DOC501",  # docstring-missing-exception (https://github.com/astral-sh/ruff/issues/12520)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
