@@ -264,10 +264,9 @@ class _KeywordDecorator:
             context_manager: SuppressableContextManager[
                 object
                 # nullcontext is typed as returning None which pyright incorrectly marks as
-                # unreachable. see ContextManager documentation
+                # unreachable. see SuppressableContextManager documentation
             ] = (  # pyright:ignore[reportAssignmentType]
                 (
-                    # needed to work around pyright bug, see ContextManager documentation
                     _FullStackStatusReporter(
                         data=data,
                         result=(
