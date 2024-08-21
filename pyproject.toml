@@ -177,11 +177,8 @@ enable_assertion_pass_hook = true
 [tool.basedpyright]
 ignore = ["pw"]
 pythonVersion = "3.8"
-pythonPlatform = "All"
-typeCheckingMode = "all"
 reportMissingTypeStubs = false           # https://github.com/robotframework/robotframework/issues/4822
 reportImplicitStringConcatenation = true # ideally this should be off and handled by the ruff formatter https://github.com/astral-sh/ruff/issues/9965
-enableTypeIgnoreComments = false         # https://github.com/DetachHead/basedpyright/issues/55
 reportUnusedImport = false               # covered by ruff (has quickfix)
 reportUnusedVariable = false             # covered by ruff (has quickfix)
 
