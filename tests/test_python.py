@@ -317,10 +317,16 @@ def test_keyword_decorator_docstring_on_next_line(pr: PytestRobotTester):
 
 
 def test_keyword_decorator_args(pr: PytestRobotTester):
-    pr.run_and_assert_result(passed=1)
+    pr.run_and_assert_result(passed=2)
     pr.assert_log_file_exists()
-    assert output_xml().xpath(
-        ".//kw[@name='Run Test']/kw[@name='Foo' and ./arg[.='1'] and ./arg[.='bar=True']]"
+    xml = output_xml()
+    assert xml.xpath(
+        ".//test[@name='test_no_truncation']//kw[@name='Run Test']/kw[@name='Foo' and ./arg[.='1']"
+        + " and ./arg[.='bar=True']]"
+    )
+    assert xml.xpath(
+        ".//test[@name='test_truncation']//kw[@name='Run Test']/kw[@name='Foo' and"
+        + " ./arg[.='aaaaaaaaaaaaaaaaaaaa...'] and ./arg[.='bar=bbbbbbbbbbbbbbbbbbbb...']]"
     )
 
 
