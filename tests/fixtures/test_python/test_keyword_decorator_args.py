@@ -13,4 +13,4 @@ def test_no_truncation():
 
 
 def test_truncation():
-    foo("a" * 21, bar="b" * 21)
+    foo("a" * 51, bar="b" * 51)

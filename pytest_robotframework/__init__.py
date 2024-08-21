@@ -253,7 +253,7 @@ class _KeywordDecorator:
                 code, but since we can't easily access that in python, we use the actual value
                 instead, but that can sometimes be huge so we truncate it. you can see the full
                 value when running with the DEBUG loglevel anyway"""
-                max_length = 20
+                max_length = 50
                 value = str(arg)
                 return value[:max_length] + "..." if len(value) > max_length else value
 

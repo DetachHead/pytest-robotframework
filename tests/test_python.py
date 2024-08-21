@@ -326,7 +326,7 @@ def test_keyword_decorator_args(pr: PytestRobotTester):
     )
     assert xml.xpath(
         ".//test[@name='test_truncation']//kw[@name='Run Test']/kw[@name='Foo' and"
-        + " ./arg[.='aaaaaaaaaaaaaaaaaaaa...'] and ./arg[.='bar=bbbbbbbbbbbbbbbbbbbb...']]"
+        + f" ./arg[.='{'a' * 50}...'] and ./arg[.='bar={'b' * 50}...']]"
     )
 
 
