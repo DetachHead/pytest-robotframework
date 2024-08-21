@@ -8,5 +8,9 @@ def foo(*args: object, **kwargs: object):  # noqa: ARG001
     ...
 
 
-def test_keyword_decorator_with_args():
+def test_no_truncation():
     foo(1, bar=True)
+
+
+def test_truncation():
+    foo("a" * 21, bar="b" * 21)

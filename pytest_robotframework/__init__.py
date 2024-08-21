@@ -248,11 +248,20 @@ class _KeywordDecorator:
 
         @wraps(fn)
         def inner(*args: P.args, **kwargs: P.kwargs) -> T:
+            def truncate(arg: object) -> str:
+                """robotframework usually just uses the argument as it was written in the source
+                code, but since we can't easily access that in python, we use the actual value
+                instead, but that can sometimes be huge so we truncate it. you can see the full
+                value when running with the DEBUG loglevel anyway"""
+                max_length = 20
+                value = str(arg)
+                return value[:max_length] + "..." if len(value) > max_length else value
+
             if self._module is None:
                 self._module = fn.__module__
             log_args = (
-                *(str(arg) for arg in args),
-                *(f"{key}={value!s}" for key, value in kwargs.items()),
+                *(truncate(arg) for arg in args),
+                *(f"{key}={truncate(value)}" for key, value in kwargs.items()),
             )
             context = execution_context()
             data = running.Keyword(name=keyword_name, args=log_args)
