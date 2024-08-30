@@ -4,7 +4,7 @@ from pytest_robotframework import keyword
 
 
 @keyword
-def foo(*args: object, **kwargs: object):  # noqa: ARG001
+def foo(*args: object, **kwargs: object):  # pyright:ignore[reportUnusedParameter]
     ...
 
 

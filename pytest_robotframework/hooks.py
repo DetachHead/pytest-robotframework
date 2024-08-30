@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 # supported by linters/type checkers:
 
 # https://github.com/pytest-dev/pytest/issues/11300
-# pyright:reportReturnType=false
+# https://github.com/DetachHead/basedpyright/issues/311
+# pyright:reportReturnType=false, reportUnusedParameter=false
 # https://github.com/astral-sh/ruff/issues/7286
-# https://github.com/astral-sh/ruff/issues/9803
-# ruff: noqa: ARG001, FBT001, PLR0917
+# ruff: noqa: FBT001, PLR0917
 
 
 @hookspec

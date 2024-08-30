@@ -244,6 +244,7 @@ ignore = [
     "D200",    # fits-on-one-line (https://github.com/astral-sh/ruff/issues/6269)
     "DOC201",  # docstring-missing-returns
     "DOC501",  # docstring-missing-exception (https://github.com/astral-sh/ruff/issues/12520)
+    "ARG001",  # unused-function-argument (covered by basedpyright)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
