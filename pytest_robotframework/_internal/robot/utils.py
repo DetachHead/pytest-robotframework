@@ -40,6 +40,17 @@ ModelTestSuite = model.TestSuite[model.Keyword, ModelTestCase]
 Listener = Union[ListenerV2, ListenerV3]
 
 
+def get_arg_with_type(
+    cls: type[T], args: tuple[object, ...], kwargs: Mapping[str, object]
+) -> T | None:
+    """since we rice `StatusReporter._get_failure` but it has a different signature on different
+    robot versions, we need to figure out what argument it is"""
+    try:
+        return next(arg for arg in (*args, *kwargs) if isinstance(arg, cls))
+    except StopIteration:
+        return None
+
+
 class RobotOptions(TypedDict):
     """robot command-line arguments after being parsed by robot into a `dict`.
 

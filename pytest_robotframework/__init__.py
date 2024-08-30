@@ -39,6 +39,7 @@ from robot.errors import DataError, ExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model.visitor import SuiteVisitor
 from robot.running import model
+from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import ExecutionStatus, HandlerExecutionFailed, StatusReporter
 from robot.utils import (
@@ -56,13 +57,12 @@ from pytest_robotframework._internal.robot.utils import (
     add_robot_error,
     escape_robot_str,
     execution_context,
+    get_arg_with_type,
     is_robot_traceback,
     robot_6,
 )
 
 if TYPE_CHECKING:
-    from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
-
     from pytest_robotframework._internal.utils import SuppressableContextManager
 
 RobotVariables: TypeAlias = Dict[str, object]
@@ -105,13 +105,13 @@ class _FullStackStatusReporter(StatusReporter):
     duplicated for each keyword in the stack"""
 
     @override
-    def _get_failure(
-        self,
-        exc_type: type[BaseException],
-        exc_value: BaseException | None,
-        exc_tb: TracebackType,
-        context: _ExecutionContext,
-    ):
+    def _get_failure(self, *args: Never, **kwargs: Never):
+        exc_value = get_arg_with_type(BaseException, args, kwargs)
+        context = get_arg_with_type(_ExecutionContext, args, kwargs)
+        if not context:
+            raise Exception(
+                f"failed to find execution context in {_FullStackStatusReporter.__name__}"
+            )
         if exc_value is None:
             return None
         if isinstance(exc_value, ExecutionStatus):
@@ -124,7 +124,7 @@ class _FullStackStatusReporter(StatusReporter):
         tb = None
         full_system_traceback = inspect.stack()
         in_framework = True
-        base_tb = exc_tb
+        base_tb = exc_value.__traceback__
         while base_tb and is_robot_traceback(base_tb):
             base_tb = base_tb.tb_next
         for frame in full_system_traceback:

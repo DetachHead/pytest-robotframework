@@ -14,12 +14,13 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
 from robot.running.model import Body
 from robot.running.statusreporter import StatusReporter
-from typing_extensions import Never, override
+from typing_extensions import Concatenate, override
 
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot.utils import (
     ModelTestCase,
     execution_context,
+    get_arg_with_type,
     robot_6,
     running_test_case_key,
 )
@@ -33,6 +34,7 @@ if TYPE_CHECKING:
     # compatibility with older versions
     from _pytest._code.code import TracebackStyle
     from _pytest._io import TerminalWriter
+    from basedtyping import P
 
 
 collected_robot_tests_key = StashKey[List[ModelTestCase]]()
@@ -42,18 +44,18 @@ original_teardown_key = StashKey[model.Keyword]()
 
 
 @patch_method(StatusReporter)
-def _get_failure(  # pyright: ignore[reportUnusedFunction]  # noqa: PLR0917
-    og: Callable[[StatusReporter, type[BaseException], BaseException, Never, Never], object],
+def _get_failure(  # pyright: ignore[reportUnusedFunction]
+    og: Callable[Concatenate[StatusReporter, P], object],
     self: StatusReporter,
-    exc_type: type[BaseException],
-    exc_value: BaseException,
-    exc_tb: Never,
-    context: Never,
+    *args: P.args,
+    **kwargs: P.kwargs,
 ):
     # robot discards the original error, so save it explicitly
-    result = og(self, exc_type, exc_value, exc_tb, context)
+    result = og(self, *args, **kwargs)
     if result:
-        result.error = exc_value  # pyright: ignore[reportAttributeAccessIssue]
+        # this function's signature is different depewnding on the robot version, so we just accept
+        # any arguments and iterate over them to find the one we need
+        result.error = get_arg_with_type(BaseException, args, kwargs)  # pyright: ignore[reportAttributeAccessIssue]
     return result
 
 
