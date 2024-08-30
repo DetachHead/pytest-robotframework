@@ -52,15 +52,15 @@ files = [
 
 [[package]]
 name = "basedpyright"
-version = "1.16.0"
+version = "1.17.1"
 requires_python = ">=3.8"
 summary = "static type checking for Python (but based)"
 dependencies = [
     "nodejs-wheel-binaries>=20.13.1",
 ]
 files = [
-    {file = "basedpyright-1.16.0-py3-none-any.whl", hash = "sha256:5eda1be337ca926f6d869f02cfd4cfd124d946d58d58d73c5c9e7c5b2d2d5b1e"},
-    {file = "basedpyright-1.16.0.tar.gz", hash = "sha256:023a19d8f1b2a466e05a9dbbd6c6ecb5abfc1518e6daa9317ec978a38a6c8ff5"},
+    {file = "basedpyright-1.17.1-py3-none-any.whl", hash = "sha256:bbf74a0ac530588d902edcecc3c4a1ace071290a5176d388a329576d1550cc17"},
+    {file = "basedpyright-1.17.1.tar.gz", hash = "sha256:ee5f245b0a2fd579fbf069c7a6476b21554a324f3ffda97a717d74ca4a41734c"},
 ]
 
 [[package]]
@@ -388,17 +388,17 @@ files = [
 
 [[package]]
 name = "nodejs-wheel-binaries"
-version = "20.16.0"
+version = "20.17.0"
 requires_python = ">=3.7"
 summary = "unoffical Node.js package"
 files = [
-    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-macosx_10_15_x86_64.whl", hash = "sha256:5f36c3e2ad9d76505e685811ff838c69163a820bf424e96ed7cff40d845ee394"},
-    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:8e23925f2fbe60a8439742de2a58e08b16a8e14235d066663b9f8d9c1d99026a"},
-    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3810a1faca9ad48e1be479f921f38b47b6f6554a4f1f7f17190d0b0ba02d9789"},
-    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e5efb3d07c30d61f91221710ce838aaf965d46d9f9eee751121abf020bc5da7c"},
-    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:338f36039d76381ce66aa24e1b7092192897b97230b631bc11aeebad217383ec"},
-    {file = "nodejs_wheel_binaries-20.16.0-py2.py3-none-win_amd64.whl", hash = "sha256:70f7da760bded1b86581ee5d4cd0e57d77c67f8ee0d969cd906db2a6a02ecffb"},
-    {file = "nodejs_wheel_binaries-20.16.0.tar.gz", hash = "sha256:85649da01bb3d0d3c9237d28545180254cda5417b4e2c219f53face0103fb2bf"},
+    {file = "nodejs_wheel_binaries-20.17.0-py2.py3-none-macosx_10_15_x86_64.whl", hash = "sha256:a5eaffb0327d751360e5f01e92f0adeb3b297a9196751bf1dda910b92c9f6f83"},
+    {file = "nodejs_wheel_binaries-20.17.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:a661d2894b11dc886ae8c25727c3cdf1d54db982cdccfcddbb2dfe20dd249f3b"},
+    {file = "nodejs_wheel_binaries-20.17.0-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e0144c91e9816cda969d78ba0903acc405c99e0a4bfffbdabac6b48b237335e7"},
+    {file = "nodejs_wheel_binaries-20.17.0-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b87ee7e88bfece2d325949e4f0dedb942b7478c401fc4e6726c5270f5835a02d"},
+    {file = "nodejs_wheel_binaries-20.17.0-py2.py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:5b5fb7c51204ad30e9f83ab503f11b17de4bcc1c248314f83ca3302fda24b1a1"},
+    {file = "nodejs_wheel_binaries-20.17.0-py2.py3-none-win_amd64.whl", hash = "sha256:931558d528b976eb67ae1f68253df089e9d7d7267b6980fc580bfd31d67a0f5c"},
+    {file = "nodejs_wheel_binaries-20.17.0.tar.gz", hash = "sha256:827a3297a99764adfaeb0cd1e9e36d8fb79c5b074de916a2a31b8a61b8d208f7"},
 ]
 
 [[package]]
@@ -423,7 +423,7 @@ files = [
 
 [[package]]
 name = "pdoc"
-version = "14.6.0"
+version = "14.6.1"
 requires_python = ">=3.8"
 summary = "API Documentation for Python Projects"
 dependencies = [
@@ -433,8 +433,8 @@ dependencies = [
     "pygments>=2.12.0",
 ]
 files = [
-    {file = "pdoc-14.6.0-py3-none-any.whl", hash = "sha256:36c42c546a317d8e3e8c0b39645f24161374de0c7066ccaae76628d721e49ba5"},
-    {file = "pdoc-14.6.0.tar.gz", hash = "sha256:6e98a24c5e0ca5d188397969cf82581836eaef13f172fc3820047bfe15c61c9a"},
+    {file = "pdoc-14.6.1-py3-none-any.whl", hash = "sha256:efbed433655264392c60551615a3d42b8f21e492373419756d20234c667b54bc"},
+    {file = "pdoc-14.6.1.tar.gz", hash = "sha256:ee598f30d5c55dd4702086dabc412a26022acc35aa88aa382cda8ac655fead98"},
 ]
 
 [[package]]
@@ -559,7 +559,7 @@ files = [
 
 [[package]]
 name = "rich"
-version = "13.7.1"
+version = "13.8.0"
 requires_python = ">=3.7.0"
 summary = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 dependencies = [
@@ -568,13 +568,13 @@ dependencies = [
     "typing-extensions<5.0,>=4.0.0; python_version < \"3.9\"",
 ]
 files = [
-    {file = "rich-13.7.1-py3-none-any.whl", hash = "sha256:4edbae314f59eb482f54e9e30bf00d33350aaa94f4bfcd4e9e3110e64d0d7222"},
-    {file = "rich-13.7.1.tar.gz", hash = "sha256:9be308cb1fe2f1f57d67ce99e95af38a1e2bc71ad9813b0e247cf7ffbcc3a432"},
+    {file = "rich-13.8.0-py3-none-any.whl", hash = "sha256:2e85306a063b9492dffc86278197a60cbece75bcb766022f3436f567cae11bdc"},
+    {file = "rich-13.8.0.tar.gz", hash = "sha256:a5ac1f1cd448ade0d59cc3356f7db7a7ccda2c8cbae9c7a90c28ff463d3e91f4"},
 ]
 
 [[package]]
 name = "rich-click"
-version = "1.8.2"
+version = "1.8.3"
 requires_python = ">=3.7"
 summary = "Format click help output nicely with rich"
 dependencies = [
@@ -584,8 +584,8 @@ dependencies = [
     "typing-extensions",
 ]
 files = [
-    {file = "rich_click-1.8.2-py3-none-any.whl", hash = "sha256:b57856f304e4fe0394b82d7ce0784450758f8c8b4e201ccc4320501cc201806b"},
-    {file = "rich_click-1.8.2.tar.gz", hash = "sha256:8e29bdede858b59aa2859a1ab1c4ccbd39ed7ed5870262dae756fba6b5dc72e8"},
+    {file = "rich_click-1.8.3-py3-none-any.whl", hash = "sha256:636d9c040d31c5eee242201b5bf4f2d358bfae4db14bb22ec1cafa717cfd02cd"},
+    {file = "rich_click-1.8.3.tar.gz", hash = "sha256:6d75bdfa7aa9ed2c467789a0688bc6da23fbe3a143e19aa6ad3f8bac113d2ab3"},
 ]
 
 [[package]]
@@ -600,7 +600,7 @@ files = [
 
 [[package]]
 name = "robotframework-robocop"
-version = "5.3.0"
+version = "5.4.0"
 requires_python = ">=3.8"
 summary = "Static code analysis tool (linter) for Robot Framework"
 dependencies = [
@@ -613,13 +613,13 @@ dependencies = [
     "tomli>=2.0.0",
 ]
 files = [
-    {file = "robotframework_robocop-5.3.0-py3-none-any.whl", hash = "sha256:dafe04be86c7506968eaa8a7842c3353e02730555ea4891297b24d1aa4202a7a"},
-    {file = "robotframework_robocop-5.3.0.tar.gz", hash = "sha256:03e5e21977390324367d13f1e95f735a1336edbeef2497e10dfd62db3ff34364"},
+    {file = "robotframework_robocop-5.4.0-py3-none-any.whl", hash = "sha256:e584cb6a33af45234306bae2d8ee2cf2381b0f5d9a74cb372f782af4c00e22c3"},
+    {file = "robotframework_robocop-5.4.0.tar.gz", hash = "sha256:11180ec18ee09f1f93ac84774b43b22f6fd6a84a27d1f34c76ffe91a76f4fa48"},
 ]
 
 [[package]]
 name = "robotframework-tidy"
-version = "4.13.0"
+version = "4.14.0"
 requires_python = ">=3.8"
 summary = "Code autoformatter for Robot Framework"
 dependencies = [
@@ -627,39 +627,39 @@ dependencies = [
     "colorama<0.4.7,>=0.4.3",
     "jinja2<4.0,>=3.1.3",
     "pathspec<0.12.2,>=0.9.0",
-    "rich-click<1.8.3,>=1.4",
+    "rich-click<1.8.4,>=1.4",
     "robotframework<8.0,>=4.0",
     "tomli==2.0.*",
 ]
 files = [
-    {file = "robotframework_tidy-4.13.0-py3-none-any.whl", hash = "sha256:335eb93a9531800965b2d23036559c006ac06ff8d5e17c1877c784d01a186dc4"},
-    {file = "robotframework_tidy-4.13.0.tar.gz", hash = "sha256:c2f2cd9cce0f7fa9ddfed6e52921dae4318447f6ca3cfb38a7b1e904f9d8a9fc"},
+    {file = "robotframework_tidy-4.14.0-py3-none-any.whl", hash = "sha256:17fc46c9c77f7abdddf6f172901d94e1ac87b5f66990cc6849920a052331d90b"},
+    {file = "robotframework_tidy-4.14.0.tar.gz", hash = "sha256:70d40544b66579f36c4dfcee40942d28985f1003f2441ff502c997a3d7e2a2b7"},
 ]
 
 [[package]]
 name = "ruff"
-version = "0.6.1"
+version = "0.6.3"
 requires_python = ">=3.7"
 summary = "An extremely fast Python linter and code formatter, written in Rust."
 files = [
-    {file = "ruff-0.6.1-py3-none-linux_armv6l.whl", hash = "sha256:b4bb7de6a24169dc023f992718a9417380301b0c2da0fe85919f47264fb8add9"},
-    {file = "ruff-0.6.1-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:45efaae53b360c81043e311cdec8a7696420b3d3e8935202c2846e7a97d4edae"},
-    {file = "ruff-0.6.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:bc60c7d71b732c8fa73cf995efc0c836a2fd8b9810e115be8babb24ae87e0850"},
-    {file = "ruff-0.6.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2c7477c3b9da822e2db0b4e0b59e61b8a23e87886e727b327e7dcaf06213c5cf"},
-    {file = "ruff-0.6.1-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:3a0af7ab3f86e3dc9f157a928e08e26c4b40707d0612b01cd577cc84b8905cc9"},
-    {file = "ruff-0.6.1-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:392688dbb50fecf1bf7126731c90c11a9df1c3a4cdc3f481b53e851da5634fa5"},
-    {file = "ruff-0.6.1-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:5278d3e095ccc8c30430bcc9bc550f778790acc211865520f3041910a28d0024"},
-    {file = "ruff-0.6.1-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:fe6d5f65d6f276ee7a0fc50a0cecaccb362d30ef98a110f99cac1c7872df2f18"},
-    {file = "ruff-0.6.1-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b2e0dd11e2ae553ee5c92a81731d88a9883af8db7408db47fc81887c1f8b672e"},
-    {file = "ruff-0.6.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d812615525a34ecfc07fd93f906ef5b93656be01dfae9a819e31caa6cfe758a1"},
-    {file = "ruff-0.6.1-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:faaa4060f4064c3b7aaaa27328080c932fa142786f8142aff095b42b6a2eb631"},
-    {file = "ruff-0.6.1-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:99d7ae0df47c62729d58765c593ea54c2546d5de213f2af2a19442d50a10cec9"},
-    {file = "ruff-0.6.1-py3-none-musllinux_1_2_i686.whl", hash = "sha256:9eb18dfd7b613eec000e3738b3f0e4398bf0153cb80bfa3e351b3c1c2f6d7b15"},
-    {file = "ruff-0.6.1-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:c62bc04c6723a81e25e71715aa59489f15034d69bf641df88cb38bdc32fd1dbb"},
-    {file = "ruff-0.6.1-py3-none-win32.whl", hash = "sha256:9fb4c4e8b83f19c9477a8745e56d2eeef07a7ff50b68a6998f7d9e2e3887bdc4"},
-    {file = "ruff-0.6.1-py3-none-win_amd64.whl", hash = "sha256:c2ebfc8f51ef4aca05dad4552bbcf6fe8d1f75b2f6af546cc47cc1c1ca916b5b"},
-    {file = "ruff-0.6.1-py3-none-win_arm64.whl", hash = "sha256:3bc81074971b0ffad1bd0c52284b22411f02a11a012082a76ac6da153536e014"},
-    {file = "ruff-0.6.1.tar.gz", hash = "sha256:af3ffd8c6563acb8848d33cd19a69b9bfe943667f0419ca083f8ebe4224a3436"},
+    {file = "ruff-0.6.3-py3-none-linux_armv6l.whl", hash = "sha256:97f58fda4e309382ad30ede7f30e2791d70dd29ea17f41970119f55bdb7a45c3"},
+    {file = "ruff-0.6.3-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:3b061e49b5cf3a297b4d1c27ac5587954ccb4ff601160d3d6b2f70b1622194dc"},
+    {file = "ruff-0.6.3-py3-none-macosx_11_0_arm64.whl", hash = "sha256:34e2824a13bb8c668c71c1760a6ac7d795ccbd8d38ff4a0d8471fdb15de910b1"},
+    {file = "ruff-0.6.3-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bddfbb8d63c460f4b4128b6a506e7052bad4d6f3ff607ebbb41b0aa19c2770d1"},
+    {file = "ruff-0.6.3-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:ced3eeb44df75353e08ab3b6a9e113b5f3f996bea48d4f7c027bc528ba87b672"},
+    {file = "ruff-0.6.3-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:47021dff5445d549be954eb275156dfd7c37222acc1e8014311badcb9b4ec8c1"},
+    {file = "ruff-0.6.3-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:7d7bd20dc07cebd68cc8bc7b3f5ada6d637f42d947c85264f94b0d1cd9d87384"},
+    {file = "ruff-0.6.3-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:500f166d03fc6d0e61c8e40a3ff853fa8a43d938f5d14c183c612df1b0d6c58a"},
+    {file = "ruff-0.6.3-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:42844ff678f9b976366b262fa2d1d1a3fe76f6e145bd92c84e27d172e3c34500"},
+    {file = "ruff-0.6.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:70452a10eb2d66549de8e75f89ae82462159855e983ddff91bc0bce6511d0470"},
+    {file = "ruff-0.6.3-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:65a533235ed55f767d1fc62193a21cbf9e3329cf26d427b800fdeacfb77d296f"},
+    {file = "ruff-0.6.3-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:d2e2c23cef30dc3cbe9cc5d04f2899e7f5e478c40d2e0a633513ad081f7361b5"},
+    {file = "ruff-0.6.3-py3-none-musllinux_1_2_i686.whl", hash = "sha256:d8a136aa7d228975a6aee3dd8bea9b28e2b43e9444aa678fb62aeb1956ff2351"},
+    {file = "ruff-0.6.3-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:f92fe93bc72e262b7b3f2bba9879897e2d58a989b4714ba6a5a7273e842ad2f8"},
+    {file = "ruff-0.6.3-py3-none-win32.whl", hash = "sha256:7a62d3b5b0d7f9143d94893f8ba43aa5a5c51a0ffc4a401aa97a81ed76930521"},
+    {file = "ruff-0.6.3-py3-none-win_amd64.whl", hash = "sha256:746af39356fee2b89aada06c7376e1aa274a23493d7016059c3a72e3b296befb"},
+    {file = "ruff-0.6.3-py3-none-win_arm64.whl", hash = "sha256:14a9528a8b70ccc7a847637c29e56fd1f9183a9db743bbc5b8e0c4ad60592a82"},
+    {file = "ruff-0.6.3.tar.gz", hash = "sha256:183b99e9edd1ef63be34a3b51fee0a9f4ab95add123dbf89a71f7b1f0c991983"},
 ]
 
 [[package]]
