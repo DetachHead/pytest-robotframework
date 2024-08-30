@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "docs", "lint", "test"]
+groups = ["default", "dev", "docs", "lint", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:729515901c0e971b7002a080dd6f6de4f03b6bcaa4fee750f44e0c839f9844f9"
+content_hash = "sha256:8699ee67aa78de031ae40017bbd390c9e8a32e31c520b8acaedd4fc8ebf82b3e"
 
 [[metadata.targets]]
 requires_python = "~=3.8"
@@ -590,12 +590,12 @@ files = [
 
 [[package]]
 name = "robotframework"
-version = "7.0.1"
+version = "7.1rc1"
 requires_python = ">=3.8"
 summary = "Generic automation framework for acceptance testing and robotic process automation (RPA)"
 files = [
-    {file = "robotframework-7.0.1-py3-none-any.whl", hash = "sha256:7f4691492311f10e3be69d8ca2f2cae6b6490030d59683d23cd7909088c286d8"},
-    {file = "robotframework-7.0.1.zip", hash = "sha256:58d01b84cd7eccea69f2dbe13cbcbff1299e551168d3b88c25617b0c9d6ddc75"},
+    {file = "robotframework-7.1rc1-py3-none-any.whl", hash = "sha256:2dae882ba04554fba05cffbab4ad7078c4a4602135726521243a098c5bb54b4c"},
+    {file = "robotframework-7.1rc1.zip", hash = "sha256:83adf1e13807fef1b6a04a186fd41445a9ef56d1917db446a33f5fbf08b609f5"},
 ]
 
 [[package]]
