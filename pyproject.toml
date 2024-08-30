@@ -24,6 +24,9 @@ robotframework = "pytest_robotframework._internal.pytest.plugin"
 [tool.pyprojectx]
 pdm = "pdm==2.18.1"
 
+[tool.pdm]
+allow_prereleases = true
+
 [tool.pdm.scripts]
 update = "pdm update"
 refresh_lockfile = "pdm lock --update-reuse"
@@ -53,7 +56,6 @@ test = [
     "lxml-stubs>=0.4.0",
     "pytest-xdist>=3.5.0",
     "pytest-github-actions-annotate-failures>=0.2.0",
-    "robotframework==7.1rc1",
 ]
 docs = ["pdoc>=14.1.0"]
 
