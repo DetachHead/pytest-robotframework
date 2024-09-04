@@ -115,6 +115,10 @@ class RobotOptions(TypedDict):
     quiet: bool
     consolewidth: int
     consolecolors: Literal["AUTO", "ON", "ANSI", "OFF"]
+    consolelinks: Literal["AUTO", "OFF"]
+    """only available in robotframework >=7.1.
+    
+    currently does nothing. see https://github.com/DetachHead/pytest-robotframework/issues/305"""
     consolemarkers: Literal["AUTO", "ON", "OFF"]
     pythonpath: list[str]
     # argumentfile is not supported because it's not in the _cli_opts dict for some reason
