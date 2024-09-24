@@ -59,6 +59,9 @@ test = [
 ]
 docs = ["pdoc>=14.1.0"]
 
+[tool.pdm.build]
+includes = ["pytest_robotframework"]
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
