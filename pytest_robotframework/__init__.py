@@ -236,8 +236,8 @@ class _KeywordDecorator:
         return result_  # pyright:ignore[reportReturnType,reportPossiblyUnboundVariable]
 
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
-        if isinstance(fn, _KeywordDecorator):
-            # https://github.com/DetachHead/basedpyright/issues/452
+        # https://github.com/DetachHead/basedpyright/issues/452
+        if isinstance(fn, _KeywordDecorator):  # pyright:ignore[reportUnnecessaryIsInstance]
             return fn  # pyright:ignore[reportUnreachable]
         keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))
         # this doesn't really do anything in python land but we call the original robot keyword
@@ -460,9 +460,7 @@ def keyword(
 
 @overload
 # prevent functions that return Never from matching the context manager overload
-def keyword(  # pyright:ignore[reportOverlappingOverload]
-    fn: Callable[P, Never],
-) -> Callable[P, Never]: ...
+def keyword(fn: Callable[P, Never]) -> Callable[P, Never]: ...
 
 
 @deprecated(
