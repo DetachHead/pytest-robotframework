@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-
-for path in Path().rglob("*.py[co]"):
-    path.unlink()
+from shutil import rmtree
 
 for path in Path().rglob("__pycache__"):
-    path.rmdir()
+    rmtree(path)
