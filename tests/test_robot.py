@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional, cast
 
 from pytest import ExitCode, Item, Mark
 
+from pytest_robotframework._internal.robot.utils import robot_6
 from tests.conftest import PytestRobotTester, assert_robot_total_stats, output_xml, xpath
 
 if TYPE_CHECKING:
@@ -326,3 +327,12 @@ def test_empty_setup_or_teardown(pr: PytestRobotTester):
     )
     assert not xml.xpath("//test[@name='Disable setup']/kw[@name='Setup']/kw[@name='Log']")
     assert not xml.xpath("//test[@name='Disable teardown']/kw[@name='Teardown']/kw[@name='Log']")
+
+
+def test_keyword_decorator_class_library(pr: PytestRobotTester):
+    pr.run_and_assert_result("--robot-loglevel", "DEBUG:INFO", passed=1)
+    pr.assert_log_file_exists()
+    assert xpath(
+        output_xml(),
+        f"//kw[@name='Foo' and @{'library' if robot_6 else 'owner'}='ClassLibrary']/msg[.='hi']",
+    )

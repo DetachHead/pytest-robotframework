@@ -8,7 +8,8 @@ from contextlib import suppress
 from functools import wraps
 from inspect import getdoc
 from re import sub
-from typing import TYPE_CHECKING, Callable, Final, Literal, Optional, cast
+from types import MethodType
+from typing import TYPE_CHECKING, Callable, Final, Literal, Optional, TypeVar, cast
 
 from _pytest import runner
 from _pytest.python import PyobjMixin
@@ -24,7 +25,7 @@ from robot.model import Message, SuiteVisitor
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.model import Body
 from robot.utils.error import ErrorDetails
-from typing_extensions import override
+from typing_extensions import Concatenate, override
 
 from pytest_robotframework import (
     _get_status_reporter_failures,  # pyright:ignore[reportPrivateUsage]
@@ -583,6 +584,19 @@ def _hide_already_raised_exception_from_robot_log(keyword: Callable[P, T]) -> Ca
     return wrapped
 
 
+_R = TypeVar("_R")
+
+
+def _bound_method(instance: T, fn: Callable[Concatenate[T, P], _R]) -> Callable[P, _R]:
+    """if the keyword we're patching is on a class library, we need to re-bound the method to the
+    instance"""
+
+    def inner(*args: P.args, **kwargs: P.kwargs) -> _R:
+        return fn(instance, *args, **kwargs)
+
+    return inner
+
+
 # the methods used in this listener were added in robot 7. in robot 6 we do this by patching
 # `LibraryKeywordRunner._runner_for` instead
 if robot_6:
@@ -600,13 +614,20 @@ if robot_6:
         named: dict[str, object],
     ) -> Function:
         """use the original function instead of the `@keyword` wrapped one"""
-        handler = _hide_already_raised_exception_from_robot_log(
-            cast(Function, getattr(handler, _keyword_original_function_attr, handler))
+        original_function: Function | None = getattr(handler, _keyword_original_function_attr, None)
+        wrapped_function = _hide_already_raised_exception_from_robot_log(
+            cast(
+                Function,
+                _bound_method(handler.__self__, original_function)
+                if original_function is not None and isinstance(handler, MethodType)
+                else (original_function or handler),
+            )
         )
-        return old_method(self, context, handler, positional, named)
+        return old_method(self, context, wrapped_function, positional, named)
 
 else:
     from robot.running.librarykeyword import StaticKeyword
+    from robot.running.testlibraries import ClassLibrary
 
     @catch_errors
     class KeywordUnwrapper(ListenerV3):
@@ -623,14 +644,19 @@ else:
         ):
             if not isinstance(implementation, StaticKeyword):
                 return
-            unwrapped_method: Function | None = getattr(
+            original_function: Function | None = getattr(
                 implementation.method, _keyword_original_function_attr, None
             )
-            if unwrapped_method is None:
+
+            if original_function is None:
                 return
 
             setattr(
                 implementation.owner.instance,  # pyright:ignore[reportAny]
                 implementation.method_name,
-                _hide_already_raised_exception_from_robot_log(unwrapped_method),
+                _hide_already_raised_exception_from_robot_log(
+                    _bound_method(implementation.owner.instance, original_function)  # pyright:ignore[reportAny]
+                    if isinstance(implementation.owner, ClassLibrary)
+                    else original_function
+                ),
             )
