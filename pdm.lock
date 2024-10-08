@@ -2,13 +2,13 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev", "docs", "lint", "test"]
+groups = ["default", "docs", "lint", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:729515901c0e971b7002a080dd6f6de4f03b6bcaa4fee750f44e0c839f9844f9"
+content_hash = "sha256:fda9f7bfc7e0a3c3a8ae099a8c2af59a60d4262b124151acbf86a7e9bbac7a2d"
 
 [[metadata.targets]]
-requires_python = "~=3.8"
+requires_python = "~=3.9"
 
 [[package]]
 name = "ansi2html"
@@ -35,19 +35,6 @@ dependencies = [
 files = [
     {file = "astroid-3.2.4-py3-none-any.whl", hash = "sha256:413658a61eeca6202a59231abb473f932038fbcbf1666587f66d482083413a25"},
     {file = "astroid-3.2.4.tar.gz", hash = "sha256:0e14202810b30da1b735827f78f5157be2bbd4a7a59b7707ca0bfc2fb4c0063a"},
-]
-
-[[package]]
-name = "astunparse"
-version = "1.6.3"
-summary = "An AST unparser for Python"
-dependencies = [
-    "six<2.0,>=1.6.1",
-    "wheel<1.0,>=0.23.0",
-]
-files = [
-    {file = "astunparse-1.6.3-py2.py3-none-any.whl", hash = "sha256:c2652417f2c8b5bb325c885ae329bdf3f86424075c4fd1a128674bc6fba4b8e8"},
-    {file = "astunparse-1.6.3.tar.gz", hash = "sha256:5ad93a8456f0d084c3456d059fd9a92cce667963232cbf763eac3bc5b7940872"},
 ]
 
 [[package]]
@@ -700,14 +687,4 @@ summary = "Backported and Experimental Type Hints for Python 3.8+"
 files = [
     {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
     {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},
-]
-
-[[package]]
-name = "wheel"
-version = "0.44.0"
-requires_python = ">=3.8"
-summary = "A built-package format for Python"
-files = [
-    {file = "wheel-0.44.0-py3-none-any.whl", hash = "sha256:2376a90c98cc337d18623527a97c31797bd02bad0033d41547043a1cbfbe448f"},
-    {file = "wheel-0.44.0.tar.gz", hash = "sha256:a29c3f2817e95ab89aa4660681ad547c0e9547f20e75b0562fe7723c9a2a9d49"},
 ]
