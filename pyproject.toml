@@ -1,6 +1,6 @@
 [project]
 name = "pytest_robotframework"
-version = "4.2.6"
+dynamic = ["version"] # https://github.com/astral-sh/uv/issues/6298
 description = "a pytest plugin that can run both python and robotframework tests while generating robot reports for them"
 authors = [
     { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
@@ -22,49 +22,50 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 robotframework = "pytest_robotframework._internal.pytest.plugin"
 
 [tool.pyprojectx]
-pdm = ["pdm==2.19.2", "uv==0.4.20"]
+main = ["uv==0.4.20"]
 
-[tool.pdm]
-allow_prereleases = true
-
-[tool.pdm.scripts]
-update = "pdm update"
-refresh_lockfile = "pdm lock --update-reuse"
-test = "pytest -n auto"
-typecheck = { composite = [
-    "basedpyright",
-    "basedpyright --verifytypes pytest_robotframework --ignoreexternal",
-] }
-ruff_check = { composite = ['ruff check', 'ruff format --check --diff'] }
-ruff_fix = { composite = ['ruff check --fix', 'ruff format'] }
-pylint = 'pylint pytest_robotframework tests'
-robocop = 'robocop'
-robotidy = 'robotidy --color --check --diff .'
-open_docs = 'pdoc pytest_robotframework'
+[tool.pyprojectx.aliases]
+# when adding an alias here, a vscode task should probably also be added too
+# unless there's already a task or something in vscode that does the same thing
+update = "uv lock --upgrade"
+test = "uv run pytest -n auto"
+typecheck = [
+    "uv run basedpyright",
+    "uv run basedpyright --verifytypes pytest_robotframework --ignoreexternal",
+]
+ruff_check = ['uv run ruff check', 'ruff format --check --diff']
+ruff_fix = ['uv run ruff check --fix', 'ruff format']
+pylint = 'uv run pylint pytest_robotframework tests'
+robocop = 'uv run robocop'
+robotidy = 'uv run robotidy --color --check --diff .'
+open_docs = 'uv run pdoc pytest_robotframework'
 clear_pycache = 'python scripts/clear_pycache.py'
 
-[tool.pdm.dev-dependencies]
-lint = [
+[tool.uv]
+prerelease = 'allow'
+dev-dependencies = [
     "basedpyright>=1.10.1",
     "pylint>=3.2.0",
     "ruff>=0.2.0",
     "robotframework-robocop>=4.1.0",
     "robotframework-tidy>=4.5.0",
-]
-test = [
     "lxml>=4.9.3",
     "lxml-stubs>=0.4.0",
     "pytest-xdist>=3.5.0",
     "pytest-github-actions-annotate-failures>=0.2.0",
+    "pdoc>=14.1.0",
 ]
-docs = ["pdoc>=14.1.0"]
-
-[tool.pdm.build]
-includes = ["pytest_robotframework"]
 
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pdm.build]
+includes = ["pytest_robotframework"]
+
+[tool.pdm.version]
+source = "file"
+path = "pytest_robotframework/_internal/__init__.py"
 
 
 [tool.ruff.format]

@@ -24,12 +24,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python_version }}
-      - run: ./pw pdm install
-      - run: ./pw pdm add robotframework==${{ matrix.robot_version }}
+      - run: ./pw uv sync
+      - run: ./pw uv add robotframework==${{ matrix.robot_version }}
         if: ${{ matrix.robot_version != 'from lockfile' }}
-      - run: ./pw pdm add pytest==${{ matrix.pytest_version }}
+      - run: ./pw uv add pytest==${{ matrix.pytest_version }}
         if: ${{ matrix.pytest_version != 'from lockfile' }}
-      - run: ./pw pdm test
+      - run: ./pw test
   static_checks:
     strategy:
       fail-fast: false
@@ -44,27 +44,25 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
 
-      - run: ./pw pdm lock --check
+      - run: ./pw uv sync --locked
 
-      - run: ./pw pdm install
-
-      - run: ./pw pdm run typecheck
+      - run: ./pw typecheck
 
       - name: ruff check
         if: always()
-        run: ./pw pdm run ruff check --output-format github
+        run: ./pw uv run ruff check --output-format github
 
       - name: ruff format
         if: always()
-        run: ./pw pdm run ruff format --check --diff
+        run: ./pw uv run ruff format --check --diff
 
-      - run: ./pw pdm run pylint -- --output-format=github
+      - run: ./pw pylint --output-format=github
         if: always()
 
-      - run: ./pw pdm run robocop
+      - run: ./pw robocop
         if: always()
 
-      - run: ./pw pdm run robotidy
+      - run: ./pw robotidy
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
@@ -78,10 +76,11 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
-      - run: ./pw pdm publish
+      - run: ./pw uv publish
       - name: get version number
         id: current-version
-        run: echo ::set-output name=CURRENT_VERSION::$(./pw pdm show --version)
+        # https://github.com/astral-sh/uv/issues/6298
+        run: echo ::set-output name=CURRENT_VERSION::$(./pw uv run python -c "from pytest_robotframework._internal import __version__;print(__version__)")
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
