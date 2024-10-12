@@ -76,6 +76,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
+      - run: ./pw uv build
       - run: ./pw uv publish
       - name: get version number
         id: current-version
