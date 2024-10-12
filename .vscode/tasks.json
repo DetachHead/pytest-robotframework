@@ -1,15 +1,119 @@
 {
   "version": "2.0.0",
   "tasks": [
-    // all tasks should be pdm scripts in pyproject.toml instead, except this one.
-    // https://github.com/pyprojectx/pyprojectx/issues/92
+    // these tasks should be removed once one any of the following sets of issues are resolved:
+    // - https://github.com/pyprojectx/pyprojectx/issues/92
+    // - https://github.com/astral-sh/uv/issues/5903, https://github.com/astral-sh/uv/issues/8123, 
     {
       "label": "install dependencies",
       "type": "shell",
       "command": "./pw",
-      "args": ["pdm", "sync", "--clean"],
+      "args": [
+        "uv",
+        "sync",
+      ],
       "presentation": {
         "clear": true
+      }
+    },
+    {
+      "label": "update dependencies",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "update"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "typecheck",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "typecheck"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "ruff check",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "ruff_check"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "ruff fix",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "ruff_fix"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "pylint",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "pylint"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "robocop",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "robocop"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "robotidy",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "robotidy"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "open docs",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "open_docs"
+      ],
+      "presentation": {
+        "clear": true,
+      },
+      "isBackground": true
+    },
+    {
+      "label": "clear pycache",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "clear_pycache"
+      ],
+      "presentation": {
+        "clear": true,
       }
     }
   ]
