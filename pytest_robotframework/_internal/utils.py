@@ -25,11 +25,13 @@ def patch_method(
     ...     def foo(self) -> int:
     ...         return 1
     ...
+    ...
     ... @patch_method(Foo)
     ... def foo(old_method: Callable[[Foo], int], self: Foo) -> int:
     ...     return old_method(self) + 1
     ...
-    ... print(Foo().foo()) # 2
+    ...
+    ... print(Foo().foo())  # 2
 
     :param method_name: defaults to the name of the function being decorated
     """

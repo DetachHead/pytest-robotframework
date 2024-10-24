@@ -715,10 +715,10 @@ def hide_asserts_from_robot_log() -> Iterator[None]:
     -------
     .. code-block:: python
 
-        assert True # not hidden
+        assert True  # not hidden
         with hide_asserts_from_robot_log():
-            assert True # hidden
-            assert True, AssertOptions(log_pass=True) # not hidden
+            assert True  # hidden
+            assert True, AssertOptions(log_pass=True)  # not hidden
     """
     item = current_item()
     if not item:

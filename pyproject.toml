@@ -70,6 +70,7 @@ path = "pytest_robotframework/_internal/__init__.py"
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
+docstring-code-format = true
 
 [tool.pylint.MASTER]
 fail-on = "I"
