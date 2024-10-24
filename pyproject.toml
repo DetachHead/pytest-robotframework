@@ -33,8 +33,8 @@ typecheck = [
     "uv run basedpyright",
     "uv run basedpyright --verifytypes pytest_robotframework --ignoreexternal",
 ]
-ruff_check = ['uv run ruff check', 'ruff format --check --diff']
-ruff_fix = ['uv run ruff check --fix', 'ruff format']
+ruff_check = ['uv run ruff check', 'uv run ruff format --check --diff']
+ruff_fix = ['uv run ruff check --fix', 'uv run ruff format']
 pylint = 'uv run pylint pytest_robotframework tests'
 robocop = 'uv run robocop'
 robotidy = 'uv run robotidy --color --check --diff .'
