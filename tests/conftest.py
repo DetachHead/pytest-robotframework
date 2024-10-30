@@ -6,7 +6,7 @@ from os import PathLike, symlink
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
-from typing import TYPE_CHECKING, Literal, cast, overload
+from typing import TYPE_CHECKING, Literal, cast, final, overload
 
 from lxml.etree import (
     XML,
@@ -134,6 +134,7 @@ def _is_element_list(xpath_object: _XPathObject) -> TypeGuard[list[_Element]]:
     return result
 
 
+@final
 class _XmlElement(Iterable["_XmlElement"]):
     def __init__(self, element: _Element) -> None:
         super().__init__()
@@ -219,6 +220,7 @@ def assert_robot_total_stats(*, passed: int = 0, skipped: int = 0, failed: int =
     assert result == {"pass": str(passed), "fail": str(failed), "skip": str(skipped)}
 
 
+@final
 class PytestRobotTester:
     def __init__(self, *, pytester: PytesterDir, xdist: int | None):
         super().__init__()

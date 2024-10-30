@@ -57,5 +57,6 @@
     "pythonTestAdapter"
   ],
   "ruff.nativeServer": true,
-  "editor.suggest.showWords": false
+  "editor.suggest.showWords": false,
+  "basedpyright.analysis.inlayHints.genericTypes": true
 }
