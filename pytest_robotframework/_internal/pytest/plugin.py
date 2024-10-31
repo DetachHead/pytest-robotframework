@@ -302,7 +302,7 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions):
     if exit_code and not session.testsfailed:
         raise Exception(
             f"pytest-robotframework detected that robot failed with exit code {exit_code} despite"
-            + " no tests failing. this was may have been caused by a robot error that occurred"
+            + " no tests failing. this may have been caused by a robot error that occurred"
             + " before any tests started."
         )
 
