@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Callable, Final, Literal, Optional, TypeVar, c
 from _pytest import runner
 from _pytest.python import PyobjMixin
 from ansi2html import Ansi2HTMLConverter
-from basedtyping import Function, P, T
+from basedtyping import FunctionType as Function, P, T
 from pluggy import HookCaller, HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
 from pytest import Class, Function as PytestFunction, Item, Module, Session, StashKey

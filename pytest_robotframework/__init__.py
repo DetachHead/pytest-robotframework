@@ -16,7 +16,7 @@ from traceback import format_stack
 from types import TracebackType
 from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
 
-from basedtyping import Function, P, T
+from basedtyping import FunctionType as Function, P, T
 from pytest import StashKey
 from robot import result, running
 from robot.api import deco, logger
