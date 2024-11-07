@@ -22,7 +22,7 @@ repository = "https://github.com/detachhead/pytest-robotframework"
 robotframework = "pytest_robotframework._internal.pytest.plugin"
 
 [tool.pyprojectx]
-main = ["uv==0.4.20"]
+main = ["uv"]
 
 [tool.pyprojectx.aliases]
 # when adding an alias here, a vscode task should probably also be added too
