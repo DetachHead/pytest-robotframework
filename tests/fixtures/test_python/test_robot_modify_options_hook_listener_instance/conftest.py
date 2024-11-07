@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from robot.api.interfaces import ListenerV3
 from typing_extensions import override
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from pytest_robotframework import RobotOptions
 
 
+@final
 class Foo(ListenerV3):
     def __init__(self):
         super().__init__()

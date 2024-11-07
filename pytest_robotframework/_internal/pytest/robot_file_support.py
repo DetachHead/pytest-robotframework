@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Callable, cast
+from typing import TYPE_CHECKING, Callable, cast, final
 
 from _pytest._code.code import ReprFileLocation, TerminalRepr
 from pytest import Config, ExceptionInfo, File, Item, MarkDecorator, Session, StashKey, mark, skip
@@ -69,7 +69,10 @@ class RobotFile(File):
                 )
 
 
-class RobotItem(Item):
+@final
+# some internal deprecated pytest thing is causing this false positive, but apparently it will be
+# removed in the future
+class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
     def __init__(
         self,
         *,

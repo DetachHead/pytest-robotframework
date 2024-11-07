@@ -14,7 +14,7 @@ from functools import wraps
 from pathlib import Path
 from traceback import format_stack
 from types import TracebackType
-from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, final, overload
 
 from basedtyping import Function, P, T
 from pytest import StashKey
@@ -189,10 +189,10 @@ class _KeywordDecorator:
         doc: str | None = None,
     ) -> None:
         super().__init__()
-        self._name = name
-        self._tags = tags or ()
-        self._module = module
-        self._doc = doc
+        self._name: str | None = name
+        self._tags: tuple[str, ...] = tags or ()
+        self._module: str | None = module
+        self._doc: str | None = doc
 
     @staticmethod
     def _save_status_reporter_failure(exception: BaseException):
@@ -357,6 +357,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
     ) -> T:
         T_WrappedContextManager = TypeVar("T_WrappedContextManager")
 
+        @final
         class WrappedContextManager(AbstractContextManager[object]):
             """defers exiting the status reporter until after the wrapped context
             manager is finished"""
@@ -652,7 +653,7 @@ class AssertOptions:
         fail_message: str | None = None,
     ) -> None:
         super().__init__()
-        self.log_pass = log_pass
+        self.log_pass: bool | None = log_pass
         """whether to display the assertion as a keyword in the robot log when it passes.
 
         by default, a passing `assert` statement will display in the robot log as long as the
@@ -683,13 +684,13 @@ class AssertOptions:
             assert foo == bar
         """
 
-        self.description = description
+        self.description: str | None = description
         """normally, the asserted expression as it was written is displayed as the argument to the
         `assert` keyword in the robot log, but setting this value will display a custom message
         instead. when a custom description is used, the original expression is logged inside the
         keyword instead."""
 
-        self.fail_message = fail_message
+        self.fail_message: str | None = fail_message
         """optional description for the `assert` statement that will be included in the
         `AssertionError` message if the assertion fails. equivalent to a normal `assert` statement's
         second argument"""

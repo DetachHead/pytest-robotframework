@@ -9,7 +9,7 @@ from functools import wraps
 from inspect import getdoc
 from re import sub
 from types import MethodType
-from typing import TYPE_CHECKING, Callable, Final, Literal, Optional, TypeVar, cast
+from typing import TYPE_CHECKING, Callable, Final, Literal, Optional, TypeVar, cast, final
 
 from _pytest import runner
 from _pytest.python import PyobjMixin
@@ -78,6 +78,7 @@ def _create_running_keyword(
     return running.Keyword(name=f"{fn.__module__}.{fn.__name__}", args=args, type=keyword_type)
 
 
+@final
 class PythonParser(Parser):
     """custom robot "parser" for python files. doesn't actually do any parsing, but instead relies
     on pytest collection already being run, so it can use the collected items to populate a robot
@@ -197,6 +198,7 @@ class _NotRunningTestSuiteError(InternalError):
 
 
 @catch_errors
+@final
 class RobotSuiteCollector(SuiteVisitor):
     """used when running robot during collection to collect it the suites from `.robot` files so
     that pytest items can be created from them in `_internal.pytest.robot_file_support`"""
@@ -220,6 +222,7 @@ class RobotSuiteCollector(SuiteVisitor):
 
 
 @catch_errors
+@final
 class RobotTestFilterer(SuiteVisitor):
     """
     does the following to prepare the tests for execution:
@@ -263,6 +266,7 @@ class RobotTestFilterer(SuiteVisitor):
 
 
 @catch_errors
+@final
 class PytestRuntestProtocolInjector(SuiteVisitor):
     """injects the setup, call and teardown hooks from `_pytest.runner.pytest_runtest_protocol` into
     the robot test suite. this replaces any existing setup/body/teardown with said hooks, which may
@@ -324,6 +328,7 @@ _HookWrapper = Generator[None, object, object]
 
 
 @catch_errors
+@final
 class PytestRuntestProtocolHooks(ListenerV3):
     """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from
     `pytest_runtest_protocol`. since all the other parts of `_pytest.runner.runtestprotocol` are
@@ -495,6 +500,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
 
 
 @catch_errors
+@final
 class ErrorDetector(ListenerV3):
     """since errors logged by robot don't raise an exception and therefore won't cause the pytest
     test to fail (or even the robot test unless `--exitonerror` is enabled), we need to listen for
@@ -544,6 +550,7 @@ class ErrorDetector(ListenerV3):
 
 
 @catch_errors
+@final
 class AnsiLogger(ListenerV3):
     esc = "\N{ESCAPE}"
 
