@@ -17,6 +17,17 @@
       }
     },
     {
+      "label": "update pyprojectx dependencies",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "--lock"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
       "label": "update dependencies",
       "type": "shell",
       "command": "./pw",
