@@ -57,5 +57,15 @@
     "pythonTestAdapter"
   ],
   "ruff.nativeServer": true,
-  "editor.suggest.showWords": false
+  "editor.suggest.showWords": false,
+  "files.readonlyInclude": {
+    ".pyprojectx/**/*": true,
+    ".pytest_cache/**/*": true,
+    ".venv/**/*": true,
+    "**/dist/**/*": true,
+    "uv.lock": true,
+    "pw.lock": true,
+    "pw": true,
+    "pw.bat": true
+  }
 }
