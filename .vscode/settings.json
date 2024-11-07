@@ -67,5 +67,6 @@
     "pw.lock": true,
     "pw": true,
     "pw.bat": true
-  }
+  },
+  "basedpyright.analysis.inlayHints.genericTypes": true
 }
