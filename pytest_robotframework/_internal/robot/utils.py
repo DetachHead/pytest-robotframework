@@ -12,6 +12,7 @@ from typing import (
     TypedDict,
     Union,
     cast,
+    final,
 )
 
 from basedtyping import T
@@ -150,11 +151,11 @@ banned_options = {
 """robot arguments that are not allowed because they conflict with pytest and/or this plugin"""
 
 
+@final
 class Cloaked(Generic[T]):
     """allows you to pass arguments to robot keywords without them appearing in the log"""
 
     def __init__(self, value: T):
-        super().__init__()
         self.value = value
 
     @override
