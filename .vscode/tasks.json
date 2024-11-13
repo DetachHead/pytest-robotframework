@@ -94,6 +94,17 @@
       }
     },
     {
+      "label": "robotcode analyze",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "robotcode"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
       "label": "robotidy",
       "type": "shell",
       "command": "./pw",

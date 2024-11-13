@@ -38,6 +38,7 @@ ruff_fix = ['uv run ruff check --fix', 'uv run ruff format']
 pylint = 'uv run pylint pytest_robotframework tests'
 robocop = 'uv run robocop'
 robotidy = 'uv run robotidy --color --check --diff .'
+robotcode = 'uv run robotcode analyze code'
 open_docs = 'uv run pdoc pytest_robotframework'
 clear_pycache = 'python scripts/clear_pycache.py'
 
@@ -54,6 +55,7 @@ dev-dependencies = [
     "pytest-xdist>=3.5.0",
     "pytest-github-actions-annotate-failures>=0.2.0",
     "pdoc>=14.1.0",
+    "robotcode[analyze]>=0.97.0",
 ]
 
 [build-system]
@@ -310,4 +312,11 @@ configure = [
     "unnecessary-string-conversion:severity:W",
     "expression-can-be-simplified:severity:W",
     "can-be-resource-file:severity:W",
+]
+
+[tool.robotcode-analyze.modifiers]
+error = [
+    "LibraryAlreadyImported",
+    "ResourceAlreadyImported",
+    "VariablesAlreadyImported",
 ]

@@ -59,6 +59,9 @@ jobs:
       - run: ./pw pylint --output-format=github
         if: always()
 
+      - run: ./pw robotcode
+        if: always()
+
       - run: ./pw robocop
         if: always()
 
