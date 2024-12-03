@@ -60,7 +60,7 @@ def test_setup_fails(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='SETUP']/kw[@name='Bar' and"
-        + " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
+        " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
     )
     # make sure the test didnt run when setup failed
     assert not xml.xpath("//kw[contains(@name, 'Run Test')]")
@@ -93,7 +93,7 @@ def test_teardown_fails(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and"
-        + " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
+        " .//msg[@level='FAIL' and .='asdf'] and .//status[@status='FAIL']]"
     )
     assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
@@ -105,8 +105,7 @@ def test_teardown_skipped(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and"
-        + " .//msg[@level='SKIP']]"
+        "//suite//test[@name='Foo']/kw[@type='TEARDOWN']/kw[@name='Bar' and .//msg[@level='SKIP']]"
     )
     assert xml.xpath("//kw[contains(@name, 'Run Test')]")
 
@@ -233,7 +232,7 @@ def test_setup_with_args(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//kw[@type='SETUP']/kw[@name='Run Keywords' and ./arg[.='Bar'] and"
-        + " ./arg[.='AND'] and ./arg[.='Baz']]"
+        " ./arg[.='AND'] and ./arg[.='Baz']]"
     )
 
 
@@ -318,12 +317,12 @@ def test_empty_setup_or_teardown(pr: PytestRobotTester):
     assert xpath(
         xml,
         "//test[@name='Runs globally defined setup and teardown']/kw[@name='Setup']/kw[@name='Log']"
-        + "/msg[.='setup ran']",
+        "/msg[.='setup ran']",
     )
     assert xpath(
         xml,
         "//test[@name='Runs globally defined setup and teardown']/kw[@name='Teardown']"
-        + "/kw[@name='Log']/msg[.='teardown ran']",
+        "/kw[@name='Log']/msg[.='teardown ran']",
     )
     assert not xml.xpath("//test[@name='Disable setup']/kw[@name='Setup']/kw[@name='Log']")
     assert not xml.xpath("//test[@name='Disable teardown']/kw[@name='Teardown']/kw[@name='Log']")

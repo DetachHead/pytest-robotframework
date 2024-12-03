@@ -302,8 +302,8 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions):
     if exit_code and not session.testsfailed:
         raise Exception(
             f"pytest-robotframework detected that robot failed with exit code {exit_code} despite"
-            + " no tests failing. this may have been caused by a robot error that occurred"
-            + " before any tests started."
+            " no tests failing. this may have been caused by a robot error that occurred"
+            " before any tests started."
         )
 
 
@@ -382,7 +382,7 @@ def pytest_addoption(parser: Parser):
     group = parser.getgroup(
         "robot",
         "robotframework (if an option is missing, it means there's a pytest equivalent you should"
-        + "use instead. see https://github.com/DetachHead/pytest-robotframework#config)",
+        "use instead. see https://github.com/DetachHead/pytest-robotframework#config)",
     )
     group.addoption(
         "--no-assertions-in-robot-log",
@@ -390,9 +390,9 @@ def pytest_addoption(parser: Parser):
         default=True,
         action="store_false",
         help="whether to hide passing `assert` statements in the robot log by default. when this is"
-        + " disabled, you can make individual `assert` statements show in the log using the"
-        + " `pytest_robotframework.AssertionOptions` class with `log_pass=True`. see the docs for"
-        + " more information: https://github.com/DetachHead/pytest-robotframework/tree/assertion-ricing#hiding-non-user-facing-assertions",
+        " disabled, you can make individual `assert` statements show in the log using the"
+        " `pytest_robotframework.AssertionOptions` class with `log_pass=True`. see the docs for"
+        " more information: https://github.com/DetachHead/pytest-robotframework/tree/assertion-ricing#hiding-non-user-facing-assertions",
     )
     for arg_name, default_value in cli_defaults(RobotSettings).items():
         if arg_name in banned_options:

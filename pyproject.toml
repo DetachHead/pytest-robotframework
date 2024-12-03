@@ -70,10 +70,6 @@ source = "file"
 path = "pytest_robotframework/_internal/__init__.py"
 
 
-[tool.ruff.format]
-skip-magic-trailing-comma = true
-docstring-code-format = true
-
 [tool.pylint.MASTER]
 fail-on = "I"
 bad-names = ["foo", "bar", "baz", "retval"]
@@ -187,10 +183,10 @@ enable_assertion_pass_hook = true
 [tool.basedpyright]
 ignore = ["pw"]
 pythonVersion = "3.9"
-reportMissingTypeStubs = false           # https://github.com/robotframework/robotframework/issues/4822
-reportImplicitStringConcatenation = true # ideally this should be off and handled by the ruff formatter https://github.com/astral-sh/ruff/issues/9965
-reportUnusedImport = false               # covered by ruff (has quickfix)
-reportUnusedVariable = false             # covered by ruff (has quickfix)
+reportMissingTypeStubs = false            # https://github.com/robotframework/robotframework/issues/4822
+reportImplicitStringConcatenation = false # handled by ruff
+reportUnusedImport = false                # covered by ruff (has quickfix)
+reportUnusedVariable = false              # covered by ruff (has quickfix)
 
 [tool.ruff]
 unsafe-fixes = true
@@ -248,13 +244,14 @@ ignore = [
     "UP035",   # deprecated-import (covered by pyright)
     "ISC001",  # single-line-implicit-string-concatenation (conflicts with formatter)
     "COM812",  # missing-trailing-comma (conflicts with formatter)
-    "ISC003",  # explicit-string-concatenation (https://github.com/astral-sh/ruff/issues/9965)
-    "W293",    # modifies strings (https://github.com/astral-sh/ruff/issues/10038)
     "PLE1507", # invalid-envvar-value (covered by pyright)
     "D200",    # fits-on-one-line (https://github.com/astral-sh/ruff/issues/6269)
     "DOC201",  # docstring-missing-returns
     "DOC501",  # docstring-missing-exception (https://github.com/astral-sh/ruff/issues/12520)
     "ARG001",  # unused-function-argument (covered by basedpyright)
+    "TC006",   # runtime-cast-value (quoted types look disgusting)
+    "W291",    # trailing-whitespace (covered by formatter + false positives inside multiline strings)
+    "W293",    # blank-line-with-whitespace (covered by formatter + false positives inside multiline strings)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
@@ -269,6 +266,10 @@ fixture-parentheses = false
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
 split-on-trailing-comma = false
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+docstring-code-format = true
 
 [tool.robotidy]
 configure = [

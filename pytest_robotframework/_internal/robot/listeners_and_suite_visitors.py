@@ -540,7 +540,7 @@ class ErrorDetector(ListenerV3):
         elif not self.current_test:
             raise InternalError(
                 "a robot error occurred and ErrorDetector failed to figure out what test it came"
-                + f"from: {message.message}"
+                f"from: {message.message}"
             )
         else:
             item_or_session = (

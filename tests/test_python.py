@@ -37,7 +37,7 @@ def test_one_test_skipped(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     assert output_xml().xpath(
         "./suite//test[@name='test_one_test_skipped']/kw[@type='SETUP']/msg[@level='SKIP' and "
-        + ".='Skipped: foo']"
+        ".='Skipped: foo']"
     )
 
 
@@ -75,11 +75,11 @@ def test_nested_suites(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "./suite/suite[@name='Suite1']/suite[@name='Suite2']/suite[@name='Test"
-        + " Asdf']/test[@name='test_func1']"
+        " Asdf']/test[@name='test_func1']"
     )
     assert xml.xpath(
         "./suite/suite[@name='Suite1']/suite[@name='Suite3']/suite[@name='Test"
-        + " Asdf2']/test[@name='test_func2']"
+        " Asdf2']/test[@name='test_func2']"
     )
     assert xml.xpath("./suite/suite[@name='Test Top Level']/test[@name='test_func1']")
 
@@ -233,11 +233,11 @@ def test_error_moment_and_second_test(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         ".//test[@name='test_foo' and ./status[@status='FAIL']]/kw[@name='Run"
-        + " Test']/msg[@level='ERROR' and .='foo']"
+        " Test']/msg[@level='ERROR' and .='foo']"
     )
     assert xml.xpath(
         ".//test[@name='test_bar' and ./status[@status='PASS']]/kw[@name='Run"
-        + " Test']/msg[@level='INFO' and .='bar']"
+        " Test']/msg[@level='INFO' and .='bar']"
     )
 
 
@@ -262,13 +262,13 @@ def test_error_moment_exitonerror_multiple_tests(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         ".//test[@name='test_foo' and ./status[@status='FAIL']]/kw[@name='Run"
-        + " Test']/msg[@level='ERROR' and .='foo']"
+        " Test']/msg[@level='ERROR' and .='foo']"
     )
     assert (
         bool(
             xml.xpath(
                 ".//test[@name='test_bar']/status[@status='FAIL' and .='Error occurred"
-                + " and exit-on-error mode is in use.']"
+                " and exit-on-error mode is in use.']"
             )
         )
         != pr.xdist
@@ -322,11 +322,11 @@ def test_keyword_decorator_args(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         ".//test[@name='test_no_truncation']//kw[@name='Run Test']/kw[@name='Foo' and ./arg[.='1']"
-        + " and ./arg[.='bar=True']]"
+        " and ./arg[.='bar=True']]"
     )
     assert xml.xpath(
         ".//test[@name='test_truncation']//kw[@name='Run Test']/kw[@name='Foo' and"
-        + f" ./arg[.='{'a' * 50}...'] and ./arg[.='bar={'b' * 50}...']]"
+        f" ./arg[.='{'a' * 50}...'] and ./arg[.='bar={'b' * 50}...']]"
     )
 
 
@@ -367,8 +367,8 @@ def test_keyword_decorator_context_manager_that_raises_in_body_and_exit(pr: Pyte
     assert xml.xpath("//kw[@name='Asdf']/msg[@level='FAIL' and .='asdf']")
     assert xml.xpath(
         "//kw[@name='Asdf']/msg[@level='DEBUG' and contains(.,'Exception:"
-        + " fdsa\n\nDuring handling of the above exception, another exception"
-        + " occurred:') and contains(., 'Exception: asdf')]"
+        " fdsa\n\nDuring handling of the above exception, another exception"
+        " occurred:') and contains(., 'Exception: asdf')]"
     )
     assert not xml.xpath("//msg[.='1']")
 
@@ -384,7 +384,7 @@ def test_keyword_decorator_try_except(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//kw[@name='Run Test' and ./status[@status='PASS']]/kw[@name='Bar' and"
-        + " ./status[@status='FAIL']]/msg[.='FooError']"
+        " ./status[@status='FAIL']]/msg[.='FooError']"
     )
     assert xml.xpath("//kw[@name='Run Test']/msg[.='hi']")
 
@@ -409,7 +409,7 @@ def test_keywordify_context_manager(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     assert output_xml().xpath(
         "//kw[@name='Raises' and ./arg[.=\"<class 'ZeroDivisionError'>\"] and"
-        + " ./status[@status='PASS']]"
+        " ./status[@status='PASS']]"
     )
 
 
@@ -528,7 +528,7 @@ def test_assertion_passes(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     assert output_xml().xpath(
         "//kw[@name='assert' and ./arg[.='left == right'] and ./status[@status='PASS']]"
-        + "/msg[@level='INFO' and .='1 == 1']"
+        "/msg[@level='INFO' and .='1 == 1']"
     )
 
 
@@ -538,7 +538,7 @@ def test_assertion_fails_with_assertion_hook(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//kw[@name='assert' and ./arg[.='left == right'] and ./status[@status='FAIL']]"
-        + "/msg[@level='FAIL' and .='assert 1 == 2']"
+        "/msg[@level='FAIL' and .='assert 1 == 2']"
     )
     # make sure the error was only logged once , since the exception gets re-raised after the
     # keyword is over we want to make sure it's not printed multiple times
@@ -565,7 +565,7 @@ def test_assertion_passes_hide_assert(pr: PytestRobotTester):
     assert not xml.xpath("//kw[@name='assert']/arg[.='right == left']")
     assert xml.xpath(
         "//kw[@name='assert' and ./arg[.='right == right  # noqa: PLR0124']]/msg[@level='INFO' and "
-        + ".='1 == 1']"
+        ".='1 == 1']"
     )
 
 
@@ -578,11 +578,11 @@ def test_assertion_passes_custom_messages(pr: PytestRobotTester):
     )
     assert xml.xpath(
         "//kw[@name='assert' and ./arg[.='does appear1'] and ./msg[@level='INFO' and .='assert "
-        + "right == left'] and ./msg[@level='INFO' and .='1 == 1']]"
+        "right == left'] and ./msg[@level='INFO' and .='1 == 1']]"
     )
     assert xml.xpath(
         "//kw[@name='assert' and ./arg[.='right == \"wrong\"'] and ./msg[@level='FAIL' and .=\"does"
-        + " appear2\nassert 1 == 'wrong'\"]]"
+        " appear2\nassert 1 == 'wrong'\"]]"
     )
 
 
@@ -611,7 +611,7 @@ def test_assertion_fails_with_fail_message_hide_assert(pr: PytestRobotTester):
     xml = output_xml()
     assert xml.xpath(
         "//kw[@name='assert' and ./arg[.='right == \"wrong\"']]/msg[@level='FAIL' and "
-        + ".=\"asdf\nassert 1 == 'wrong'\"]"
+        ".=\"asdf\nassert 1 == 'wrong'\"]"
     )
 
 
@@ -620,8 +620,7 @@ def test_assertion_fails_with_description(pr: PytestRobotTester):
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(
-        "//kw[@name='assert' and ./arg[.='asdf']]/msg[@level='FAIL' and "
-        + ".=\"assert 1 == 'wrong'\"]"
+        "//kw[@name='assert' and ./arg[.='asdf']]/msg[@level='FAIL' and .=\"assert 1 == 'wrong'\"]"
     )
 
 
