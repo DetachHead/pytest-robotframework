@@ -131,8 +131,8 @@ class _FullStackStatusReporter(StatusReporter):
                 str(
                     InternalError(
                         "failed to filter out pytest-robotframework machinery for exception: "
-                        + f"{exc_value!r}\n\nfull traceback:\n\n"
-                        + "".join(format_stack())
+                        f"{exc_value!r}\n\nfull traceback:\n\n"
+                        "".join(format_stack())
                     )
                 )
             )
@@ -316,7 +316,7 @@ class _FunctionKeywordDecorator(_KeywordDecorator):
 
     @deprecated(
         "you must explicitly pass `wrap_context_manager` when using `keyword` with a"
-        + " context manager"
+        " context manager"
     )
     @overload
     def __call__(self, fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
@@ -602,7 +602,7 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
                         # stack trace isn't showsn so we neewd to include the original error in the
                         # message as well
                         f"an error occurred inside {cls.__name__} and failed to get the"
-                        + f" current pytest item/session: {e}"
+                        f" current pytest item/session: {e}"
                     ) from e
                 add_robot_error(item_or_session, str(e))
                 raise

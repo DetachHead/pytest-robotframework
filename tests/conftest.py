@@ -152,7 +152,7 @@ class _XmlElement(Iterable["_XmlElement"]):
     def __len__(self) -> Never:
         raise Exception(
             "cannot call `len()` on `XmlElement` to count its children, use `count_children` "
-            + "instead"
+            "instead"
         )
 
     @override
