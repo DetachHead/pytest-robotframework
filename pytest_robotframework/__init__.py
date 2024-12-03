@@ -408,8 +408,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
             )
         # 🚀 independently verified for safety by the overloads
         return WrappedContextManager(  # pyright:ignore[reportReturnType]
-            fn_result,  # pyright:ignore[reportUnknownArgumentType]
-            status_reporter,
+            fn_result, status_reporter
         )
 
     def __call__(
