@@ -287,13 +287,10 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions):
     # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
     # the test is over
     with LOGGER:
-        exit_code = cast(
-            int,
-            robot.main(  # pyright:ignore[reportUnknownMemberType]
-                _get_pytest_collection_paths(session),
-                # needed because PythonParser.visit_init creates an empty suite
-                **robot_options,
-            ),
+        exit_code = robot.main(  # pyright:ignore[reportUnknownMemberType]
+            _get_pytest_collection_paths(session),
+            # needed because PythonParser.visit_init creates an empty suite
+            **robot_options,
         )
 
     robot_errors = report_robot_errors(session)
