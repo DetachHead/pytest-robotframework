@@ -50,7 +50,6 @@ from pytest_robotframework._internal.robot.utils import (
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Mapping
 
-    from pytest_robotframework._internal.utils import SuppressableContextManager
 
 RobotVariables: TypeAlias = dict[str, object]
 """variable names and values to be set on the suite level. see the `set_variables` function"""
@@ -203,7 +202,7 @@ class _KeywordDecorator:
     def inner(
         cls,
         fn: Callable[P, T],
-        status_reporter: SuppressableContextManager[object],
+        status_reporter: AbstractContextManager[object, bool],
         /,
         *args: P.args,
         **kwargs: P.kwargs,
@@ -256,11 +255,9 @@ class _KeywordDecorator:
             # afterwards, so that context managers like `pytest.raises` can see the actual
             # exception instead of `robot.errors.HandlerExecutionFailed`
             suppress = True
-            context_manager: SuppressableContextManager[
-                object
-                # nullcontext is typed as returning None which pyright incorrectly marks as
-                # unreachable. see SuppressableContextManager documentation
-            ] = (  # pyright:ignore[reportAssignmentType]
+            # nullcontext is typed as returning None which pyright incorrectly marks as
+            # unreachable. see https://github.com/DetachHead/basedpyright/issues/10
+            context_manager: AbstractContextManager[object, bool] = (  # pyright:ignore[reportAssignmentType]
                 (
                     _FullStackStatusReporter(
                         data=data,
