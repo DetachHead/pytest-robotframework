@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-from abc import abstractmethod
-from contextlib import AbstractContextManager
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Protocol, cast
+from typing import TYPE_CHECKING, Callable, cast
 
-from basedtyping import P, T, out_T
-from typing_extensions import override
+from basedtyping import P, T
 
 if TYPE_CHECKING:
-    from types import TracebackType
-
     from typing_extensions import Concatenate
 
 
@@ -50,22 +45,6 @@ def patch_method(
         return new_fn
 
     return decorator
-
-
-class SuppressableContextManager(AbstractContextManager[out_T], Protocol[out_T]):
-    """removes `None` from the return type of `AbstractContextManager.__exit__` to prevent code
-    from being incorrectly marked as unreachable by pyright. see https://github.com/microsoft/pyright/issues/6034
-    """
-
-    @abstractmethod
-    @override
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
-        /,
-    ) -> bool: ...
 
 
 main_package_name = __name__.split(".")[0]
