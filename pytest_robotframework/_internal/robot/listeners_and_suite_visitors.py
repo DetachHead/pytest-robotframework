@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Callable, Final, Literal, Optional, TypeVar, c
 from _pytest import runner
 from _pytest.python import PyobjMixin
 from ansi2html import Ansi2HTMLConverter
-from basedtyping import Function, P, T
 from pluggy import HookCaller, HookImpl
 from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
 from pytest import Class, Function as PytestFunction, Item, Module, Session, StashKey
@@ -62,6 +61,7 @@ if TYPE_CHECKING:
     from types import ModuleType
 
     from _pytest.nodes import Node
+    from basedtyping import Function, P, T
     from robot.running.builder.settings import TestDefaults
     from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 
@@ -623,12 +623,9 @@ if robot_6:
         """use the original function instead of the `@keyword` wrapped one"""
         original_function: Function | None = getattr(handler, _keyword_original_function_attr, None)
         wrapped_function = _hide_already_raised_exception_from_robot_log(
-            cast(
-                Function,
-                _bound_method(handler.__self__, original_function)
-                if original_function is not None and isinstance(handler, MethodType)
-                else (original_function or handler),
-            )
+            _bound_method(handler.__self__, original_function)
+            if original_function is not None and isinstance(handler, MethodType)
+            else (original_function or handler)
         )
         return old_method(self, context, wrapped_function, positional, named)
 
