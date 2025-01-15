@@ -125,9 +125,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
     def _run_keyword(self, keyword: model.Keyword | None):
         if keyword and keyword.name is not None and keyword.name.lower() != "none":
             with self._check_skipped():
-                BuiltIn().run_keyword(  # pyright:ignore[reportUnknownMemberType]
-                    keyword.name, *keyword.args
-                )
+                BuiltIn().run_keyword(keyword.name, *keyword.args)
 
     @override
     def setup(self):
@@ -143,7 +141,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
         if robot_6:
             with check_skipped:
                 # pyright is only run when robot 7 is installed
-                BodyRunner(  # pyright:ignore[reportUnknownMemberType,reportCallIssue]
+                BodyRunner(  # pyright:ignore[reportCallIssue]
                     context=context, templated=bool(test.template)
                 ).run(self.stash[original_body_key])
         else:
@@ -151,9 +149,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
             test.body = self.stash[original_body_key]
             try:
                 with check_skipped:
-                    BodyRunner(  # pyright:ignore[reportUnknownMemberType]
-                        context=context, templated=bool(test.template)
-                    ).run(
+                    BodyRunner(context=context, templated=bool(test.template)).run(
                         data=test,
                         result=context.test,  # pyright:ignore[reportUnknownMemberType]
                     )

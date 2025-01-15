@@ -183,10 +183,12 @@ enable_assertion_pass_hook = true
 [tool.basedpyright]
 ignore = ["pw"]
 pythonVersion = "3.9"
-reportMissingTypeStubs = false            # https://github.com/robotframework/robotframework/issues/4822
+allowedUntypedLibraries = [
+    'robot', # https://github.com/robotframework/robotframework/issues/4822
+]
 reportImplicitStringConcatenation = false # handled by ruff
-reportUnusedImport = false                # covered by ruff (has quickfix)
-reportUnusedVariable = false              # covered by ruff (has quickfix)
+reportUnusedImport = false # covered by ruff (has quickfix)
+reportUnusedVariable = false # covered by ruff (has quickfix)
 
 [tool.ruff]
 unsafe-fixes = true

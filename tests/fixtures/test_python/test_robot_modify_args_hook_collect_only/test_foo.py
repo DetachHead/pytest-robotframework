@@ -4,7 +4,4 @@ from robot.libraries.BuiltIn import BuiltIn
 
 
 def test_foo():
-    assert (
-        BuiltIn().get_variable_value("$foo")  # pyright:ignore[reportUnknownMemberType]
-        is None
-    )
+    assert BuiltIn().get_variable_value("$foo") is None

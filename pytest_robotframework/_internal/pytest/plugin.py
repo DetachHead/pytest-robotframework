@@ -34,7 +34,7 @@ from robot.conf.settings import (
 from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.rebot import Rebot
-from robot.result.resultbuilder import ExecutionResult  # pyright:ignore[reportUnknownVariableType]
+from robot.result.resultbuilder import ExecutionResult
 from robot.run import RobotFramework, RobotSettings
 from robot.utils.error import ErrorDetails
 from typing_extensions import TYPE_CHECKING, Callable, Generator, Mapping, cast
@@ -253,7 +253,7 @@ def _get_robot_args(session: Session) -> RobotOptions:
         options,
         cast(
             RobotOptions,
-            RobotFramework().parse_arguments(  # pyright:ignore[reportUnknownMemberType]
+            RobotFramework().parse_arguments(
                 # i don't think this is actually used here, but we send it the correct paths
                 # just to be safe
                 _get_pytest_collection_paths(session)
@@ -287,7 +287,7 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions):
     # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
     # the test is over
     with LOGGER:
-        exit_code = robot.main(  # pyright:ignore[reportUnknownMemberType]
+        exit_code = robot.main(
             _get_pytest_collection_paths(session),
             # needed because PythonParser.visit_init creates an empty suite
             **robot_options,
@@ -458,7 +458,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                         for output in outputs:
                             _ = cast(
                                 int,
-                                rebot.main(  # pyright:ignore[reportUnknownMemberType]
+                                rebot.main(
                                     [output], output=output, name=merged_suite_name, stdout=None
                                 ),
                             )
@@ -494,7 +494,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                     )
                     rebot_options["loglevel"] = f"TRACE:{default_log_level}"
 
-                    _ = rebot.main(  # pyright:ignore[reportUnknownVariableType,reportUnknownMemberType]
+                    _ = rebot.main(  # pyright:ignore[reportUnknownVariableType]
                         outputs,
                         # merge is deliberately specified here instead of in the merged dict because
                         # it should never be overwritten
@@ -591,7 +591,7 @@ def pytest_runtest_setup(item: Item) -> HookWrapperResult:
         # section and resources should be imported with `Resource` in the `*** Settings***` section
         builtin = BuiltIn()
         for key, value in _suite_variables[item.path].items():
-            builtin.set_suite_variable(  # pyright:ignore[reportUnknownMemberType]
+            builtin.set_suite_variable(
                 r"${" + key + "}", escape_robot_str(value) if isinstance(value, str) else value
             )
         del _suite_variables[item.path]

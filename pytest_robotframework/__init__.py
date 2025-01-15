@@ -27,10 +27,7 @@ from robot.running import model
 from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import ExecutionStatus, HandlerExecutionFailed, StatusReporter
-from robot.utils import (
-    getshortdoc,  # pyright:ignore[reportUnknownVariableType]
-    printable_name,  # pyright:ignore[reportUnknownVariableType]
-)
+from robot.utils import getshortdoc, printable_name
 from robot.utils.error import ErrorDetails
 from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 
@@ -75,9 +72,7 @@ def import_resource(path: Path | str) -> None:
 
     to import libraries, use a regular python import"""
     if execution_context():
-        BuiltIn().import_resource(  # pyright:ignore[reportUnknownMemberType]
-            escape_robot_str(str(path))
-        )
+        BuiltIn().import_resource(escape_robot_str(str(path)))
     else:
         _resources.append(Path(path))
 
@@ -104,7 +99,7 @@ class _FullStackStatusReporter(StatusReporter):
             return exc_value
         if isinstance(exc_value, DataError):
             msg = exc_value.message
-            context.fail(msg)  # pyright:ignore[reportUnknownMemberType]
+            context.fail(msg)
             return ExecutionFailed(msg, syntax=exc_value.syntax)
 
         tb = None
@@ -145,11 +140,11 @@ class _FullStackStatusReporter(StatusReporter):
         # therefore has already been logged by its status reporter
         is_nested_status_reporter_failure = len(_get_status_reporter_failures(exc_value)) > 1
         if failure.skip:
-            context.skip(error.message)  # pyright:ignore[reportUnknownMemberType]
+            context.skip(error.message)
         elif not is_nested_status_reporter_failure:
-            context.fail(error.message)  # pyright:ignore[reportUnknownMemberType]
+            context.fail(error.message)
         if not is_nested_status_reporter_failure and error.traceback:
-            context.debug(error.traceback)  # pyright:ignore[reportUnknownMemberType]
+            context.debug(error.traceback)
         return failure
 
 
@@ -288,10 +283,7 @@ class _KeywordDecorator:
                             context=context,
                             suppress=suppress,
                             implementation=cast(
-                                LibraryKeywordRunner,
-                                context.get_runner(  # pyright:ignore[reportUnknownMemberType]
-                                    keyword_name
-                                ),
+                                LibraryKeywordRunner, context.get_runner(keyword_name)
                             ).keyword.bind(data),
                         )
                     )
