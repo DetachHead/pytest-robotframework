@@ -490,12 +490,9 @@ def keyword(  # pylint:disable=missing-param-doc
         if wrap_context_manager:
             return _WrappedContextManagerKeywordDecorator(name=name, tags=tags, module=module)
         return _NonWrappedContextManagerKeywordDecorator(name=name, tags=tags, module=module)
-    return keyword(  # pyright:ignore[reportCallIssue,reportUnknownVariableType]
-        name=name,
-        tags=tags,
-        module=module,
-        wrap_context_manager=wrap_context_manager,  # pyright:ignore[reportArgumentType]
-    )(fn)
+    return keyword(  # pyright:ignore[reportReturnType]
+        name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager
+    )(fn)  # pyright:ignore[reportArgumentType]
 
 
 def as_keyword(
@@ -558,12 +555,9 @@ def keywordify(
     setattr(
         obj,
         method_name,
-        keyword(  # pyright:ignore[reportCallIssue]
-            name=name,
-            tags=tags,
-            module=module,
-            wrap_context_manager=wrap_context_manager,  # pyright:ignore[reportArgumentType]
-        )(getattr(obj, method_name)),
+        keyword(name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager)(
+            getattr(obj, method_name)  # pyright:ignore[reportAny]
+        ),
     )
 
 
