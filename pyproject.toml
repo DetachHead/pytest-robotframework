@@ -48,7 +48,8 @@ dev-dependencies = [
     "basedpyright>=1.10.1",
     "pylint>=3.2.0",
     "ruff>=0.2.0",
-    "robotframework-robocop>=4.1.0",
+    # https://github.com/robotcodedev/robotcode/issues/411
+    "robotframework-robocop>=4.1.0,<6",
     "robotframework-tidy>=4.5.0",
     "lxml>=4.9.3",
     "lxml-stubs>=0.4.0",
