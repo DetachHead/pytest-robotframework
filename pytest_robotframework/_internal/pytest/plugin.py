@@ -343,7 +343,7 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
         {
             "prerunmodifier": [
                 RobotTestFilterer(session, items=items),
-                PytestRuntestProtocolInjector(session=session, item=xdist_item),
+                PytestRuntestProtocolInjector(session=session, xdist_item=xdist_item),
             ],
             "listener": listeners,
         },

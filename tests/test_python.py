@@ -197,12 +197,18 @@ def test_error_moment(pr: PytestRobotTester):
     assert xml.xpath(".//test/kw[@name='Run Test']/msg[@level='INFO' and .='bar']")
 
 
-def test_fixture_scope(pr: PytestRobotTester):
+def test_fixture_class_scope(pr: PytestRobotTester):
     if pr.xdist:
         # since the test is split into separate jobs, the fixture has to run multiple times
         pr.run_and_assert_result(passed=1, failed=1)
     else:
         pr.run_and_assert_result(passed=2)
+    pr.assert_log_file_exists()
+
+
+def test_fixture_module_scope(pytester_dir: PytesterDir):
+    pr = PytestRobotTester(pytester=pytester_dir, xdist=None)
+    pr.run_and_assert_result(passed=2)
     pr.assert_log_file_exists()
 
 
