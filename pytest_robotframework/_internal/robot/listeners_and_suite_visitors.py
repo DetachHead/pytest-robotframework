@@ -285,43 +285,45 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
     `PytestRuntestProtocolHooks` listener
     """
 
-    def __init__(self, *, session: Session, item: Item | None = None):
+    def __init__(self, *, session: Session, xdist_item: Item | None = None):
         super().__init__()
         self.session = session
-        self.item = item
+        self.xdist_item: Final = xdist_item
+        self._previous_item: Item | None = None
+
+    @override
+    # https://github.com/robotframework/robotframework/issues/4940
+    def start_test(self, test: running.TestCase) -> bool | None:  # pyright:ignore[reportIncompatibleMethodOverride]
+        if self.xdist_item:
+            item = self.xdist_item
+        else:
+            item = get_item_from_robot_test(self.session, test)
+            if not item:
+                raise InternalError(
+                    "this should NEVER happen, `PytestCollector` failed to filter out " + test.name
+                )
+            # need to set nextitem on all the items, because for some reason the attribute
+            # exists on the class but is never used
+            if self._previous_item and not cast(Optional[Item], self._previous_item.nextitem):
+                self._previous_item.nextitem = (  # pyright:ignore[reportAttributeAccessIssue]
+                    item
+                )
+            self._previous_item = item
+        cloaked_item = Cloaked(item)
+        item.stash[original_setup_key] = test.setup
+        test.setup = _create_running_keyword("SETUP", setup, cloaked_item)
+
+        item.stash[original_body_key] = test.body
+        test.body = Body(items=[_create_running_keyword("KEYWORD", run_test, cloaked_item)])
+
+        item.stash[original_teardown_key] = test.teardown
+        test.teardown = _create_running_keyword("TEARDOWN", teardown, cloaked_item)
 
     @override
     def start_suite(self, suite: ModelTestSuite):
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
         _ = suite.resource.imports.library(robot_library_name, alias=robot_library_name)
-        item: Item | None = None
-        for test in suite.tests:
-            if self.item:
-                item = self.item
-            else:
-                previous_item: Item | None = item
-                item = get_item_from_robot_test(self.session, test)
-                if not item:
-                    raise InternalError(
-                        "this should NEVER happen, `PytestCollector` failed to filter out "
-                        + test.name
-                    )
-                # need to set nextitem on all the items, because for some reason the attribute
-                # exists on the class but is never used
-                if previous_item and not cast(Optional[Item], previous_item.nextitem):
-                    previous_item.nextitem = (  # pyright:ignore[reportAttributeAccessIssue]
-                        item
-                    )
-            cloaked_item = Cloaked(item)
-            item.stash[original_setup_key] = test.setup
-            test.setup = _create_running_keyword("SETUP", setup, cloaked_item)
-
-            item.stash[original_body_key] = test.body
-            test.body = Body(items=[_create_running_keyword("KEYWORD", run_test, cloaked_item)])
-
-            item.stash[original_teardown_key] = test.teardown
-            test.teardown = _create_running_keyword("TEARDOWN", teardown, cloaked_item)
 
 
 _HookWrapper = Generator[None, object, object]
