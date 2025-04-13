@@ -42,8 +42,10 @@ Listener = Union[ListenerV2, ListenerV3]
 def get_arg_with_type(
     cls: type[T], args: tuple[object, ...], kwargs: Mapping[str, object]
 ) -> T | None:
-    """since we rice `StatusReporter._get_failure` but it has a different signature on different
-    robot versions, we need to figure out what argument it is"""
+    """
+    since we rice `StatusReporter._get_failure` but it has a different signature on different
+    robot versions, we need to figure out what argument it is
+    """
     try:
         return next(arg for arg in (*args, *kwargs) if isinstance(arg, cls))
     except StopIteration:
@@ -51,7 +53,8 @@ def get_arg_with_type(
 
 
 class RobotOptions(TypedDict):
-    """robot command-line arguments after being parsed by robot into a `dict`.
+    """
+    robot command-line arguments after being parsed by robot into a `dict`.
 
     for example, the following robot options:
 
@@ -176,7 +179,8 @@ running_test_case_key = StashKey[running.TestCase]()
 def get_item_from_robot_test(
     session: Session, test: running.TestCase, *, all_items_should_have_tests: bool = True
 ) -> Item | None:
-    """set `all_items_should_have_tests` to `False` if the assigning of the `running_test_case_key`
+    """
+    set `all_items_should_have_tests` to `False` if the assigning of the `running_test_case_key`
     stashes is still in progress
     """
     for item in session.items:
@@ -220,8 +224,10 @@ def report_robot_errors(item_or_session: Item | Session) -> str | None:
 
 
 def escape_robot_str(value: str) -> str:
-    r"""in the robot language, backslashes (`\`) get stripped as they are used as escape characters,
-    so they need to be duplicated when used in keywords called from python code"""
+    r"""
+    in the robot language, backslashes (`\`) get stripped as they are used as escape characters,
+    so they need to be duplicated when used in keywords called from python code
+    """
     return value.replace("\\", "\\\\")
 
 
@@ -246,8 +252,10 @@ def _merge_robot_options(
 
 
 def merge_robot_options(*robot_options: InternalRobotOptions) -> dict[str, object]:
-    """merges two dicts of robot options, combining lists, or overriding them with `None` if a later
-    object explicitly sets the value to `None`"""
+    """
+    merges two dicts of robot options, combining lists, or overriding them with `None` if a later
+    object explicitly sets the value to `None`
+    """
     return reduce(_merge_robot_options, robot_options, {})
 
 

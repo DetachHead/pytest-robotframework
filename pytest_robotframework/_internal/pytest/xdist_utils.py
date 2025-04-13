@@ -34,8 +34,10 @@ def worker_id(session: Session) -> str | None:
 
 
 def is_xdist_worker(session: Session) -> bool:
-    """checks whether the test is running in xdist mode (`-n` argument), since we need special
-    handling to support it"""
+    """
+    checks whether the test is running in xdist mode (`-n` argument), since we need special
+    handling to support it
+    """
     return worker_id(session) is not None
 
 

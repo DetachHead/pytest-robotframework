@@ -1,7 +1,9 @@
-"""cringe global variables for when there's no other way to get the current session/item. this
+"""
+cringe global variables for when there's no other way to get the current session/item. this
 should only be used as a last resort
 
-this is safe for now since robot doesn't support running multiple tests at the same time"""
+this is safe for now since robot doesn't support running multiple tests at the same time
+"""
 
 from __future__ import annotations
 

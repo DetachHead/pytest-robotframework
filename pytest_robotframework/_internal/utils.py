@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 def patch_method(
     cls: type[object], method_name: str | None = None
 ) -> Callable[[Callable[Concatenate[Callable[P, T], P], T]], Callable[P, T]]:
-    """replaces a method of a class with the decorated one
+    """
+    replaces a method of a class with the decorated one
 
     example:
     -------

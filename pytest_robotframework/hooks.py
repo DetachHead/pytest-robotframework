@@ -1,8 +1,10 @@
 # ideally this would be in _internal.pytest so this would go without saying, but i can't figure out
 # any other way to get this module to show up in pdoc
-"""new hooks defined by the pytest_robotframework plugin. these are not to be imported. see
+"""
+new hooks defined by the pytest_robotframework plugin. these are not to be imported. see
 [the documentation for pytest hook functions](https://docs.pytest.org/en/7.1.x/how-to/writing_hook_functions.html)
-for information on how to use them."""
+for information on how to use them.
+"""
 
 from __future__ import annotations
 
@@ -27,7 +29,8 @@ if TYPE_CHECKING:
 
 @hookspec
 def pytest_robot_modify_options(options: RobotOptions, session: Session) -> None:
-    """modify the arguments passed to robot in-place
+    """
+    modify the arguments passed to robot in-place
 
     :param options: the arguments to be passed to robot in dict format. for example,
     `{"listener": ["Foo", "Bar"]}`means `--listener Foo --listener Bar`). you can also specify
@@ -52,7 +55,8 @@ def pytest_robot_assertion(
     assertion_error: AssertionError | None,
     explanation: str,
 ) -> None:
-    """gets called when an assertion runs. unlike `pytest_assertrepr_compare` and
+    """
+    gets called when an assertion runs. unlike `pytest_assertrepr_compare` and
     `pytest_assertion_pass`, this hook is executed on both passing and failing assertions, and
     allows you to see the second argument passed to `assert` statement
 
