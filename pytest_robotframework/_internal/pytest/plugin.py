@@ -129,7 +129,8 @@ rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttr
 def visit_Assert(  # noqa: N802
     og: Callable[[AssertionRewriter, Assert], list[stmt]], self: AssertionRewriter, assert_: Assert
 ) -> list[stmt]:
-    """we patch the assertion rewriter because the hook functions do not give us what we need. see
+    """
+    we patch the assertion rewriter because the hook functions do not give us what we need. see
     these issues:
 
     - https://github.com/pytest-dev/pytest/issues/11984
@@ -200,10 +201,12 @@ _xdist_ourput_dir_name = "robot_xdist_outputs"
 
 
 def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
-    """this is usually done during collection inside `perform_collect`,
+    """
+    this is usually done during collection inside `perform_collect`,
     but there's a "circular dependency" between pytest collection and robot "collection":
     pytest collection needs the tests collected by robot, but for robot to run it needs the paths
-    resolved during pytest collection."""
+    resolved during pytest collection.
+    """
     if session._initialpaths:  # pyright:ignore[reportPrivateUsage]
         return session._initialpaths  # pyright:ignore[reportPrivateUsage]
     result: set[Path] = set()
@@ -305,7 +308,8 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions):
 
 
 def _robot_collect(session: Session):
-    """runs robot in "collection" mode, meaning it won't actually run any tests or output any result
+    """
+    runs robot in "collection" mode, meaning it won't actually run any tests or output any result
     files. this is only used to set `session.stash[collected_robot_tests_key]` which is then used in
     `_internal.pytest.robot_file_support` during collectionto create `RobotItem`s for tests located
     in `.robot` files

@@ -55,10 +55,12 @@ _suite_variables = defaultdict[Path, RobotVariables](dict)
 
 
 def set_variables(variables: RobotVariables) -> None:
-    """sets suite-level variables, equivalent to the `*** Variables ***` section in a `.robot` file.
+    """
+    sets suite-level variables, equivalent to the `*** Variables ***` section in a `.robot` file.
 
     also performs some validation checks that robot doesn't to make sure the variable has the
-    correct type matching its prefix."""
+    correct type matching its prefix.
+    """
     suite_path = Path(inspect.stack()[1].filename)
     _suite_variables[suite_path] = variables
 
@@ -67,10 +69,12 @@ _resources: list[Path] = []
 
 
 def import_resource(path: Path | str) -> None:
-    """imports the specified robot `.resource` file when the suite execution begins.
+    """
+    imports the specified robot `.resource` file when the suite execution begins.
     use this when specifying robot resource imports at the top of the file.
 
-    to import libraries, use a regular python import"""
+    to import libraries, use a regular python import
+    """
     if execution_context():
         BuiltIn().import_resource(escape_robot_str(str(path)))
     else:
@@ -78,12 +82,14 @@ def import_resource(path: Path | str) -> None:
 
 
 class _FullStackStatusReporter(StatusReporter):
-    """Riced status reporter that does the following:
+    """
+    Riced status reporter that does the following:
 
     - inserts the full test traceback into exceptions raisec within it (otherwise it would only go
     back to the start of the keyword, instead of the whole test)
     - does not log failures when they came from a nested keyword, to prevent errors from being
-    duplicated for each keyword in the stack"""
+    duplicated for each keyword in the stack
+    """
 
     @override
     def _get_failure(self, *args: Never, **kwargs: Never):
@@ -152,7 +158,8 @@ _status_reporter_exception_attr = "__pytest_robot_status_reporter_exceptions__"
 
 
 def _get_status_reporter_failures(exception: BaseException) -> list[HandlerExecutionFailed]:
-    """normally, robot wraps exceptions from keywords in a `HandlerExecutionFailed` or
+    """
+    normally, robot wraps exceptions from keywords in a `HandlerExecutionFailed` or
     something, but we want to preserve the original exception so that users can use
     `try`/`except` without having to worry about their expected exception being wrapped in
     something else, so instead we just add this attribute to the existing exception so we can
@@ -160,7 +167,8 @@ def _get_status_reporter_failures(exception: BaseException) -> list[HandlerExecu
     it was already logged inside a keyword
 
     it's a stack because we need to check if there is more than 1 wrapped exception in
-    `FullStackStatusReporter`"""
+    `FullStackStatusReporter`
+    """
     wrapped_error: list[HandlerExecutionFailed] | None = getattr(
         exception, _status_reporter_exception_attr, None
     )
@@ -229,10 +237,12 @@ class _KeywordDecorator:
         @wraps(fn)
         def inner(*args: P.args, **kwargs: P.kwargs) -> T:
             def truncate(arg: object) -> str:
-                """robotframework usually just uses the argument as it was written in the source
+                """
+                robotframework usually just uses the argument as it was written in the source
                 code, but since we can't easily access that in python, we use the actual value
                 instead, but that can sometimes be huge so we truncate it. you can see the full
-                value when running with the DEBUG loglevel anyway"""
+                value when running with the DEBUG loglevel anyway
+                """
                 max_length = 50
                 value = str(arg)
                 return value[:max_length] + "..." if len(value) > max_length else value
@@ -298,9 +308,11 @@ class _KeywordDecorator:
 
 
 class _FunctionKeywordDecorator(_KeywordDecorator):
-    """decorator for a keyword that does not return a context manager. does not allow functions that
+    """
+    decorator for a keyword that does not return a context manager. does not allow functions that
     return context managers. if you want to decorate a context manager, pass the
-    `wrap_context_manager` argument to the `keyword` decorator"""
+    `wrap_context_manager` argument to the `keyword` decorator
+    """
 
     @deprecated(
         "you must explicitly pass `wrap_context_manager` when using `keyword` with a"
@@ -320,7 +332,8 @@ _T_ContextManager = TypeVar("_T_ContextManager", bound=AbstractContextManager[ob
 
 
 class _NonWrappedContextManagerKeywordDecorator(_KeywordDecorator):
-    """decorator for a function that returns a context manager. only wraps the function as a keyword
+    """
+    decorator for a function that returns a context manager. only wraps the function as a keyword
     but not the body of the context manager it returns. to do that, pass `wrap_context_manager=True`
     """
 
@@ -329,7 +342,8 @@ class _NonWrappedContextManagerKeywordDecorator(_KeywordDecorator):
 
 
 class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
-    """decorator for a function that returns a context manager. only wraps the body of the context
+    """
+    decorator for a function that returns a context manager. only wraps the body of the context
     manager it returns
     """
 
@@ -347,8 +361,10 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
 
         @final
         class WrappedContextManager(AbstractContextManager[object]):
-            """defers exiting the status reporter until after the wrapped context
-            manager is finished"""
+            """
+            defers exiting the status reporter until after the wrapped context
+            manager is finished
+            """
 
             def __init__(
                 self,
@@ -459,7 +475,8 @@ def keyword(  # pylint:disable=missing-param-doc
     module: str | None = None,
     wrap_context_manager: bool | None = None,
 ) -> _KeywordDecorator | Callable[P, T]:
-    """marks a function as a keyword and makes it show in the robot log.
+    """
+    marks a function as a keyword and makes it show in the robot log.
 
     unlike robot's `deco.keyword` decorator, this one will make your function appear as a keyword in
     the robot log even when ran from a python file.
@@ -495,7 +512,8 @@ def as_keyword(
     args: Iterable[str] | None = None,
     kwargs: Mapping[str, str] | None = None,
 ) -> AbstractContextManager[None]:
-    """runs the body as a robot keyword.
+    """
+    runs the body as a robot keyword.
 
     example:
     -------
@@ -526,7 +544,8 @@ def keywordify(
     module: str | None = None,
     wrap_context_manager: bool = False,
 ) -> None:
-    """patches a function to make it show as a keyword in the robot log.
+    """
+    patches a function to make it show as a keyword in the robot log.
 
     you should only use this on third party modules that you don't control. if you want your own
     function to show as a keyword you should decorate it with `@keyword` instead (the one from this
@@ -559,14 +578,16 @@ _T_ListenerOrSuiteVisitor = TypeVar(
 
 
 def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
-    """errors that occur inside suite visitors and listeners do not cause the test run to fail. even
+    """
+    errors that occur inside suite visitors and listeners do not cause the test run to fail. even
     `--exitonerror` doesn't catch every exception (see <https://github.com/robotframework/robotframework/issues/4853>).
 
     this decorator will remember any errors that occurred inside listeners and suite visitors, then
     raise them after robot has finished running.
 
     you don't need this if you are using the `listener` or `pre_rebot_modifier` decorator, as
-    those decorators use `catch_errors` as well"""
+    those decorators use `catch_errors` as well
+    """
     # prevent classes from being wrapped twice
     marker = "_catch_errors"
     if hasattr(cls, marker):
@@ -614,7 +635,8 @@ def catch_errors(cls: _T_ListenerOrSuiteVisitor) -> _T_ListenerOrSuiteVisitor:
 
 
 class AssertOptions:
-    """pass this as the second argument to an `assert` statement to customize how it appears in the
+    """
+    pass this as the second argument to an `assert` statement to customize how it appears in the
     robot log.
 
     example:
@@ -687,7 +709,8 @@ _hide_asserts_context_manager_key = StashKey[bool]()
 
 @contextmanager
 def hide_asserts_from_robot_log() -> Iterator[None]:
-    """context manager for hiding multiple passing `assert` statements from the robot log. note that
+    """
+    context manager for hiding multiple passing `assert` statements from the robot log. note that
     individual `assert` statements using `AssertOptions(log_pass=True)` take precedence, and that
     failing assertions will always appear in the log.
 

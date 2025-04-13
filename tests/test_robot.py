@@ -121,8 +121,10 @@ def test_two_files_run_one_test(pr: PytestRobotTester):
 
 
 def test_two_files_run_test_from_second_suite(pr: PytestRobotTester):
-    """makes sure `PytestCollector` correctly filters the tests without mutating the list of tests
-    as it iterates over it"""
+    """
+    makes sure `PytestCollector` correctly filters the tests without mutating the list of tests
+    as it iterates over it
+    """
     pr.run_and_assert_result("fdsa/bar.robot::Baz", passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()

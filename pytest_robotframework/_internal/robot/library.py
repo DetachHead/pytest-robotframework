@@ -1,5 +1,7 @@
-"""robot library that contains the keywords added by the plugin. this module is imported as a robot
-library by `robot_classes.PytestRuntestProtocolInjector`"""
+"""
+robot library that contains the keywords added by the plugin. this module is imported as a robot
+library by `robot_classes.PytestRuntestProtocolInjector`
+"""
 
 from __future__ import annotations
 
@@ -32,8 +34,10 @@ ROBOT_AUTO_KEYWORDS: Final = False
 def _call_and_report_robot_edition(
     item: Item, when: Literal["setup", "call", "teardown"], **kwargs: object
 ):
-    """wrapper for the `call_and_report` function used by `_pytest.runner.runtestprotocol`
-    with additional logic to show the result in the robot log"""
+    """
+    wrapper for the `call_and_report` function used by `_pytest.runner.runtestprotocol`
+    with additional logic to show the result in the robot log
+    """
     reports = item.stash.setdefault(_report_key, [])
     report = call_and_report(item, when, log=True, **kwargs)
     reports.append(report)

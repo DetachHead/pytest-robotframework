@@ -31,9 +31,11 @@ pytest_plugins = ["pytester"]
 
 
 def try_symlink(src: StrPath, dest: StrPath):
-    """try to use symlinks so breakpoints in the copied python files still work
+    """
+    try to use symlinks so breakpoints in the copied python files still work
 
-    but some computers don't support symlinks so fall back to the copy method"""
+    but some computers don't support symlinks so fall back to the copy method
+    """
     try:
         symlink(src, dest)
     except OSError:
@@ -42,7 +44,8 @@ def try_symlink(src: StrPath, dest: StrPath):
 
 @fixture
 def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
-    """wrapper for pytester that moves the files located in
+    """
+    wrapper for pytester that moves the files located in
     `tests/fixtures/[test file]/[test name].py` to the pytester temp dir for the current test, so
     you don't have to write your test files as strings with the `makefile`/`makepyfile` methods
     """
@@ -76,10 +79,12 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
 if TYPE_CHECKING:
     # Pytester is final so it's probably a bad idea to rely on extending this at runtime
     class PytesterDir(Pytester):  # pyright:ignore[reportGeneralTypeIssues]
-        """fake subtype of `Pytester` that bans you from using file creation and runpytest methods.
+        """
+        fake subtype of `Pytester` that bans you from using file creation and runpytest methods.
         you should put real life files in `tests/fixtures/[test file path]/[test name]` instead,
         and use the runpytest methods on `PytestRobotTester` since they have handling for the xdist
-        parameterization"""
+        parameterization
+        """
 
         @override
         def makepyfile(self, *args: Never, **kwargs: Never) -> Never: ...
@@ -181,8 +186,10 @@ class _XmlElement(Iterable["_XmlElement"]):
 if TYPE_CHECKING:
 
     class XmlElement(_Element):
-        """proxy for lxml's `_Element` that disables its stupid nonsense `__bool__` and `__len__`
-        behavior"""
+        """
+        proxy for lxml's `_Element` that disables its stupid nonsense `__bool__` and `__len__`
+        behavior
+        """
 
         def __init__(self, element: _Element) -> None: ...
 
@@ -191,8 +198,10 @@ if TYPE_CHECKING:
 
         @override
         def __len__(self) -> Never:  # pyright:ignore[reportReturnType]
-            """normally this returns how many children it has. but if you want to check than then
-            call `count_children` instead"""
+            """
+            normally this returns how many children it has. but if you want to check than then
+            call `count_children` instead
+            """
 
         def count_children(self) -> int: ...
 
@@ -232,10 +241,12 @@ class PytestRobotTester:
         assert not _log_file_exists()
 
     def assert_log_file_exists(self, *, check_xdist: bool = True):
-        """asserts that robot generated a log file, and ensures that it did/didn't use xdist.
+        """
+        asserts that robot generated a log file, and ensures that it did/didn't use xdist.
 
         set `check_xdist` to `False` if you expect no tests to have been run (in which case most
-        of the xdist-specific logic won't get hit so the xdist check would fail)"""
+        of the xdist-specific logic won't get hit so the xdist check would fail)
+        """
         assert _log_file_exists()
         # far from perfect but we can be reasonably confident that the xdist stuff ran if this
         # folder exists

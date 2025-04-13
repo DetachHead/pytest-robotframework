@@ -1,5 +1,7 @@
-"""robot parsers, prerunmodifiers and listeners that the plugin (`plugin.py`) uses when running
-robot (some of them are not activated when running pytest in `--collect-only` mode)"""
+"""
+robot parsers, prerunmodifiers and listeners that the plugin (`plugin.py`) uses when running
+robot (some of them are not activated when running pytest in `--collect-only` mode)
+"""
 
 from __future__ import annotations
 
@@ -80,12 +82,14 @@ def _create_running_keyword(
 
 @final
 class PythonParser(Parser):
-    """custom robot "parser" for python files. doesn't actually do any parsing, but instead relies
+    """
+    custom robot "parser" for python files. doesn't actually do any parsing, but instead relies
     on pytest collection already being run, so it can use the collected items to populate a robot
     suite.
 
     the `PytestRuntestProtocolInjector` inserts the actual test functions which are responsible for
-    actually running the setup/call/teardown functions"""
+    actually running the setup/call/teardown functions
+    """
 
     _robot_suite_key: Final = StashKey[running.TestSuite]()
 
@@ -200,8 +204,10 @@ class _NotRunningTestSuiteError(InternalError):
 @catch_errors
 @final
 class RobotSuiteCollector(SuiteVisitor):
-    """used when running robot during collection to collect it the suites from `.robot` files so
-    that pytest items can be created from them in `_internal.pytest.robot_file_support`"""
+    """
+    used when running robot during collection to collect it the suites from `.robot` files so
+    that pytest items can be created from them in `_internal.pytest.robot_file_support`
+    """
 
     def __init__(self, session: Session):
         super().__init__()
@@ -268,7 +274,8 @@ class RobotTestFilterer(SuiteVisitor):
 @catch_errors
 @final
 class PytestRuntestProtocolInjector(SuiteVisitor):
-    """injects the setup, call and teardown hooks from `_pytest.runner.pytest_runtest_protocol` into
+    """
+    injects the setup, call and teardown hooks from `_pytest.runner.pytest_runtest_protocol` into
     the robot test suite. this replaces any existing setup/body/teardown with said hooks, which may
     or may not be an issue depending on whether a python or robot test is being run.
 
@@ -332,7 +339,8 @@ _HookWrapper = Generator[None, object, object]
 @catch_errors
 @final
 class PytestRuntestProtocolHooks(ListenerV3):
-    """runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from
+    """
+    runs the `pytest_runtest_logstart` and `pytest_runtest_logfinish` hooks from
     `pytest_runtest_protocol`. since all the other parts of `_pytest.runner.runtestprotocol` are
     re-implemented in `PytestRuntestProtocolInjector`.
 
@@ -359,8 +367,10 @@ class PytestRuntestProtocolHooks(ListenerV3):
 
     @staticmethod
     def _unproxy_hook_caller(hook_caller: HookCaller) -> HookCaller:
-        """`HookCaller`s can sometimes be a proxy, which means it can't be mutated, so we need to
-        unproxy it if we intend to modify it"""
+        """
+        `HookCaller`s can sometimes be a proxy, which means it can't be mutated, so we need to
+        unproxy it if we intend to modify it
+        """
         return (
             hook_caller._orig  # pyright:ignore[reportPrivateUsage]
             if isinstance(hook_caller, _SubsetHookCaller)
@@ -504,7 +514,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
 @catch_errors
 @final
 class ErrorDetector(ListenerV3):
-    """since errors logged by robot don't raise an exception and therefore won't cause the pytest
+    """
+    since errors logged by robot don't raise an exception and therefore won't cause the pytest
     test to fail (or even the robot test unless `--exitonerror` is enabled), we need to listen for
     errors and save them to the item to be used in the plugin's `pytest_runtest_makereport` hook
     """
@@ -597,8 +608,10 @@ _R = TypeVar("_R")
 
 
 def _bound_method(instance: T, fn: Callable[Concatenate[T, P], _R]) -> Callable[P, _R]:
-    """if the keyword we're patching is on a class library, we need to re-bound the method to the
-    instance"""
+    """
+    if the keyword we're patching is on a class library, we need to re-bound the method to the
+    instance
+    """
 
     def inner(*args: P.args, **kwargs: P.kwargs) -> _R:
         return fn(instance, *args, **kwargs)
@@ -637,9 +650,11 @@ else:
 
     @catch_errors
     class KeywordUnwrapper(ListenerV3):
-        """prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
+        """
+        prevents keywords decorated with `pytest_robotframework.keyword` from being wrapped in
         two status reporters when called from `.robot` tests, and prevents exceptions from being
-        printed a second time since they would already have been printed in a child keyword"""
+        printed a second time since they would already have been printed in a child keyword
+        """
 
         @override
         def start_library_keyword(
