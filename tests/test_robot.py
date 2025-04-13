@@ -335,3 +335,8 @@ def test_keyword_decorator_class_library(pr: PytestRobotTester):
         output_xml(),
         f"//kw[@name='Foo' and @{'library' if robot_6 else 'owner'}='ClassLibrary']/msg[.='hi']",
     )
+
+
+def test_pass_execution(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=1)
+    pr.assert_log_file_exists()

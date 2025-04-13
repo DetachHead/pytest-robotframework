@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Callable, cast, final
 from _pytest._code.code import ReprFileLocation, TerminalRepr
 from pytest import Config, ExceptionInfo, File, Item, MarkDecorator, Session, StashKey, mark, skip
 from robot import model
-from robot.errors import ExecutionFailed, ExecutionFailures, RobotError
+from robot.errors import ExecutionFailures, ExecutionStatus, RobotError
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
 from robot.running.model import Body
@@ -112,19 +112,22 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
 
     @staticmethod
     @contextmanager
-    def _check_skipped() -> Iterator[None]:
-        """since robot and pytest skips are different, we need to catch robot skips and convert them
-        to pytest skips"""
+    def _check_execution_status() -> Iterator[None]:
+        """
+        catches robot execution status exceptions to turn them into their pytest equivalent
+        """
         try:
             yield
-        except ExecutionFailed as e:
+        except ExecutionStatus as e:
             if e.status == "SKIP":
                 skip(e.message)
-            raise
+            if e.status != "PASS":  # pyright:ignore[reportUnnecessaryComparison] type is wrong
+                # unlike robot, pytest does not raise a passed exception
+                raise
 
     def _run_keyword(self, keyword: model.Keyword | None):
         if keyword and keyword.name is not None and keyword.name.lower() != "none":
-            with self._check_skipped():
+            with self._check_execution_status():
                 BuiltIn().run_keyword(keyword.name, *keyword.args)
 
     @override
@@ -137,7 +140,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
         context = execution_context()
         if not context:
             raise InternalError("failed to runtest because no execution context")
-        check_skipped = self._check_skipped()
+        check_skipped = self._check_execution_status()
         if robot_6:
             with check_skipped:
                 # pyright is only run when robot 7 is installed
