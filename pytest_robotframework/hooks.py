@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 # https://github.com/DetachHead/basedpyright/issues/311
 # pyright:reportReturnType=false, reportUnusedParameter=false
 # https://github.com/astral-sh/ruff/issues/7286
-# ruff: noqa: FBT001, PLR0917
+# ruff: noqa: PLR0917
 
 
 @hookspec
