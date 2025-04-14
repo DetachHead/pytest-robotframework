@@ -654,6 +654,7 @@ class AssertOptions:
         log_pass: bool | None = None,
         description: str | None = None,
         fail_message: str | None = None,
+        verbosity: int | None = None,
     ) -> None:
         super().__init__()
         self.log_pass: bool | None = log_pass
@@ -697,6 +698,27 @@ class AssertOptions:
         """optional description for the `assert` statement that will be included in the
         `AssertionError` message if the assertion fails. equivalent to a normal `assert` statement's
         second argument"""
+
+        self.verbosiy = verbosity
+        """override the verbosity for this assert statement. by default, `assert` statements will
+        not show the full diff unless pytest is run with `-vv` (aka. `--verbosity=2`). the values
+        correspond to the following pytest arguments:
+        
+        - `--verbosity=-1` (aka. `-q` / `--quiet`)
+        - `--verbosity=0` (the default verbosity)
+        - `--verbosity=1` (aka. `-v` / `--verbose`)
+        - `--verbosity=2` (aka. `-vv`)
+
+        values higher than 2 are allowed but have no effect in pytest itself, however some plugins
+        might make use of higher verbosity.
+
+        `None` means the verbosity will be unchanged from whatever level pytest was run with
+
+        example:
+        -------
+        due to [this issue](https://github.com/pytest-dev/pytest/issues/12009#issuecomment-2201710676),
+        this argument has no effect when run from CI.
+        """
 
     @override
     def __repr__(self) -> str:
