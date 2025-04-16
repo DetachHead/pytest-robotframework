@@ -13,8 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
       - run: ./pw uv sync
       - name: generate docs
         run: ./pw uv run pdoc pytest_robotframework -o docs
