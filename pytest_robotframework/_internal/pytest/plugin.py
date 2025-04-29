@@ -37,7 +37,7 @@ from robot.rebot import Rebot
 from robot.result.resultbuilder import ExecutionResult
 from robot.run import RobotFramework, RobotSettings
 from robot.utils.error import ErrorDetails
-from typing_extensions import TYPE_CHECKING, Callable, Generator, Mapping, cast
+from typing_extensions import TYPE_CHECKING, Callable, Generator, Mapping, TypeVar, cast
 
 from pytest_robotframework import (
     AssertOptions,
@@ -87,6 +87,7 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from _pytest.terminal import TerminalReporter
+    from basedtyping import Fn
     from pluggy import PluginManager
     from pytest import CallInfo, Item, Parser, Session
 
@@ -94,7 +95,14 @@ if TYPE_CHECKING:
 _explanation_key = StashKey[str]()
 
 
-def _call_assertion_hook(
+def _assert_rewrite_context(fn: Fn) -> Fn:
+    """make the function available within the context of a rewritten assert statement"""
+    setattr(rewrite, fn.__name__, fn)
+    return fn
+
+
+@_assert_rewrite_context
+def _call_assertion_hook(  # pyright:ignore[reportUnusedFunction]
     expression: str,
     fail_message: object,
     line_number: int,
@@ -120,9 +128,29 @@ def _call_assertion_hook(
     )
 
 
-# we aren't patching an existing function here but instead adding a new one to the rewrite module,
-# since the rewritten assert statement needs to call it, and this is the easist way to do that
-rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue]
+_original_verbosity = StashKey[int]()
+
+
+@_assert_rewrite_context
+def _change_verbosity(fail_message: object):  # pyright:ignore[reportUnusedFunction]
+    if not isinstance(fail_message, AssertOptions) or fail_message.verbosiy is None:
+        return
+    item = current_item()
+    if not item:
+        return
+    item.stash[_original_verbosity] = item.config.get_verbosity(Config.VERBOSITY_ASSERTIONS)
+    _set_verbosity(item.config, fail_message.verbosiy)
+
+
+def _change_verbosity_back():
+    item = current_item()
+    if not item:
+        return
+    original_verbosity = item.stash.get(_original_verbosity, None)
+    if original_verbosity is None:
+        return
+    _set_verbosity(item.config, original_verbosity)
+    del item.stash[_original_verbosity]
 
 
 @patch_method(AssertionRewriter)
@@ -147,6 +175,9 @@ def visit_Assert(  # noqa: N802
     except StopIteration:
         raise InternalError("failed to find if statement for assertion rewriting") from None
     expression = _get_assertion_exprs(self.source)[assert_.lineno]
+    # call the verbosity override check right before the main test
+    result.insert(0, Expr(self.helper("_change_verbosity", assert_msg)))
+
     # rice the fail statements:
     raise_statement = cast(Raise, main_test.body.pop())
     if not raise_statement.exc:
@@ -185,7 +216,9 @@ def visit_Assert(  # noqa: N802
     return result
 
 
-HookWrapperResult = Generator[None, object, None]
+_T_default_object = TypeVar("_T_default_object", default=object)
+
+HookWrapperResult = Generator[None, _T_default_object, _T_default_object]
 
 
 def _xdist_temp_dir(session: Session) -> Path:
@@ -375,6 +408,10 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
     _ = _run_robot(session, robot_options)
 
 
+def _set_verbosity(config: Config, verbosity: int):
+    config._inicache["verbosity_assertions"] = verbosity  # pyright:ignore[reportPrivateUsage]
+
+
 def pytest_addhooks(pluginmanager: PluginManager):
     pluginmanager.add_hookspecs(hooks)
 
@@ -535,6 +572,8 @@ def pytest_robot_assertion(
         if not assertion_error and fail_message.log_pass is not None:
             show_in_log = fail_message.log_pass
         description = fail_message.description
+        if fail_message.verbosiy is not None:
+            _change_verbosity_back()
     else:
         description = None
     if show_in_log is None:
