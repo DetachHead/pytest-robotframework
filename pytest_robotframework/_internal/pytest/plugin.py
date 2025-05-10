@@ -122,7 +122,7 @@ def _call_assertion_hook(
 
 # we aren't patching an existing function here but instead adding a new one to the rewrite module,
 # since the rewritten assert statement needs to call it, and this is the easist way to do that
-rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue]
+rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute]
 
 
 @patch_method(AssertionRewriter)
@@ -158,7 +158,7 @@ def visit_Assert(  # noqa: N802
                 Constant(expression),  # expression
                 assert_msg,  # fail_message
                 Constant(assert_.lineno),  # line_number
-                raise_statement.exc,  # assertion_error
+                raise_statement.exc,  # assertion_error # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/164
                 cast(Call, raise_statement.exc).args[0],  # explanation
             )
         )
@@ -192,7 +192,7 @@ def _xdist_temp_dir(session: Session) -> Path:
     return Path(
         cast(
             TempPathFactory,
-            session.config._tmp_path_factory,  # pyright:ignore[reportAttributeAccessIssue]
+            session.config._tmp_path_factory,  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute]
         ).getbasetemp()
     )
 
@@ -220,7 +220,7 @@ def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
             collection_argument.path
             if pytest_version >= (8, 1)
             # we only run pyright on pytest >=8.1
-            else cast(Path, collection_argument[0])  # pyright:ignore[reportIndexIssue]
+            else cast(Path, collection_argument[0])  # pyright:ignore[reportIndexIssue] # ty:ignore[non-subscriptable]
         )
         result.add(path)
     return frozenset(result)
@@ -338,7 +338,7 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
     if not robot_6:
         # this listener is conditionally defined so has to be conditionally imported
         from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # noqa: PLC0415
-            KeywordUnwrapper,
+            KeywordUnwrapper,  # ty:ignore[possibly-unbound-import]
         )
 
         listeners.append(KeywordUnwrapper())
@@ -449,7 +449,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                     # Here we create a jenkem huffer because you can't control rebots console output
                     #  Rebot uses __stdout__, which doesn't have an implementation in contextlib
                     result = contextlib._RedirectStream(file)  # pyright: ignore[reportPrivateUsage]
-                    result._stream = "__stdout__"  # pyright: ignore[reportAttributeAccessIssue]
+                    result._stream = "__stdout__"  # pyright: ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute]
                     return result
 
                 with Path(os.devnull).open("w", encoding="UTF8") as devull, redirector(devull):
@@ -584,7 +584,7 @@ def pytest_runtest_setup(item: Item) -> HookWrapperResult:
         # this is usually handled in `pytest_runtestloop`, but since we replace it we need to
         # re-implement it here. ideally it would just stop the execution entirely instead of
         # skipping to match what pytest does by default, but we still want to generate a robot log
-        skip(
+        skip(  # ty:ignore[call-non-callable] https://github.com/astral-sh/ty/issues/553
             "shouldfail was set to `True`, skipping the rest of the tests"
             if isinstance(should_fail, bool)
             else should_fail

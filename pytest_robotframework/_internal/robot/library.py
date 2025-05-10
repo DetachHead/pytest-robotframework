@@ -45,7 +45,12 @@ def _call_and_report_robot_edition(
         # empty string means xfail with no reason, None means it was not an xfail
         xfail_reason = report.wasxfail if hasattr(report, "wasxfail") else None
         if xfail_reason is None:
-            skip_reason = report.longrepr[2] if isinstance(report.longrepr, tuple) else ""
+            skip_reason = (
+                # https://github.com/astral-sh/ty/issues/164
+                report.longrepr[2]  # ty:ignore[possibly-unbound-implicit-call]
+                if isinstance(report.longrepr, tuple)
+                else ""
+            )
         else:
             skip_reason = "xfail" + (f": {xfail_reason}" if xfail_reason else "")
         BuiltIn().skip(skip_reason)
@@ -83,7 +88,7 @@ def setup(arg: Cloaked[Item]):
     ):
         # This only happens if the item is re-run, as is done by
         # pytest-rerunfailures.
-        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType]
+        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType] # ty:ignore[possibly-unbound-attribute]
     _call_and_report_robot_edition(item, "setup")
 
 

@@ -6,4 +6,4 @@ from pytest import raises
 def test_foo():
     # keywordified in plugin.py
     with raises(ZeroDivisionError):
-        _ = 1 / 0
+        _ = 1 / 0  # ty:ignore[division-by-zero]

@@ -37,7 +37,9 @@ jobs:
 
       - run: ./pw uv sync --locked
 
-      - run: ./pw typecheck
+      - run: ./pw basedpyright
+
+      - run: ./pw ty
 
       - name: ruff check
         if: always()

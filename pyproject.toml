@@ -29,10 +29,11 @@ main = ["uv"]
 # unless there's already a task or something in vscode that does the same thing
 update = "uv lock --upgrade"
 test = "uv run pytest -n auto"
-typecheck = [
+basedpyright = [
   "uv run basedpyright",
   "uv run basedpyright --verifytypes pytest_robotframework --ignoreexternal",
 ]
+ty = 'uv run ty check'
 ruff_check = ['uv run ruff check', 'uv run ruff format --check --diff']
 ruff_fix = ['uv run ruff check --fix', 'uv run ruff format']
 pylint = 'uv run pylint pytest_robotframework tests'
@@ -58,6 +59,7 @@ dev-dependencies = [
   "pdoc>=14.1.0",
   "robotcode[analyze]>=0.97.0",
   "dprint-py>=0.49.1.2",
+  "ty>=0.0.0a8",
 ]
 
 [build-system]
@@ -192,6 +194,19 @@ reportUnusedImport = false # covered by ruff (has quickfix)
 reportUnusedVariable = false # covered by ruff (has quickfix)
 # even though we enable this rule we still keep reportUnannotatedClassAttribute enabled since this is a library
 reportIncompatibleUnannotatedOverride = 'error'
+
+[tool.ty.rules]
+# https://github.com/astral-sh/ty/issues/174
+division-by-zero = "error"
+possibly-unresolved-reference = "warn"
+unused-ignore-comment = "warn"
+invalid-type-form = "ignore" # https://github.com/astral-sh/ty/issues/157
+
+[tool.ty.environment]
+python-platform = "linux" # https://github.com/astral-sh/ty/issues/609
+
+[tool.ty.terminal]
+error-on-warning = true
 
 [tool.ruff]
 unsafe-fixes = true
