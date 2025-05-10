@@ -269,8 +269,8 @@ class _KeywordDecorator:
                         result=(
                             result.Keyword(
                                 # pyright is only run when robot 7 is installed
-                                kwname=keyword_name,  # pyright:ignore[reportCallIssue]
-                                libname=self._module,  # pyright:ignore[reportCallIssue]
+                                kwname=keyword_name,  # pyright:ignore[reportCallIssue] # ty:ignore[unknown-argument]
+                                libname=self._module,  # pyright:ignore[reportCallIssue] # ty:ignore[unknown-argument]
                                 doc=doc,
                                 args=log_args,
                                 tags=self._tags,
@@ -299,7 +299,7 @@ class _KeywordDecorator:
                     )
                 )
                 if context
-                else nullcontext()
+                else nullcontext()  # ty:ignore[no-matching-overload] https://github.com/astral-sh/ty/issues/258
             )
             return self.inner(fn, context_manager, *args, **kwargs)
 
