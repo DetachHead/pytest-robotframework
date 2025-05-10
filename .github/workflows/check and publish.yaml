@@ -64,6 +64,10 @@ jobs:
         if: always()
 
       - run: ./pw robotidy
+        if: always()
+
+      - run: ./pw dprint
+        if: always()
   publish:
     runs-on: "ubuntu-latest"
     if: github.ref == 'refs/heads/master'
