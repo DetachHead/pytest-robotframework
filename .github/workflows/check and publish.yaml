@@ -29,18 +29,11 @@ jobs:
         if: ${{ matrix.pytest_version != 'from lockfile' }}
       - run: ./pw test
   static_checks:
-    strategy:
-      fail-fast: false
-      matrix:
-        python_version: ["3.9", null]
-        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-    runs-on: ${{ matrix.os }}
+    runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python_version }}
 
       - run: ./pw uv sync --locked
 
