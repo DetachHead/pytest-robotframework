@@ -190,6 +190,8 @@ allowedUntypedLibraries = [
 reportImplicitStringConcatenation = false # handled by ruff
 reportUnusedImport = false # covered by ruff (has quickfix)
 reportUnusedVariable = false # covered by ruff (has quickfix)
+# even though we enable this rule we still keep reportUnannotatedClassAttribute enabled since this is a library
+reportIncompatibleUnannotatedOverride = 'error'
 
 [tool.ruff]
 unsafe-fixes = true
