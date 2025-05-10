@@ -3,14 +3,14 @@
   "tasks": [
     // these tasks should be removed once one any of the following sets of issues are resolved:
     // - https://github.com/pyprojectx/pyprojectx/issues/92
-    // - https://github.com/astral-sh/uv/issues/5903, https://github.com/astral-sh/uv/issues/8123, 
+    // - https://github.com/astral-sh/uv/issues/5903, https://github.com/astral-sh/uv/issues/8123,
     {
       "label": "install dependencies",
       "type": "shell",
       "command": "./pw",
       "args": [
         "uv",
-        "sync",
+        "sync"
       ],
       "presentation": {
         "clear": true
@@ -116,6 +116,17 @@
       }
     },
     {
+      "label": "dprint",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "dprint"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
       "label": "open docs",
       "type": "shell",
       "command": "./pw",
@@ -123,7 +134,7 @@
         "open_docs"
       ],
       "presentation": {
-        "clear": true,
+        "clear": true
       },
       "isBackground": true
     },
@@ -135,7 +146,7 @@
         "clear_pycache"
       ],
       "presentation": {
-        "clear": true,
+        "clear": true
       }
     }
   ]

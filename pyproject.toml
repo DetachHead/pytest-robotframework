@@ -39,6 +39,7 @@ pylint = 'uv run pylint pytest_robotframework tests'
 robocop = 'uv run robocop'
 robotidy = 'uv run robotidy --color --check --diff .'
 robotcode = 'uv run robotcode analyze code'
+dprint = 'uv run dprint check'
 open_docs = 'uv run pdoc pytest_robotframework'
 clear_pycache = 'python scripts/clear_pycache.py'
 
