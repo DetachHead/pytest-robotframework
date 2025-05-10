@@ -2,38 +2,6 @@
     "files": {
         "./pytest_robotframework/_internal/pytest/plugin.py": [
             {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 4,
-                    "endColumn": 21,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 4,
-                    "endColumn": 24,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 4,
-                    "endColumn": 17,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 25,
-                    "endColumn": 52,
-                    "lineCount": 1
-                }
-            },
-            {
                 "code": "reportDeprecated",
                 "range": {
                     "startColumn": 55,
@@ -48,98 +16,14 @@
                     "endColumn": 73,
                     "lineCount": 1
                 }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 33,
-                    "endColumn": 49,
-                    "lineCount": 1
-                }
             }
         ],
         "./pytest_robotframework/_internal/pytest/robot_file_support.py": [
             {
-                "code": "reportPrivateImportUsage",
+                "code": "reportUnusedCallResult",
                 "range": {
-                    "startColumn": 31,
-                    "endColumn": 47,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 49,
-                    "endColumn": 61,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 35,
-                    "endColumn": 49,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 28,
-                    "endColumn": 42,
-                    "lineCount": 1
-                }
-            }
-        ],
-        "./pytest_robotframework/_internal/robot/library.py": [
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 31,
-                    "endColumn": 43,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 4,
-                    "endColumn": 19,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 4,
-                    "endColumn": 18,
-                    "lineCount": 1
-                }
-            }
-        ],
-        "./pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py": [
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 27,
-                    "endColumn": 37,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 26,
-                    "endColumn": 43,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportPrivateImportUsage",
-                "range": {
-                    "startColumn": 30,
-                    "endColumn": 34,
+                    "startColumn": 16,
+                    "endColumn": 66,
                     "lineCount": 1
                 }
             }
@@ -162,12 +46,12 @@
                 }
             }
         ],
-        "./tests/test_python.py": [
+        "./tests/fixtures/test_python/test_robot_keyword_in_python_test/test_foo.py": [
             {
-                "code": "reportPrivateImportUsage",
+                "code": "reportUnusedCallResult",
                 "range": {
-                    "startColumn": 35,
-                    "endColumn": 48,
+                    "startColumn": 4,
+                    "endColumn": 32,
                     "lineCount": 1
                 }
             }
