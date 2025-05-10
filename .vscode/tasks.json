@@ -39,11 +39,22 @@
       }
     },
     {
-      "label": "typecheck",
+      "label": "basedpyright",
       "type": "shell",
       "command": "./pw",
       "args": [
-        "typecheck"
+        "basedpyright"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "ty",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "ty"
       ],
       "presentation": {
         "clear": true

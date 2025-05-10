@@ -77,7 +77,12 @@ def _create_running_keyword(
     """creates a `running.Keyword` for the specified keyword from `_robot_library`"""
     if kwargs:
         raise InternalError(f"kwargs not supported: {kwargs}")
-    return running.Keyword(name=f"{fn.__module__}.{fn.__name__}", args=args, type=keyword_type)
+    return running.Keyword(
+        # https://github.com/astral-sh/ty/issues/599
+        name=f"{fn.__module__}.{fn.__name__}",  # ty:ignore[unresolved-attribute]
+        args=args,
+        type=keyword_type,
+    )
 
 
 @final
@@ -453,7 +458,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                             item,  # pyright:ignore[reportUnknownArgumentType]
                             nextitem,  # pyright:ignore[reportUnknownArgumentType]
                         ),
-                        {
+                        {  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/154
                             **hook.opts,
                             "hookwrapper": False,
                             "wrapper": False,
@@ -469,7 +474,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                         lambda hook=hook: exit_wrapper(  # pyright:ignore[reportUnknownArgumentType,reportUnknownLambdaType]
                             hook  # pyright:ignore[reportUnknownArgumentType]
                         ),
-                        {
+                        {  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/154
                             **hook.opts,
                             "hookwrapper": False,
                             "wrapper": False,
@@ -663,7 +668,10 @@ else:
             implementation: running.LibraryKeyword,
             result: result.Keyword,  # pylint:disable=redefined-outer-name
         ):
-            if not isinstance(implementation, StaticKeyword):
+            if not isinstance(
+                implementation,
+                StaticKeyword,  # ty:ignore[possibly-unresolved-reference] https://github.com/astral-sh/ty/issues/607
+            ):
                 return
             original_function: Function | None = getattr(
                 implementation.method, _keyword_original_function_attr, None
@@ -677,7 +685,10 @@ else:
                 implementation.method_name,
                 _hide_already_raised_exception_from_robot_log(
                     _bound_method(implementation.owner.instance, original_function)  # pyright:ignore[reportAny]
-                    if isinstance(implementation.owner, ClassLibrary)
+                    if isinstance(
+                        implementation.owner,
+                        ClassLibrary,  # ty:ignore[possibly-unresolved-reference] https://github.com/astral-sh/ty/issues/607
+                    )
                     else original_function
                 ),
             )

@@ -5,4 +5,5 @@ from pytest import fail
 
 def test_foo():
     # keywordified in plugin.py
-    fail("asdf")
+    # https://github.com/astral-sh/ty/issues/553
+    fail("asdf")  # ty:ignore[call-non-callable]

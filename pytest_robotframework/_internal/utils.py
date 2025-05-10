@@ -34,15 +34,21 @@ def patch_method(
 
     def decorator(fn: Callable[Concatenate[Callable[P, T], P], T]) -> Callable[P, T]:
         nonlocal method_name
-        if method_name is None:
-            method_name = fn.__name__
-        old_method = cast(Callable[P, T], getattr(cls, method_name))
+        # https://github.com/astral-sh/ty/issues/220
+        if method_name is None:  # ty:ignore[unresolved-reference]
+            # https://github.com/astral-sh/ty/issues/599
+            method_name = fn.__name__  # ty:ignore[unresolved-attribute]
+        old_method = cast(
+            Callable[P, T],
+            # https://github.com/astral-sh/ty/issues/220
+            getattr(cls, method_name),  # ty:ignore[possibly-unresolved-reference]
+        )
 
         @wraps(fn)
         def new_fn(*args: P.args, **kwargs: P.kwargs) -> T:
             return fn(old_method, *args, **kwargs)
 
-        setattr(cls, method_name, new_fn)
+        setattr(cls, method_name, new_fn)  # ty:ignore[possibly-unresolved-reference]
         return new_fn
 
     return decorator

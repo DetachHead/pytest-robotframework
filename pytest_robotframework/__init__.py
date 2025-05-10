@@ -269,8 +269,8 @@ class _KeywordDecorator:
                         result=(
                             result.Keyword(
                                 # pyright is only run when robot 7 is installed
-                                kwname=keyword_name,  # pyright:ignore[reportCallIssue]
-                                libname=self._module,  # pyright:ignore[reportCallIssue]
+                                kwname=keyword_name,  # pyright:ignore[reportCallIssue] # ty:ignore[unknown-argument]
+                                libname=self._module,  # pyright:ignore[reportCallIssue] # ty:ignore[unknown-argument]
                                 doc=doc,
                                 args=log_args,
                                 tags=self._tags,
@@ -411,7 +411,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                 f"keyword decorator expected a context manager but instead got {fn_result!r}"
             )
         # 🚀 independently verified for safety by the overloads
-        return WrappedContextManager(  # pyright:ignore[reportReturnType]
+        return WrappedContextManager(  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type]
             fn_result, status_reporter
         )
 
@@ -499,7 +499,7 @@ def keyword(  # pylint:disable=missing-param-doc
         if wrap_context_manager:
             return _WrappedContextManagerKeywordDecorator(name=name, tags=tags, module=module)
         return _NonWrappedContextManagerKeywordDecorator(name=name, tags=tags, module=module)
-    return keyword(  # pyright:ignore[reportReturnType]
+    return keyword(  # pyright:ignore[reportReturnType] # ty:ignore[no-matching-overload]
         name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager
     )(fn)  # pyright:ignore[reportArgumentType]
 
@@ -566,7 +566,9 @@ def keywordify(
     setattr(
         obj,
         method_name,
-        keyword(name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager)(
+        keyword(  # ty:ignore[no-matching-overload] https://github.com/astral-sh/ty/issues/468
+            name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager
+        )(
             getattr(obj, method_name)  # pyright:ignore[reportAny]
         ),
     )
@@ -728,7 +730,9 @@ def hide_asserts_from_robot_log() -> Iterator[None]:
     item = current_item()
     if not item:
         raise InternalError(
-            f"failed to get current pytest item in {hide_asserts_from_robot_log.__name__}"
+            # https://github.com/astral-sh/ty/issues/599
+            # https://github.com/astral-sh/ruff/issues/18529
+            f"failed to get current pytest item in {hide_asserts_from_robot_log.__name__}"  # ty:ignore[unresolved-attribute] # noqa: E501
         )
     previous_value = item.stash.get(_hide_asserts_context_manager_key, False)
     item.stash[_hide_asserts_context_manager_key] = True

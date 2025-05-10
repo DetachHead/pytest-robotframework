@@ -79,7 +79,7 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
 
 if TYPE_CHECKING:
     # Pytester is final so it's probably a bad idea to rely on extending this at runtime
-    class PytesterDir(Pytester):  # pyright:ignore[reportGeneralTypeIssues]
+    class PytesterDir(Pytester):  # pyright:ignore[reportGeneralTypeIssues] #ty:ignore[subclass-of-final-class]
         """
         fake subtype of `Pytester` that bans you from using file creation and runpytest methods.
         you should put real life files in `tests/fixtures/[test file path]/[test name]` instead,
@@ -87,31 +87,43 @@ if TYPE_CHECKING:
         parameterization
         """
 
-        @override
-        def makepyfile(self, *args: Never, **kwargs: Never) -> Never: ...
+        # https://github.com/astral-sh/ty/issues/339
 
         @override
-        def makefile(self, ext: str, *args: str, **kwargs: str) -> Never: ...
+        def makepyfile(
+            self, *args: Never, **kwargs: Never
+        ) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def makeini(self, source: str) -> Never: ...
+        def makefile(
+            self, ext: str, *args: str, **kwargs: str
+        ) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def makepyprojecttoml(self, source: str) -> Never: ...
+        def makeini(self, source: str) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def maketxtfile(self, *args: Never, **kwargs: Never) -> Never: ...
+        def makepyprojecttoml(self, source: str) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def runpytest(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...
+        def maketxtfile(
+            self, *args: Never, **kwargs: Never
+        ) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def runpytest_inprocess(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...
+        def runpytest(
+            self, *args: str | PathLike[str], **kwargs: Never
+        ) -> Never: ...  # ty:ignore[invalid-return-type]
+
+        @override
+        def runpytest_inprocess(
+            self, *args: str | PathLike[str], **kwargs: Never
+        ) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
         def runpytest_subprocess(
             self, *args: str | PathLike[str], timeout: float | None = None
-        ) -> Never: ...
+        ) -> Never: ...  # ty:ignore[invalid-return-type]
 
 else:
     PytesterDir = Pytester
@@ -169,9 +181,10 @@ class _XmlElement(Iterable["_XmlElement"]):
     def xpath(
         self,
         _path: _AnyStr,
-        namespaces: _NonDefaultNSMapArg | None = ...,
+        # only used in TYPE_CHECKING block
+        namespaces: _NonDefaultNSMapArg | None = ...,  # ty:ignore[invalid-parameter-default]
         extensions: object = ...,
-        smart_strings: bool = ...,  # noqa:FBT001
+        smart_strings: bool = ...,  # ty:ignore[invalid-parameter-default]  # noqa:FBT001
         **_variables: _XPathObject,
     ) -> _XPathObject:
         result = self._proxied.xpath(_path, namespaces, extensions, smart_strings, **_variables)
@@ -194,17 +207,19 @@ if TYPE_CHECKING:
 
         def __init__(self, element: _Element) -> None: ...
 
-        def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType]
+        # https://github.com/astral-sh/ty/issues/339
+        def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type]
             """normally this returns `True` only if it has children"""
 
         @override
-        def __len__(self) -> Never:  # pyright:ignore[reportReturnType]
+        def __len__(self) -> Never:  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type]
             """
             normally this returns how many children it has. but if you want to check than then
             call `count_children` instead
             """
 
-        def count_children(self) -> int: ...
+        # https://github.com/astral-sh/ty/issues/339
+        def count_children(self) -> int: ...  # ty:ignore[invalid-return-type]
 
 else:
     XmlElement = _XmlElement

@@ -55,7 +55,7 @@ def _get_failure(  # pyright: ignore[reportUnusedFunction]
     if result:
         # this function's signature is different depewnding on the robot version, so we just accept
         # any arguments and iterate over them to find the one we need
-        result.error = get_arg_with_type(BaseException, args, kwargs)  # pyright: ignore[reportAttributeAccessIssue]
+        result.error = get_arg_with_type(BaseException, args, kwargs)  # pyright: ignore[reportAttributeAccessIssue] #ty:ignore[invalid-assignment]
     return result
 
 
@@ -120,7 +120,8 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
             yield
         except ExecutionStatus as e:
             if e.status == "SKIP":
-                skip(e.message)
+                # https://github.com/astral-sh/ty/issues/553
+                skip(e.message)  # ty:ignore[call-non-callable]
             if e.status != "PASS":  # pyright:ignore[reportUnnecessaryComparison] type is wrong
                 # unlike robot, pytest does not raise a passed exception
                 raise
@@ -143,8 +144,8 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
         check_skipped = self._check_execution_status()
         if robot_6:
             with check_skipped:
-                # pyright is only run when robot 7 is installed
-                BodyRunner(  # pyright:ignore[reportCallIssue]
+                # type checkers are only run when robot 7 is installed
+                BodyRunner(  # pyright:ignore[reportCallIssue] # ty:ignore[missing-argument]
                     context=context, templated=bool(test.template)
                 ).run(self.stash[original_body_key])
         else:
@@ -172,7 +173,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
         self, excinfo: ExceptionInfo[BaseException], style: TracebackStyle | None = None
     ) -> str | TerminalRepr:
         if isinstance(excinfo.value, ExecutionFailures):
-            error = cast(BaseException, excinfo.value._errors[-1].error)  # pyright: ignore[reportPrivateUsage, reportUnknownMemberType]
+            error = cast(BaseException, excinfo.value._errors[-1].error)  # pyright: ignore[reportPrivateUsage, reportUnknownMemberType] # ty:ignore[unresolved-attribute]
             if isinstance(error, RobotError) or not error.__traceback__:
                 return RobotToiletRepr(excinfo.value)
             return super().repr_failure(ExceptionInfo[BaseException].from_exception(error), style)
