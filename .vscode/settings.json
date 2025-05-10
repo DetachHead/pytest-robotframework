@@ -32,6 +32,9 @@
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
+  "[toml][json][jsonc][yaml][markdown]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
   "robotcode.testExplorer.enabled": false,
   "explorer.compactFolders": false,
   "search.exclude": {
@@ -69,5 +72,6 @@
     "pw.bat": true
   },
   "basedpyright.analysis.inlayHints.genericTypes": true,
-  "chat.commandCenter.enabled": false
+  "chat.commandCenter.enabled": false,
+  "dprint.path": ".venv/Scripts/dprint.exe" // https://github.com/dprint/dprint/issues/859#issuecomment-2868290521
 }

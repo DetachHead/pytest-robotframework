@@ -3,13 +3,13 @@ name = "pytest_robotframework"
 dynamic = ["version"] # https://github.com/astral-sh/uv/issues/6298
 description = "a pytest plugin that can run both python and robotframework tests while generating robot reports for them"
 authors = [
-    { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
+  { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
 ]
 dependencies = [
-    "pytest<9,>=7",
-    "robotframework<8.0.0,>=6.1",
-    "basedtyping<0.2,>=0.1.0",
-    "ansi2html>=1.9.1",
+  "pytest<9,>=7",
+  "robotframework<8.0.0,>=6.1",
+  "basedtyping<0.2,>=0.1.0",
+  "ansi2html>=1.9.1",
 ]
 requires-python = ">=3.9,<4.0"
 readme = "README.md"
@@ -30,8 +30,8 @@ main = ["uv"]
 update = "uv lock --upgrade"
 test = "uv run pytest -n auto"
 typecheck = [
-    "uv run basedpyright",
-    "uv run basedpyright --verifytypes pytest_robotframework --ignoreexternal",
+  "uv run basedpyright",
+  "uv run basedpyright --verifytypes pytest_robotframework --ignoreexternal",
 ]
 ruff_check = ['uv run ruff check', 'uv run ruff format --check --diff']
 ruff_fix = ['uv run ruff check --fix', 'uv run ruff format']
@@ -45,18 +45,19 @@ clear_pycache = 'python scripts/clear_pycache.py'
 [tool.uv]
 prerelease = 'allow'
 dev-dependencies = [
-    "basedpyright>=1.10.1",
-    "pylint>=3.2.0",
-    "ruff>=0.2.0",
-    # https://github.com/robotcodedev/robotcode/issues/411
-    "robotframework-robocop>=4.1.0,<6",
-    "robotframework-tidy>=4.5.0",
-    "lxml>=4.9.3",
-    "lxml-stubs>=0.4.0",
-    "pytest-xdist>=3.5.0",
-    "pytest-github-actions-annotate-failures>=0.2.0",
-    "pdoc>=14.1.0",
-    "robotcode[analyze]>=0.97.0",
+  "basedpyright>=1.10.1",
+  "pylint>=3.2.0",
+  "ruff>=0.2.0",
+  # https://github.com/robotcodedev/robotcode/issues/411
+  "robotframework-robocop>=4.1.0,<6",
+  "robotframework-tidy>=4.5.0",
+  "lxml>=4.9.3",
+  "lxml-stubs>=0.4.0",
+  "pytest-xdist>=3.5.0",
+  "pytest-github-actions-annotate-failures>=0.2.0",
+  "pdoc>=14.1.0",
+  "robotcode[analyze]>=0.97.0",
+  "dprint-py>=0.49.1.2",
 ]
 
 [build-system]
@@ -70,102 +71,101 @@ includes = ["pytest_robotframework"]
 source = "file"
 path = "pytest_robotframework/_internal/__init__.py"
 
-
 [tool.pylint.MASTER]
 fail-on = "I"
 bad-names = ["foo", "bar", "baz", "retval"]
 load-plugins = [
-    # we don't use all of these but enabling them all for completeness since there's no error if a rule is not found
-    "pylint.extensions.bad_builtin",
-    "pylint.extensions.broad_try_caluse",
-    "pylint.extensions.check_elif",
-    "pylint.extensions.code_style",
-    "pylint.extensions.comparetozero",
-    "pylint.extensions.comparison_placement",
-    "pylint.extensions.confusing_elif",
-    "pylint.extensions.consider_refactoring_into_while_condition",
-    "pylint.extensions.consider_ternary_expression",
-    "pylint.extensions.dict_init_mutate",
-    "pylint.extensions.docparams",
-    "pylint.extensions.docstyle",
-    "pylint.extensions.dunder",
-    "pylint.extensions.empty_comment",
-    "pylint.extensions.emptystring",
-    "pylint.extensions.eq_without_hash",
-    "pylint.extensions.for_any_all",
-    "pylint.extensions.magic_value",
-    "pylint.extensions.no_self_use",
-    "pylint.extensions.overlapping_exceptions",
-    "pylint.extensions.private_import",
-    "pylint.extensions.redefined_loop_name",
-    "pylint.extensions.redefined_variable_type",
-    "pylint.extensions.set_membership",
-    "pylint.extensions.typing",
-    "pylint.extensions.while_used",
+  # we don't use all of these but enabling them all for completeness since there's no error if a rule is not found
+  "pylint.extensions.bad_builtin",
+  "pylint.extensions.broad_try_caluse",
+  "pylint.extensions.check_elif",
+  "pylint.extensions.code_style",
+  "pylint.extensions.comparetozero",
+  "pylint.extensions.comparison_placement",
+  "pylint.extensions.confusing_elif",
+  "pylint.extensions.consider_refactoring_into_while_condition",
+  "pylint.extensions.consider_ternary_expression",
+  "pylint.extensions.dict_init_mutate",
+  "pylint.extensions.docparams",
+  "pylint.extensions.docstyle",
+  "pylint.extensions.dunder",
+  "pylint.extensions.empty_comment",
+  "pylint.extensions.emptystring",
+  "pylint.extensions.eq_without_hash",
+  "pylint.extensions.for_any_all",
+  "pylint.extensions.magic_value",
+  "pylint.extensions.no_self_use",
+  "pylint.extensions.overlapping_exceptions",
+  "pylint.extensions.private_import",
+  "pylint.extensions.redefined_loop_name",
+  "pylint.extensions.redefined_variable_type",
+  "pylint.extensions.set_membership",
+  "pylint.extensions.typing",
+  "pylint.extensions.while_used",
 ]
 
 [tool.pylint."MESSAGE CONTROL"]
 disable = ["R", "C", "E", "F", "W", "I"]
 enable = [
-    "useless-suppression",
-    # rules that have not yet been implemented in ruff. once all of these are implemented in ruff, we should remove pylint
-    # (see https://github.com/astral-sh/ruff/issues/970):
-    "access-member-before-definition",
-    "assignment-from-none",
-    "dict-iter-missing-items",
-    "invalid-bool-returned",
-    "invalid-getnewargs-ex-returned",
-    "invalid-getnewargs-returned",
-    "invalid-index-returned",
-    "invalid-length-hint-returned",
-    "invalid-slice-index",
-    "invalid-slice-step",
-    "invalid-slots",
-    "invalid-slots-object",
-    "invalid-unicode-codec",
-    "logging-format-truncated",
-    "logging-unsupported-format",
-    "method-hidden",
-    "modified-iterating-dict",
-    "potential-index-error",
-    "relative-beyond-top-level",
-    "abstract-method",
-    "arguments-out-of-order",
-    "attribute-defined-outside-init",
-    "confusing-with-statement",
-    "deprecated-decorator",
-    "deprecated-module",
-    "differing-param-doc",
-    "global-variable-undefined",
-    "missing-param-doc",
-    "modified-iterating-list",
-    "multiple-constructor-doc",
-    "non-parent-init-called",
-    "overlapping-except",
-    "preferred-module",
-    "raising-format-tuple",
-    "redefined-outer-name",
-    "redefined-slots-in-subclass",
-    "redundant-returns-doc",
-    "redundant-yields-doc",
-    "shallow-copy-environ",
-    "useless-param-doc",
-    "useless-parent-delegation",
-    "useless-type-doc",
-    "using-constant-test",
-    "bad-file-encoding",
-    "dict-init-mutate",
-    "use-implicit-booleaness-not-comparison",
-    "chained-comparison",
-    "confusing-consecutive-elif",
-    "consider-using-join",
-    "consider-using-max-builtin",
-    "consider-using-min-builtin",
-    "consider-using-namedtuple-or-dataclass",
-    "consider-using-tuple",
-    "simplifiable-condition",
-    "simplify-boolean-expression",
-    "contextmanager-generator-missing-cleanup",
+  "useless-suppression",
+  # rules that have not yet been implemented in ruff. once all of these are implemented in ruff, we should remove pylint
+  # (see https://github.com/astral-sh/ruff/issues/970):
+  "access-member-before-definition",
+  "assignment-from-none",
+  "dict-iter-missing-items",
+  "invalid-bool-returned",
+  "invalid-getnewargs-ex-returned",
+  "invalid-getnewargs-returned",
+  "invalid-index-returned",
+  "invalid-length-hint-returned",
+  "invalid-slice-index",
+  "invalid-slice-step",
+  "invalid-slots",
+  "invalid-slots-object",
+  "invalid-unicode-codec",
+  "logging-format-truncated",
+  "logging-unsupported-format",
+  "method-hidden",
+  "modified-iterating-dict",
+  "potential-index-error",
+  "relative-beyond-top-level",
+  "abstract-method",
+  "arguments-out-of-order",
+  "attribute-defined-outside-init",
+  "confusing-with-statement",
+  "deprecated-decorator",
+  "deprecated-module",
+  "differing-param-doc",
+  "global-variable-undefined",
+  "missing-param-doc",
+  "modified-iterating-list",
+  "multiple-constructor-doc",
+  "non-parent-init-called",
+  "overlapping-except",
+  "preferred-module",
+  "raising-format-tuple",
+  "redefined-outer-name",
+  "redefined-slots-in-subclass",
+  "redundant-returns-doc",
+  "redundant-yields-doc",
+  "shallow-copy-environ",
+  "useless-param-doc",
+  "useless-parent-delegation",
+  "useless-type-doc",
+  "using-constant-test",
+  "bad-file-encoding",
+  "dict-init-mutate",
+  "use-implicit-booleaness-not-comparison",
+  "chained-comparison",
+  "confusing-consecutive-elif",
+  "consider-using-join",
+  "consider-using-max-builtin",
+  "consider-using-min-builtin",
+  "consider-using-namedtuple-or-dataclass",
+  "consider-using-tuple",
+  "simplifiable-condition",
+  "simplify-boolean-expression",
+  "contextmanager-generator-missing-cleanup",
 ]
 
 [tool.pylint.REPORTS]
@@ -185,7 +185,7 @@ enable_assertion_pass_hook = true
 ignore = ["pw"]
 pythonVersion = "3.9"
 allowedUntypedLibraries = [
-    'robot', # https://github.com/robotframework/robotframework/issues/4822
+  'robot', # https://github.com/robotframework/robotframework/issues/4822
 ]
 reportImplicitStringConcatenation = false # handled by ruff
 reportUnusedImport = false # covered by ruff (has quickfix)
@@ -204,57 +204,57 @@ extend-exclude = ["pw"]
 [tool.ruff.lint]
 extend-select = ["ALL"]
 ignore = [
-    "ANN",     # flake8-annotations (covered by pyright)
-    "EM",      # flake8-errmsg
-    "FIX",     # flake8-fixme
-    "PLR0913", # Too many arguments to function call
-    "PLR0912", # Too many branches
-    "PLR0915", # Too many statements
-    "PLR1702", # too-many-nested-blocks
-    "PLR2004", # Magic value used in comparison
-    "PLR1722", # Use `sys.exit()` instead of `exit`
-    "PLW2901", # `for` loop variable overwritten by assignment target
-    "PLE0605", # Invalid format for `__all__`, must be `tuple` or `list` (covered by pyright)
-    "PLR0911", # Too many return statements
-    "PLW0603", # Using the global statement is discouraged
-    "PLC0105", # `TypeVar` name does not reflect its covariance
-    "PLC0414", # Import alias does not rename original package (used by pyright for explicit re-export)
-    "RUF013",  # PEP 484 prohibits implicit Optional (covered by pyright)
-    "RUF016",  # Slice in indexed access to type (covered by pyright)
-    "TRY002",  # Create your own exception
-    "TRY003",  # Avoid specifying long messages outside the exception class
-    "D10",     # Missing docstring
-    "D203",    # 1 blank line required before class docstring
-    "D205",    # 1 blank line required between summary line and description
-    "D212",    # Multi-line docstring summary should start at the first line
-    "D400",    # First line should end with a period
-    "D401",    # First line should be in imperative mood
-    "D403",    # First word of the first line should be properly capitalized
-    "D404",    # First word of the docstring should not be `This`
-    "D405",    # Section name should be properly capitalized
-    "D406",    # Section name should end with a newline
-    "D415",    # First line should end with a period, question mark, or exclamation point
-    "D418",    # Function/Method decorated with @overload shouldn't contain a docstring (vscode supports it)
-    "D413",    # blank-line-after-last-section
-    "PT013",   # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
-    "TD002",   # Missing author in TODO
-    "CPY001",  # missing-copyright-notice
-    "C901",    # max-complexity
-    "SLF001",  # private-member-access (covered by pyright)
-    "PLC2701", # import-private-name (covered by pyright)
-    "UP006",   # non-pep585-annotation (covered by pyright)
-    "UP007",   # non-pep604-annotation (covered by pyright)
-    "UP035",   # deprecated-import (covered by pyright)
-    "ISC001",  # single-line-implicit-string-concatenation (conflicts with formatter)
-    "COM812",  # missing-trailing-comma (conflicts with formatter)
-    "PLE1507", # invalid-envvar-value (covered by pyright)
-    "D200",    # fits-on-one-line (https://github.com/astral-sh/ruff/issues/6269)
-    "DOC201",  # docstring-missing-returns
-    "DOC501",  # docstring-missing-exception (https://github.com/astral-sh/ruff/issues/12520)
-    "ARG001",  # unused-function-argument (covered by basedpyright)
-    "TC006",   # runtime-cast-value (quoted types look disgusting)
-    "W291",    # trailing-whitespace (covered by formatter + false positives inside multiline strings)
-    "W293",    # blank-line-with-whitespace (covered by formatter + false positives inside multiline strings)
+  "ANN", # flake8-annotations (covered by pyright)
+  "EM", # flake8-errmsg
+  "FIX", # flake8-fixme
+  "PLR0913", # Too many arguments to function call
+  "PLR0912", # Too many branches
+  "PLR0915", # Too many statements
+  "PLR1702", # too-many-nested-blocks
+  "PLR2004", # Magic value used in comparison
+  "PLR1722", # Use `sys.exit()` instead of `exit`
+  "PLW2901", # `for` loop variable overwritten by assignment target
+  "PLE0605", # Invalid format for `__all__`, must be `tuple` or `list` (covered by pyright)
+  "PLR0911", # Too many return statements
+  "PLW0603", # Using the global statement is discouraged
+  "PLC0105", # `TypeVar` name does not reflect its covariance
+  "PLC0414", # Import alias does not rename original package (used by pyright for explicit re-export)
+  "RUF013", # PEP 484 prohibits implicit Optional (covered by pyright)
+  "RUF016", # Slice in indexed access to type (covered by pyright)
+  "TRY002", # Create your own exception
+  "TRY003", # Avoid specifying long messages outside the exception class
+  "D10", # Missing docstring
+  "D203", # 1 blank line required before class docstring
+  "D205", # 1 blank line required between summary line and description
+  "D212", # Multi-line docstring summary should start at the first line
+  "D400", # First line should end with a period
+  "D401", # First line should be in imperative mood
+  "D403", # First word of the first line should be properly capitalized
+  "D404", # First word of the docstring should not be `This`
+  "D405", # Section name should be properly capitalized
+  "D406", # Section name should end with a newline
+  "D415", # First line should end with a period, question mark, or exclamation point
+  "D418", # Function/Method decorated with @overload shouldn't contain a docstring (vscode supports it)
+  "D413", # blank-line-after-last-section
+  "PT013", # Found incorrect import of pytest, use simple import pytest instead (only for bad linters that can't check the qualname)
+  "TD002", # Missing author in TODO
+  "CPY001", # missing-copyright-notice
+  "C901", # max-complexity
+  "SLF001", # private-member-access (covered by pyright)
+  "PLC2701", # import-private-name (covered by pyright)
+  "UP006", # non-pep585-annotation (covered by pyright)
+  "UP007", # non-pep604-annotation (covered by pyright)
+  "UP035", # deprecated-import (covered by pyright)
+  "ISC001", # single-line-implicit-string-concatenation (conflicts with formatter)
+  "COM812", # missing-trailing-comma (conflicts with formatter)
+  "PLE1507", # invalid-envvar-value (covered by pyright)
+  "D200", # fits-on-one-line (https://github.com/astral-sh/ruff/issues/6269)
+  "DOC201", # docstring-missing-returns
+  "DOC501", # docstring-missing-exception (https://github.com/astral-sh/ruff/issues/12520)
+  "ARG001", # unused-function-argument (covered by basedpyright)
+  "TC006", # runtime-cast-value (quoted types look disgusting)
+  "W291", # trailing-whitespace (covered by formatter + false positives inside multiline strings)
+  "W293", # blank-line-with-whitespace (covered by formatter + false positives inside multiline strings)
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
@@ -263,7 +263,7 @@ fixture-parentheses = false
 [tool.ruff.lint.per-file-ignores]
 "*.pyi" = ["A001", "A002", "N"] # we don't control names in 3rd party modules
 "tests/**/*.py" = [
-    "S101", # Use of assert detected (pytest uses assert statements)
+  "S101", # Use of assert detected (pytest uses assert statements)
 ]
 [tool.ruff.lint.isort]
 combine-as-imports = true
@@ -276,51 +276,50 @@ docstring-code-format = true
 
 [tool.robotidy]
 configure = [
-    "AlignTemplatedTestCases:enabled=True",
-    "RenameKeywords:enabled=True",
-    "RenameTestCases:enabled=True",
-    "SplitTooLongLine:line_length=160",
+  "AlignTemplatedTestCases:enabled=True",
+  "RenameKeywords:enabled=True",
+  "RenameTestCases:enabled=True",
+  "SplitTooLongLine:line_length=160",
 ]
-
 
 [tool.robocop]
 paths = ["tests"]
 reports = ["all"]
 exclude = [
-    "not-allowed-char-in-filename",
-    "non-local-variables-should-be-uppercase",
-    "section-variable-not-uppercase",
-    "too-many-calls-in-test-case",
-    "too-many-calls-in-keyword",
-    "too-long-test-case",
-    "too-many-arguments",
-    "not-capitalized-test-case-title",
-    "file-too-long",
-    "too-long-keyword",
-    "missing-doc-resource-file",
-    "missing-doc-keyword",
-    "missing-doc-suite",
-    "missing-doc-test-case",
+  "not-allowed-char-in-filename",
+  "non-local-variables-should-be-uppercase",
+  "section-variable-not-uppercase",
+  "too-many-calls-in-test-case",
+  "too-many-calls-in-keyword",
+  "too-long-test-case",
+  "too-many-arguments",
+  "not-capitalized-test-case-title",
+  "file-too-long",
+  "too-long-keyword",
+  "missing-doc-resource-file",
+  "missing-doc-keyword",
+  "missing-doc-suite",
+  "missing-doc-test-case",
 ]
 configure = [
-    "todo-in-comment:enabled:False",
-    "too-many-test-cases:enabled:False",
-    "too-many-calls-in-keyword:severity:W",
-    "can-be-resource-file:severity:W",
-    "missing-doc-suite:severity:W",
-    "line-too-long:line_length:160",
-    "possible-variable-overwriting:severity:E",
-    "could-be-test-tags:severity:E",
-    "tag-already-set-in-test-tags:severity:E",
-    "unused-variable:severity:W",
-    "unnecessary-string-conversion:severity:W",
-    "expression-can-be-simplified:severity:W",
-    "can-be-resource-file:severity:W",
+  "todo-in-comment:enabled:False",
+  "too-many-test-cases:enabled:False",
+  "too-many-calls-in-keyword:severity:W",
+  "can-be-resource-file:severity:W",
+  "missing-doc-suite:severity:W",
+  "line-too-long:line_length:160",
+  "possible-variable-overwriting:severity:E",
+  "could-be-test-tags:severity:E",
+  "tag-already-set-in-test-tags:severity:E",
+  "unused-variable:severity:W",
+  "unnecessary-string-conversion:severity:W",
+  "expression-can-be-simplified:severity:W",
+  "can-be-resource-file:severity:W",
 ]
 
 [tool.robotcode-analyze.modifiers]
 error = [
-    "LibraryAlreadyImported",
-    "ResourceAlreadyImported",
-    "VariablesAlreadyImported",
+  "LibraryAlreadyImported",
+  "ResourceAlreadyImported",
+  "VariablesAlreadyImported",
 ]
