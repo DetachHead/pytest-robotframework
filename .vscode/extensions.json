@@ -5,6 +5,7 @@
     "ms-python.pylint",
     "ms-python.debugpy",
     "charliermarsh.ruff",
+    "astral-sh.ty",
     "shd101wyy.markdown-preview-enhanced",
     "mhutchie.git-graph",
     "tamasfe.even-better-toml",
