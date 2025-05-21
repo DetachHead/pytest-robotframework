@@ -97,7 +97,7 @@ class PythonParser(Parser):
         self.items = items
         super().__init__()
 
-    extension = "py"  # pyright:ignore[reportIncompatibleUnannotatedOverride] https://github.com/DetachHead/basedpyright/issues/1247
+    extension = "py"
 
     @staticmethod
     def _create_suite_from_source(source: Path) -> running.TestSuite:
