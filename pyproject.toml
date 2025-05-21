@@ -44,7 +44,6 @@ open_docs = 'uv run pdoc pytest_robotframework'
 clear_pycache = 'python scripts/clear_pycache.py'
 
 [tool.uv]
-prerelease = 'allow'
 dev-dependencies = [
   "basedpyright>=1.10.1",
   "pylint>=3.2.0",
