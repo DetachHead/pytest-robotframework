@@ -158,18 +158,18 @@ pass `--capture=no` to make `logger.console` work properly.
 
 since this is a pytest plugin, you should avoid using robot options that have pytest equivalents:
 
-| instead of...                           | use...                                | notes                                                                                                                                                   |
-| :-------------------------------------- | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `robot --include tag_name`              | `pytest -m tag_name`                  |                                                                                                                                                         |
-| `robot --exclude tag_name`              | `pytest -m not tag_name`              |                                                                                                                                                         |
-| `robot --skip tag_name`                 | `pytest -m "not tag_name"`            |                                                                                                                                                         |
-| `robot --test "test name" ./test.robot` | `pytest ./test.robot::"Test Name"`    |                                                                                                                                                         |
-| `robot --suite "suite name" ./folder`   | `pytest ./folder`                     |                                                                                                                                                         |
+| instead of...                           | use...                                | notes                                                                                                                                                    |
+| :-------------------------------------- | :------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `robot --include tag_name`              | `pytest -m tag_name`                  |                                                                                                                                                          |
+| `robot --exclude tag_name`              | `pytest -m not tag_name`              |                                                                                                                                                          |
+| `robot --skip tag_name`                 | `pytest -m "not tag_name"`            |                                                                                                                                                          |
+| `robot --test "test name" ./test.robot` | `pytest ./test.robot::"Test Name"`    |                                                                                                                                                          |
+| `robot --suite "suite name" ./folder`   | `pytest ./folder`                     |                                                                                                                                                          |
 | `robot --dryrun`                        | `pytest --collect-only`               | not exactly the same. you should use [a type checker](https://github.com/detachhead/basedpyright) on your python tests as a replacement for robot dryrun |
-| `robot --exitonfailure`                 | `pytest --maxfail=1`                  |                                                                                                                                                         |
-| `robot --rerunfailed`                   | `pytest --lf`                         |                                                                                                                                                         |
-| `robot --runemptysuite`                 | `pytest --suppress-no-test-exit-code` | requires the [pytest-custom-exit-code](https://pypi.org/project/pytest-custom-exit-code/) plugin                                                        |
-| `robot --help`                          | `pytest --help`                       | all supported robot options will be listed in the `robotframework` section                                                                              |
+| `robot --exitonfailure`                 | `pytest --maxfail=1`                  |                                                                                                                                                          |
+| `robot --rerunfailed`                   | `pytest --lf`                         |                                                                                                                                                          |
+| `robot --runemptysuite`                 | `pytest --suppress-no-test-exit-code` | requires the [pytest-custom-exit-code](https://pypi.org/project/pytest-custom-exit-code/) plugin                                                         |
+| `robot --help`                          | `pytest --help`                       | all supported robot options will be listed in the `robotframework` section                                                                               |
 
 ## specifying robot options directlty
 
