@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from copy import copy as copy_object
-from os import PathLike, symlink
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
@@ -16,6 +15,8 @@ from pytest import ExitCode, FixtureRequest, Function, Pytester, RunResult, fixt
 from typing_extensions import TypeGuard, override
 
 if TYPE_CHECKING:
+    from os import PathLike
+
     from _typeshed import StrPath
     from lxml.etree import (
         _AnyStr,  # pyright: ignore[reportPrivateUsage]
@@ -37,7 +38,7 @@ def try_symlink(src: StrPath, dest: StrPath):
     but some computers don't support symlinks so fall back to the copy method
     """
     try:
-        symlink(src, dest)
+        Path(src).symlink_to(dest)
     except OSError:
         copy(src, dest)
 
