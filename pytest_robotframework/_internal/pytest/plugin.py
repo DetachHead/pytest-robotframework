@@ -158,7 +158,7 @@ def visit_Assert(  # noqa: N802
                 Constant(expression),  # expression
                 assert_msg,  # fail_message
                 Constant(assert_.lineno),  # line_number
-                raise_statement.exc,  # assertion_error # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/164
+                raise_statement.exc,  # assertion_error
                 cast(Call, raise_statement.exc).args[0],  # explanation
             )
         )

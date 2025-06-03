@@ -45,12 +45,7 @@ def _call_and_report_robot_edition(
         # empty string means xfail with no reason, None means it was not an xfail
         xfail_reason = report.wasxfail if hasattr(report, "wasxfail") else None
         if xfail_reason is None:
-            skip_reason = (
-                # https://github.com/astral-sh/ty/issues/164
-                report.longrepr[2]  # ty:ignore[possibly-unbound-implicit-call]
-                if isinstance(report.longrepr, tuple)
-                else ""
-            )
+            skip_reason = report.longrepr[2] if isinstance(report.longrepr, tuple) else ""
         else:
             skip_reason = "xfail" + (f": {xfail_reason}" if xfail_reason else "")
         BuiltIn().skip(skip_reason)
@@ -98,15 +93,9 @@ def run_test(arg: Cloaked[Item]):
     # mostly copied from the middle of `_pytest.runner.runtestprotocol`:
     reports = item.stash[_report_key]
     if reports[0].passed:
-        if item.config.getoption(
-            "setupshow",
-            default=False,  # pyright:ignore[reportArgumentType]
-        ):
+        if item.config.getoption("setupshow", default=False):
             show_test_item(item)
-        if not item.config.getoption(
-            "setuponly",
-            default=False,  # pyright:ignore[reportArgumentType]
-        ):
+        if not item.config.getoption("setuponly", default=False):
             _call_and_report_robot_edition(item, "call")
 
 

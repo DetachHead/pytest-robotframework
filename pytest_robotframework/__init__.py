@@ -566,9 +566,7 @@ def keywordify(
     setattr(
         obj,
         method_name,
-        keyword(  # ty:ignore[no-matching-overload] https://github.com/astral-sh/ty/issues/468
-            name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager
-        )(
+        keyword(name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager)(
             getattr(obj, method_name)  # pyright:ignore[reportAny]
         ),
     )
@@ -731,8 +729,7 @@ def hide_asserts_from_robot_log() -> Iterator[None]:
     if not item:
         raise InternalError(
             # https://github.com/astral-sh/ty/issues/599
-            # https://github.com/astral-sh/ruff/issues/18529
-            f"failed to get current pytest item in {hide_asserts_from_robot_log.__name__}"  # ty:ignore[unresolved-attribute] # noqa: E501
+            f"failed to get current pytest item in {hide_asserts_from_robot_log.__name__}"  # ty:ignore[unresolved-attribute]
         )
     previous_value = item.stash.get(_hide_asserts_context_manager_key, False)
     item.stash[_hide_asserts_context_manager_key] = True
