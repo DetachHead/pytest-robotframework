@@ -90,14 +90,10 @@ if TYPE_CHECKING:
         # https://github.com/astral-sh/ty/issues/339
 
         @override
-        def makepyfile(
-            self, *args: Never, **kwargs: Never
-        ) -> Never: ...  # ty:ignore[invalid-return-type]
+        def makepyfile(self, *args: Never, **kwargs: Never) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def makefile(
-            self, ext: str, *args: str, **kwargs: str
-        ) -> Never: ...  # ty:ignore[invalid-return-type]
+        def makefile(self, ext: str, *args: str, **kwargs: str) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
         def makeini(self, source: str) -> Never: ...  # ty:ignore[invalid-return-type]
@@ -106,19 +102,13 @@ if TYPE_CHECKING:
         def makepyprojecttoml(self, source: str) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def maketxtfile(
-            self, *args: Never, **kwargs: Never
-        ) -> Never: ...  # ty:ignore[invalid-return-type]
+        def maketxtfile(self, *args: Never, **kwargs: Never) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def runpytest(
-            self, *args: str | PathLike[str], **kwargs: Never
-        ) -> Never: ...  # ty:ignore[invalid-return-type]
+        def runpytest(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
-        def runpytest_inprocess(
-            self, *args: str | PathLike[str], **kwargs: Never
-        ) -> Never: ...  # ty:ignore[invalid-return-type]
+        def runpytest_inprocess(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...  # ty:ignore[invalid-return-type]
 
         @override
         def runpytest_subprocess(
@@ -133,7 +123,9 @@ else:
 def pr(pytester_dir: PytesterDir, request: FixtureRequest) -> PytestRobotTester:
     return PytestRobotTester(
         pytester=pytester_dir,
-        xdist=2 if request.param else None,  # pyright:ignore[reportAny]
+        # ty error is because param is declared in the constructor withoiut giving it a value for
+        # some reason
+        xdist=2 if request.param else None,  # pyright:ignore[reportAny] #ty:ignore[unresolved-attribute]
     )
 
 

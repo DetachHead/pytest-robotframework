@@ -173,7 +173,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
         self, excinfo: ExceptionInfo[BaseException], style: TracebackStyle | None = None
     ) -> str | TerminalRepr:
         if isinstance(excinfo.value, ExecutionFailures):
-            error = cast(BaseException, excinfo.value._errors[-1].error)  # pyright: ignore[reportPrivateUsage, reportUnknownMemberType] # ty:ignore[unresolved-attribute]
+            error = cast(BaseException, excinfo.value._errors[-1].error)  # pyright: ignore[reportPrivateUsage, reportUnknownMemberType]
             if isinstance(error, RobotError) or not error.__traceback__:
                 return RobotToiletRepr(excinfo.value)
             return super().repr_failure(ExceptionInfo[BaseException].from_exception(error), style)

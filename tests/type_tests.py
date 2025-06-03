@@ -41,9 +41,7 @@ if TYPE_CHECKING:
     def b() -> Iterator[None]:
         yield
 
-    _ = assert_type(
-        b, Callable[[], AbstractContextManager[None]]
-    )  # ty:ignore[type-assertion-failure]
+    _ = assert_type(b, Callable[[], AbstractContextManager[None]])  # ty:ignore[type-assertion-failure]
 
     # keyword, wrap_context_manager=False:
     @keyword(wrap_context_manager=False)
@@ -51,9 +49,7 @@ if TYPE_CHECKING:
     def c() -> Iterator[None]:
         yield
 
-    _ = assert_type(
-        c, Callable[[], _GeneratorContextManager[None]]
-    )  # ty:ignore[type-assertion-failure]
+    _ = assert_type(c, Callable[[], _GeneratorContextManager[None]])  # ty:ignore[type-assertion-failure]
 
     # keyword, context manager with no wrap_context_manager arg:
     @keyword  # pyright:ignore[reportDeprecated]
