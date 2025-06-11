@@ -98,15 +98,9 @@ def run_test(arg: Cloaked[Item]):
     # mostly copied from the middle of `_pytest.runner.runtestprotocol`:
     reports = item.stash[_report_key]
     if reports[0].passed:
-        if item.config.getoption(
-            "setupshow",
-            default=False,  # pyright:ignore[reportArgumentType]
-        ):
+        if item.config.getoption("setupshow", default=False):
             show_test_item(item)
-        if not item.config.getoption(
-            "setuponly",
-            default=False,  # pyright:ignore[reportArgumentType]
-        ):
+        if not item.config.getoption("setuponly", default=False):
             _call_and_report_robot_edition(item, "call")
 
 
