@@ -958,8 +958,7 @@ def test_console_output(pr: PytestRobotTester):
 
 def test_exitfirst(pr: PytestRobotTester):
     if pr.xdist:
-        # https://github.com/astral-sh/ty/issues/553
-        skip(  # ty:ignore[call-non-callable]
+        skip(
             "--exitfirst doesn't work with xdist. https://github.com/pytest-dev/pytest-xdist/issues/420"
         )
     pr.run_and_assert_result("-x", failed=1, skipped=1)
@@ -967,8 +966,7 @@ def test_exitfirst(pr: PytestRobotTester):
 
 def test_maxfail(pr: PytestRobotTester):
     if pr.xdist:
-        # https://github.com/astral-sh/ty/issues/553
-        skip(  # ty:ignore[call-non-callable]
+        skip(
             "--maxfail doesn't work with xdist. https://github.com/pytest-dev/pytest-xdist/issues/868"
         )
     pr.run_and_assert_result("--maxfail=2", failed=2, skipped=1)

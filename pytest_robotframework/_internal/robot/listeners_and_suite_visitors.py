@@ -668,10 +668,7 @@ else:
             implementation: running.LibraryKeyword,
             result: result.Keyword,  # pylint:disable=redefined-outer-name
         ):
-            if not isinstance(
-                implementation,
-                StaticKeyword,  # ty:ignore[possibly-unresolved-reference] https://github.com/astral-sh/ty/issues/607
-            ):
+            if not isinstance(implementation, StaticKeyword):
                 return
             original_function: Function | None = getattr(
                 implementation.method, _keyword_original_function_attr, None
@@ -685,10 +682,7 @@ else:
                 implementation.method_name,
                 _hide_already_raised_exception_from_robot_log(
                     _bound_method(implementation.owner.instance, original_function)  # pyright:ignore[reportAny]
-                    if isinstance(
-                        implementation.owner,
-                        ClassLibrary,  # ty:ignore[possibly-unresolved-reference] https://github.com/astral-sh/ty/issues/607
-                    )
+                    if isinstance(implementation.owner, ClassLibrary)
                     else original_function
                 ),
             )
