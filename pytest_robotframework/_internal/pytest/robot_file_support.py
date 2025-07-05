@@ -120,8 +120,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
             yield
         except ExecutionStatus as e:
             if e.status == "SKIP":
-                # https://github.com/astral-sh/ty/issues/553
-                skip(e.message)  # ty:ignore[call-non-callable]
+                skip(e.message)
             if e.status != "PASS":  # pyright:ignore[reportUnnecessaryComparison] type is wrong
                 # unlike robot, pytest does not raise a passed exception
                 raise

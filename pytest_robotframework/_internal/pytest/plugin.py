@@ -584,7 +584,7 @@ def pytest_runtest_setup(item: Item) -> HookWrapperResult:
         # this is usually handled in `pytest_runtestloop`, but since we replace it we need to
         # re-implement it here. ideally it would just stop the execution entirely instead of
         # skipping to match what pytest does by default, but we still want to generate a robot log
-        skip(  # ty:ignore[call-non-callable] https://github.com/astral-sh/ty/issues/553
+        skip(
             "shouldfail was set to `True`, skipping the rest of the tests"
             if isinstance(should_fail, bool)
             else should_fail

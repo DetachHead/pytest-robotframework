@@ -201,7 +201,7 @@ unused-ignore-comment = "warn"
 invalid-type-form = "ignore" # https://github.com/astral-sh/ty/issues/157
 
 [tool.ty.environment]
-python-platform = "linux" # https://github.com/astral-sh/ty/issues/609
+python-platform = "all"
 
 [tool.ty.terminal]
 error-on-warning = true
