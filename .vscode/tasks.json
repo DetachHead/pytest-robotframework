@@ -94,11 +94,11 @@
       }
     },
     {
-      "label": "robocop",
+      "label": "robocop lint",
       "type": "shell",
       "command": "./pw",
       "args": [
-        "robocop"
+        "robocop_lint"
       ],
       "presentation": {
         "clear": true
@@ -116,11 +116,11 @@
       }
     },
     {
-      "label": "robotidy",
+      "label": "robocop format",
       "type": "shell",
       "command": "./pw",
       "args": [
-        "robotidy"
+        "robocop_format"
       ],
       "presentation": {
         "clear": true
