@@ -37,8 +37,8 @@ ty = 'uv run ty check'
 ruff_check = ['uv run ruff check', 'uv run ruff format --check --diff']
 ruff_fix = ['uv run ruff check --fix', 'uv run ruff format']
 pylint = 'uv run pylint pytest_robotframework tests'
-robocop = 'uv run robocop'
-robotidy = 'uv run robotidy --color --check --diff .'
+robocop_lint = 'uv run robocop check'
+robocop_format = 'uv run robocop format --check .'
 robotcode = 'uv run robotcode analyze code'
 dprint = 'uv run dprint check'
 open_docs = 'uv run pdoc pytest_robotframework'
@@ -49,9 +49,7 @@ dev-dependencies = [
   "basedpyright>=1.10.1",
   "pylint>=3.2.0",
   "ruff>=0.2.0",
-  # https://github.com/robotcodedev/robotcode/issues/411
-  "robotframework-robocop>=4.1.0,<6",
-  "robotframework-tidy>=4.5.0",
+  "robotframework-robocop>=6",
   "lxml>=4.9.3",
   "lxml-stubs>=0.4.0",
   "pytest-xdist>=3.5.0",
@@ -288,19 +286,21 @@ split-on-trailing-comma = false
 [tool.ruff.format]
 skip-magic-trailing-comma = true
 docstring-code-format = true
-
-[tool.robotidy]
+[tool.robocop.format]
 configure = [
-  "AlignTemplatedTestCases:enabled=True",
-  "RenameKeywords:enabled=True",
-  "RenameTestCases:enabled=True",
-  "SplitTooLongLine:line_length=160",
+  "AlignTemplatedTestCases.enabled=True",
+  "RenameKeywords.enabled=True",
+  "RenameTestCases.enabled=True",
+  "SplitTooLongLine.line_length=160",
 ]
 
 [tool.robocop]
-paths = ["tests"]
-reports = ["all"]
-exclude = [
+include = [
+  "tests",
+]
+
+[tool.robocop.lint]
+ignore = [
   "not-allowed-char-in-filename",
   "non-local-variables-should-be-uppercase",
   "section-variable-not-uppercase",
@@ -315,21 +315,24 @@ exclude = [
   "missing-doc-keyword",
   "missing-doc-suite",
   "missing-doc-test-case",
+  "todo-in-comment",
+  "too-many-test-cases",
+]
+reports = [
+  "all",
 ]
 configure = [
-  "todo-in-comment:enabled:False",
-  "too-many-test-cases:enabled:False",
-  "too-many-calls-in-keyword:severity:W",
-  "can-be-resource-file:severity:W",
-  "missing-doc-suite:severity:W",
-  "line-too-long:line_length:160",
-  "possible-variable-overwriting:severity:E",
-  "could-be-test-tags:severity:E",
-  "tag-already-set-in-test-tags:severity:E",
-  "unused-variable:severity:W",
-  "unnecessary-string-conversion:severity:W",
-  "expression-can-be-simplified:severity:W",
-  "can-be-resource-file:severity:W",
+  "too-many-calls-in-keyword.severity=W",
+  "can-be-resource-file.severity=W",
+  "missing-doc-suite.severity=W",
+  "line-too-long.line_length=160",
+  "possible-variable-overwriting.severity=E",
+  "could-be-test-tags.severity=E",
+  "tag-already-set-in-test-tags.severity=E",
+  "unused-variable.severity=W",
+  "unnecessary-string-conversion.severity=W",
+  "expression-can-be-simplified.severity=W",
+  "can-be-resource-file.severity=W",
 ]
 
 [tool.robotcode-analyze.modifiers]

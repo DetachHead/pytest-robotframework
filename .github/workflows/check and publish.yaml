@@ -55,10 +55,10 @@ jobs:
       - run: ./pw robotcode
         if: always()
 
-      - run: ./pw robocop
+      - run: ./pw robocop_lint
         if: always()
 
-      - run: ./pw robotidy
+      - run: ./pw robocop_format
         if: always()
 
       - run: ./pw dprint
