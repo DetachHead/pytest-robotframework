@@ -1,6 +1,6 @@
 [project]
 name = "pytest_robotframework"
-dynamic = ["version"] # https://github.com/astral-sh/uv/issues/6298
+version = "4.3.2"
 description = "a pytest plugin that can run both python and robotframework tests while generating robot reports for them"
 authors = [
   { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
@@ -60,16 +60,12 @@ dev-dependencies = [
   "ty>=0.0.0a8",
 ]
 
+[tool.uv.build-backend]
+module-root = "."
+
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pdm.build]
-includes = ["pytest_robotframework"]
-
-[tool.pdm.version]
-source = "file"
-path = "pytest_robotframework/_internal/__init__.py"
+requires = ["uv_build"]
+build-backend = "uv_build"
 
 [tool.pylint.MASTER]
 fail-on = "I"

@@ -81,7 +81,7 @@ jobs:
       - name: get version number
         id: current-version
         # https://github.com/astral-sh/uv/issues/6298
-        run: echo ::set-output name=CURRENT_VERSION::$(./pw uv run python -c "from pytest_robotframework._internal import __version__;print(__version__)")
+        run: echo ::set-output name=CURRENT_VERSION::$(./pw uv version --short)
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
