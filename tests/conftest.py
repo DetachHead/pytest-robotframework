@@ -38,7 +38,7 @@ def try_symlink(src: StrPath, dest: StrPath):
     but some computers don't support symlinks so fall back to the copy method
     """
     try:
-        Path(src).symlink_to(dest)
+        Path(dest).symlink_to(src)
     except OSError:
         copy(src, dest)
 
