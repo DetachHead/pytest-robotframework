@@ -74,6 +74,5 @@
   "basedpyright.analysis.inlayHints.genericTypes": true,
   "chat.commandCenter.enabled": false,
   "dprint.path": ".venv/Scripts/dprint.exe", // https://github.com/dprint/dprint/issues/859#issuecomment-2868290521
-  "python.languageServer": "None", // we use ty & basedpyright instead
-  "basedpyright.analysis.inlayHints.variableTypes": false // conflicts with ty's inlay hints, and there's currently no option to turn them off so we turn off basedpyright's instead
+  "python.ty.disableLanguageServices": true // we use basedpyright's language server because it's more feature-complete
 }
