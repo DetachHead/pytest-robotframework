@@ -123,9 +123,7 @@ else:
 def pr(pytester_dir: PytesterDir, request: FixtureRequest) -> PytestRobotTester:
     return PytestRobotTester(
         pytester=pytester_dir,
-        # ty error is because param is declared in the constructor withoiut giving it a value for
-        # some reason
-        xdist=2 if request.param else None,  # pyright:ignore[reportAny] #ty:ignore[unresolved-attribute]
+        xdist=2 if request.param else None,  # pyright:ignore[reportAny]
     )
 
 
