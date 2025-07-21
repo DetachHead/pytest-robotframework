@@ -7,7 +7,7 @@ from re import search
 from typing import TYPE_CHECKING, cast
 
 from _pytest.assertion.util import running_on_ci
-from pytest import ExitCode, MonkeyPatch, skip
+from pytest import ExitCode, MonkeyPatch, mark, skip, version_tuple as pytest_version
 
 from pytest_robotframework._internal.robot.utils import robot_6
 from tests.conftest import (
@@ -416,6 +416,16 @@ def test_keywordify_context_manager(pr: PytestRobotTester):
     assert output_xml().xpath(
         "//kw[@name='Raises' and ./arg[.=\"<class 'ZeroDivisionError'>\"] and"
         " ./status[@status='PASS']]"
+    )
+
+
+@mark.skipif(pytest_version < (8, 4), reason="RaisesGroup was introduced in pytest 8.4")
+def test_keywordify_class_context_manager(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=1)
+    pr.assert_log_file_exists()
+    assert output_xml().xpath(
+        "//kw[@name='Raises Group' and ./arg[.=\"<class 'ZeroDivisionError'>\"] and"
+        " ./arg[.=\"<class 'TypeError'>\"] and ./status[@status='PASS']]"
     )
 
 
