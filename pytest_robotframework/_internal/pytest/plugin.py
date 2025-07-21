@@ -635,7 +635,11 @@ def _keywordify_pytest_functions():
     # https://github.com/DetachHead/pytest-robotframework/issues/51
     for method in ("fail", "xfail"):
         keywordify(pytest, method, module=module)
-    for method in ("deprecated_call", "warns", "raises"):
+    methods_to_wrap = {"deprecated_call", "warns", "raises"}
+    if pytest_version >= (8, 4):
+        # RaisesGroup was only introduced in pytest 8.4
+        methods_to_wrap.add("RaisesGroup")
+    for method in methods_to_wrap:
         keywordify(pytest, method, wrap_context_manager=True, module=module)
 
 
