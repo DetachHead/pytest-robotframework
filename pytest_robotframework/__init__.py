@@ -227,7 +227,7 @@ class _KeywordDecorator:
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
             return fn
-        keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))
+        keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))  # ty:ignore[unresolved-attribute]
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
         deco.keyword(  # pyright:ignore[reportUnknownMemberType]
@@ -704,7 +704,7 @@ class AssertOptions:
         return self.fail_message or ""
 
 
-_hide_asserts_context_manager_key = StashKey[bool]()
+_hide_asserts_context_manager_key: StashKey[bool] = StashKey()
 
 
 @contextmanager

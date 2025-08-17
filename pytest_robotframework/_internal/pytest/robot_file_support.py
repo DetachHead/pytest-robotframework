@@ -8,11 +8,9 @@ from typing import TYPE_CHECKING, Callable, cast, final
 
 from _pytest._code.code import ReprFileLocation, TerminalRepr
 from pytest import Config, ExceptionInfo, File, Item, MarkDecorator, Session, StashKey, mark, skip
-from robot import model
 from robot.errors import ExecutionFailures, ExecutionStatus, RobotError
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
-from robot.running.model import Body
 from robot.running.statusreporter import StatusReporter
 from typing_extensions import Concatenate, override
 
@@ -35,12 +33,14 @@ if TYPE_CHECKING:
     from _pytest._code.code import TracebackStyle
     from _pytest._io import TerminalWriter
     from basedtyping import P
+    from robot import model
+    from robot.running.model import Body
 
 
-collected_robot_tests_key = StashKey[list[ModelTestCase]]()
-original_setup_key = StashKey[model.Keyword]()
-original_body_key = StashKey[Body]()
-original_teardown_key = StashKey[model.Keyword]()
+collected_robot_tests_key: StashKey[list[ModelTestCase]] = StashKey()
+original_setup_key: StashKey[model.Keyword] = StashKey()
+original_body_key: StashKey[Body] = StashKey()
+original_teardown_key: StashKey[model.Keyword] = StashKey()
 
 
 @patch_method(StatusReporter)

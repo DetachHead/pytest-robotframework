@@ -458,7 +458,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                             item,  # pyright:ignore[reportUnknownArgumentType]
                             nextitem,  # pyright:ignore[reportUnknownArgumentType]
                         ),
-                        {  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/154
+                        {
                             **hook.opts,
                             "hookwrapper": False,
                             "wrapper": False,
@@ -474,7 +474,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                         lambda hook=hook: exit_wrapper(  # pyright:ignore[reportUnknownArgumentType,reportUnknownLambdaType]
                             hook  # pyright:ignore[reportUnknownArgumentType]
                         ),
-                        {  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/154
+                        {
                             **hook.opts,
                             "hookwrapper": False,
                             "wrapper": False,
