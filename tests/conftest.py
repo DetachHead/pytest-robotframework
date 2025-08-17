@@ -87,33 +87,31 @@ if TYPE_CHECKING:
         parameterization
         """
 
-        # https://github.com/astral-sh/ty/issues/339
+        @override
+        def makepyfile(self, *args: Never, **kwargs: Never) -> Never: ...
 
         @override
-        def makepyfile(self, *args: Never, **kwargs: Never) -> Never: ...  # ty:ignore[invalid-return-type]
+        def makefile(self, ext: str, *args: str, **kwargs: str) -> Never: ...
 
         @override
-        def makefile(self, ext: str, *args: str, **kwargs: str) -> Never: ...  # ty:ignore[invalid-return-type]
+        def makeini(self, source: str) -> Never: ...
 
         @override
-        def makeini(self, source: str) -> Never: ...  # ty:ignore[invalid-return-type]
+        def makepyprojecttoml(self, source: str) -> Never: ...
 
         @override
-        def makepyprojecttoml(self, source: str) -> Never: ...  # ty:ignore[invalid-return-type]
+        def maketxtfile(self, *args: Never, **kwargs: Never) -> Never: ...
 
         @override
-        def maketxtfile(self, *args: Never, **kwargs: Never) -> Never: ...  # ty:ignore[invalid-return-type]
+        def runpytest(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...
 
         @override
-        def runpytest(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...  # ty:ignore[invalid-return-type]
-
-        @override
-        def runpytest_inprocess(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...  # ty:ignore[invalid-return-type]
+        def runpytest_inprocess(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...
 
         @override
         def runpytest_subprocess(
             self, *args: str | PathLike[str], timeout: float | None = None
-        ) -> Never: ...  # ty:ignore[invalid-return-type]
+        ) -> Never: ...
 
 else:
     PytesterDir = Pytester
@@ -197,19 +195,17 @@ if TYPE_CHECKING:
 
         def __init__(self, element: _Element) -> None: ...
 
-        # https://github.com/astral-sh/ty/issues/339
-        def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type]
+        def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType]
             """normally this returns `True` only if it has children"""
 
         @override
-        def __len__(self) -> Never:  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type]
+        def __len__(self) -> Never:  # pyright:ignore[reportReturnType]
             """
             normally this returns how many children it has. but if you want to check than then
             call `count_children` instead
             """
 
-        # https://github.com/astral-sh/ty/issues/339
-        def count_children(self) -> int: ...  # ty:ignore[invalid-return-type]
+        def count_children(self) -> int: ...
 
 else:
     XmlElement = _XmlElement

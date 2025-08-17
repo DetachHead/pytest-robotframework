@@ -7,7 +7,7 @@ from pytest import Item, Session, StashKey, hookimpl
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-run_key = StashKey[int]()
+run_key: StashKey[int] = StashKey()
 
 
 @hookimpl(wrapper=True)

@@ -7,6 +7,5 @@ from pytest import RaisesGroup
 def test_foo():
     # keywordified in plugin.py
     exceptions = (ZeroDivisionError, TypeError)
-    # https://github.com/astral-sh/ty/issues/247 and/or https://github.com/astral-sh/ty/issues/493
-    with RaisesGroup(*exceptions):  # ty:ignore[no-matching-overload]
+    with RaisesGroup(*exceptions):
         raise ExceptionGroup("asdf", [cls() for cls in exceptions])
