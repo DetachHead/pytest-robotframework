@@ -418,21 +418,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="vscode">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#running-robot-tests" class="md-nav__link">
-    <span class="md-ellipsis">
-      running .robot tests
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -701,21 +686,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="vscode">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#running-robot-tests" class="md-nav__link">
-    <span class="md-ellipsis">
-      running .robot tests
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -751,8 +721,15 @@
 <p>vscode's builtin python plugin should discover both your python and robot tests by default, and show run buttons next to them:</p>
 <p><img alt="" src="../images/vscode-1.png" />
 <img alt="" src="../images/vscode-2.png" /></p>
-<h3 id="running-robot-tests">running <code>.robot</code> tests</h3>
-<p>if you still intend to use <code>.robot</code> files with pytest-robotframework, we recommend using the <a href="https://github.com/d-biehl/robotcode">robotcode</a> extension and setting <code>robotcode.testExplorer.enabled</code> to <code>false</code> in <code>.vscode/settings.json</code>. this will prevent the tests from being duplicated in the test explorer.</p>
+<div class="admonition note">
+<p class="admonition-title">running <code>.robot</code> tests</p>
+<p>if you still intend to use <code>.robot</code> files with pytest-robotframework, we recommend using the <a href="https://github.com/d-biehl/robotcode">robotcode</a> extension and disabling its test explorer integration:</p>
+<p><div class="highlight"><span class="filename">.vscode/settings.json</span><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;robotcode.testExplorer.enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">}</span>
+</code></pre></div>
+this will prevent the tests from being duplicated in the test explorer.</p>
+</div>
 <h2 id="pycharm">pycharm</h2>
 <p>pycharm currently does not support pytest plugins for non-python files. see <a href="https://youtrack.jetbrains.com/issue/PY-63110/use-pytest-collect-only-to-collect-pytest-tests">this issue</a></p>
 
