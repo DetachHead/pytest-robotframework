@@ -73,7 +73,7 @@
   },
   "basedpyright.analysis.inlayHints.genericTypes": true,
   "chat.commandCenter.enabled": false,
-  "dprint.path": ".venv/Scripts/dprint.exe", // https://github.com/dprint/dprint/issues/859#issuecomment-2868290521
+  "dprint.path": ".vscode/dprint", // https://github.com/dprint/dprint/issues/859#issuecomment-3194102785
   "python.ty.disableLanguageServices": true,
   "git.blame.editorDecoration.enabled": true // we use basedpyright's language server because it's more feature-complete
 }

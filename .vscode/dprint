@@ -1,0 +1,3 @@
+#!/bin/bash
+# see dprint.path in settings.json
+./.venv/bin/dprint "$@"
