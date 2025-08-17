@@ -2,11 +2,11 @@ name: docs
 
 on:
   push:
-    branches: ["main"]
+    branches: ["master"]
     tags:
       - "*"
   pull_request:
-    branches: ["main"]
+    branches: ["master"]
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -45,7 +45,7 @@ jobs:
       - name: validate docs
         run: ./pw uv run mkdocs build --strict
       - name: deploy dev docs
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         run: ./pw uv run mike deploy --push --update-aliases dev
       - name: deploy release docs
         if: github.ref_type == 'tag'
