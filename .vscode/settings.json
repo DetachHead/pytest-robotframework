@@ -32,7 +32,8 @@
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
-  "[toml][json][jsonc][yaml][markdown]": {
+  // why does vscode treat github actions yaml files as a separate language????
+  "[toml][json][jsonc][yaml][markdown][github-actions-workflow]": {
     "editor.defaultFormatter": "dprint.dprint"
   },
   "robotcode.testExplorer.enabled": false,
