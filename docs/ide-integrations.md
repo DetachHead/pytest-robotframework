@@ -7,9 +7,16 @@ vscode's builtin python plugin should discover both your python and robot tests 
 ![](./images/vscode-1.png)
 ![](./images/vscode-2.png)
 
-### running `.robot` tests
+!!! note "running `.robot` tests"
 
-if you still intend to use `.robot` files with pytest-robotframework, we recommend using the [robotcode](https://github.com/d-biehl/robotcode) extension and setting `robotcode.testExplorer.enabled` to `false` in `.vscode/settings.json`. this will prevent the tests from being duplicated in the test explorer.
+    if you still intend to use `.robot` files with pytest-robotframework, we recommend using the [robotcode](https://github.com/d-biehl/robotcode) extension and disabling its test explorer integration:
+
+    ```json title=".vscode/settings.json"
+    {
+        "robotcode.testExplorer.enabled": false
+    }
+    ```
+    this will prevent the tests from being duplicated in the test explorer.
 
 ## pycharm
 
