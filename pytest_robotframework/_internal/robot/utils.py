@@ -63,10 +63,12 @@ class RobotOptions(TypedDict):
     ```
 
     will be converted to a `dict` like so:
-    >>> {"listener": ["Foo", "Bar"], "outputdir": "baz"}
+    ```py
+    {"listener": ["Foo", "Bar"], "outputdir": "baz"}
+    ```
 
     any options missing from this `TypedDict` are not allowed to be modified as they interfere with
-    the functionality of this plugin. see https://github.com/detachhead/pytest-robotframework#config
+    the functionality of this plugin. see [configuration](../configuration.md)
     for alternatives
     """
 
