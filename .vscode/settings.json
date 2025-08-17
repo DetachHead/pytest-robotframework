@@ -46,10 +46,10 @@
     "PATH": "${env:PATH};${workspaceFolder}/.pyprojectx/main"
   },
   "terminal.integrated.env.osx": {
-    "PATH": "${env:PATH};${workspaceFolder}/.pyprojectx/main"
+    "PATH": "${env:PATH}:${workspaceFolder}/.pyprojectx/main"
   },
   "terminal.integrated.env.linux": {
-    "PATH": "${env:PATH};${workspaceFolder}/.pyprojectx/main"
+    "PATH": "${env:PATH}:${workspaceFolder}/.pyprojectx/main"
   },
   "python.testing.pytestArgs": [
     "-n",
