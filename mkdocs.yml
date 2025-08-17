@@ -61,7 +61,6 @@ plugins:
         python:
           options:
             docstring_style: sphinx
-            show_root_heading: true
             show_if_no_docstring: true
             filters:
               - "!^_"
