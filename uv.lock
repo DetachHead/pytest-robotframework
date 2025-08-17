@@ -911,7 +911,7 @@ wheels = [
 
 [[package]]
 name = "pytest-robotframework"
-version = "4.4.0.post1"
+version = "4.4.0.post2"
 source = { editable = "." }
 dependencies = [
     { name = "ansi2html" },
