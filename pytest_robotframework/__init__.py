@@ -543,7 +543,6 @@ def as_keyword(
     runs the body as a robot keyword.
 
     example:
-    -------
     ```py
     with as_keyword("do thing"):
         ...
@@ -671,7 +670,6 @@ class AssertOptions:
     robot log.
 
     example:
-    -------
     ```python
     assert foo == bar, AssertOptions(
         log_pass=False, description="checking the value", fail_msg="assertion failed"
@@ -702,7 +700,6 @@ class AssertOptions:
         will be logged, but not within a keyword.
 
         example:
-        -------
         ```py
         # (assuming all of these assertions pass)
 
@@ -748,7 +745,6 @@ def hide_asserts_from_robot_log() -> Iterator[None]:
     when hiding only a single `assert` statement, you should use `AssertOptions(log=False)` instead.
 
     example:
-    -------
     ```py
     assert True  # not hidden
     with hide_asserts_from_robot_log():

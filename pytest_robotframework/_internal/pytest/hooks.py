@@ -31,7 +31,6 @@ def pytest_robot_modify_options(options: RobotOptions, session: Session) -> None
     modify the arguments passed to robot in-place
 
     example:
-    -------
     ```py
     def pytest_robot_modify_options(options: RobotOptions, session: Session) -> None:
     if not session.config.option.collectonly:
