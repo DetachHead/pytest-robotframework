@@ -60,6 +60,7 @@ plugins:
         python:
           options:
             docstring_style: sphinx
+            show_root_heading: true
             filters:
               - "!^_"
               - "__init__"
