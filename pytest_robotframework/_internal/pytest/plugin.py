@@ -47,13 +47,13 @@ from pytest_robotframework import (
     _resources,  # pyright:ignore[reportPrivateUsage]
     _suite_variables,  # pyright:ignore[reportPrivateUsage]
     as_keyword,
-    hooks,
     import_resource,
     keywordify,
 )
 from pytest_robotframework._internal import cringe_globals
 from pytest_robotframework._internal.cringe_globals import current_item
 from pytest_robotframework._internal.errors import InternalError
+from pytest_robotframework._internal.pytest import hooks
 from pytest_robotframework._internal.pytest.exception_getter import exception_key
 from pytest_robotframework._internal.pytest.robot_file_support import RobotFile, RobotItem
 from pytest_robotframework._internal.pytest.xdist_utils import (
