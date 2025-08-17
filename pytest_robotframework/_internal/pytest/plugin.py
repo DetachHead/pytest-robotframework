@@ -383,7 +383,7 @@ def pytest_addoption(parser: Parser):
     group = parser.getgroup(
         "robot",
         "robotframework (if an option is missing, it means there's a pytest equivalent you should"
-        "use instead. see https://github.com/DetachHead/pytest-robotframework#config)",
+        "use instead. see https://detachhead.github.io/pytest-robotframework/pytest_robotframework.html#config)",
     )
     group.addoption(
         "--no-assertions-in-robot-log",
@@ -393,7 +393,7 @@ def pytest_addoption(parser: Parser):
         help="whether to hide passing `assert` statements in the robot log by default. when this is"
         " disabled, you can make individual `assert` statements show in the log using the"
         " `pytest_robotframework.AssertionOptions` class with `log_pass=True`. see the docs for"
-        " more information: https://github.com/DetachHead/pytest-robotframework/tree/assertion-ricing#hiding-non-user-facing-assertions",
+        " more information: https://detachhead.github.io/pytest-robotframework/pytest_robotframework.html#enabling-pytest-assertions-in-the-robot-log",
     )
     for arg_name, default_value in cli_defaults(RobotSettings).items():
         if arg_name in banned_options:
