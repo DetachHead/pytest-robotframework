@@ -1,5 +1,3 @@
-# contributing
-
 unlike many projects, i try to make mine as easy as possible for other developers to work on by committing IDE config files and using tools such as pyprojectx to automate the installation of all the dev dependencies, so the steps to get set up are quite straightforward:
 
 ## prerequisites
@@ -20,10 +18,10 @@ unlike many projects, i try to make mine as easy as possible for other developer
 
 since this is a pytest plugin, we have two types of tests:
 
-- the plugin tests (located in [`./tests/test_python.py`](./tests/test_python.py) and [`./tests/test_robot.py`](./tests/test_robot.py)) - these use pytester to run pytest against the fixture tests
-- the "fixture" tests ([`./tests/fixtures`](./tests/fixtures)) - the tests that the plugin tests run and validate the results of
+- the plugin tests (located in `./tests/test_python.py` and `./tests/test_robot.py`) - these use pytester to run pytest against the fixture tests
+- the "fixture" tests (`./tests/fixtures`) - the tests that the plugin tests run and validate the results of
 
-each plugin test is tied to a fixture test by the test name. for example, the following test runs the fixture test at [`./tests/fixtures/test_python/test_one_test_passes.py`](./tests/fixtures/test_python/test_one_test_passes.py):
+each plugin test is tied to a fixture test by the test name. for example, the following test runs the fixture test at `./tests/fixtures/test_python/test_one_test_passes.py`:
 
 ```py
 # ./tests/test_python.py

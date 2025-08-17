@@ -38,7 +38,7 @@ robocop_lint = 'uv run robocop check'
 robocop_format = 'uv run robocop format --check .'
 robotcode = 'uv run robotcode analyze code'
 dprint = 'uv run dprint check'
-open_docs = 'uv run pdoc pytest_robotframework'
+open_docs = 'uv run mkdocs serve'
 clear_pycache = 'python scripts/clear_pycache.py'
 
 [tool.uv]
@@ -51,11 +51,14 @@ dev-dependencies = [
   "lxml-stubs>=0.4.0",
   "pytest-xdist>=3.5.0",
   "pytest-github-actions-annotate-failures>=0.2.0",
-  "pdoc>=14.1.0",
   "robotcode[analyze]>=0.97.0",
   "dprint-py>=0.49.1.2",
   "ty>=0.0.0a8",
   "exceptiongroup>=1.3.0",
+  "mkdocs-material>=9.6.17",
+  "mkdocs-unused-files>=0.2.0",
+  "mkdocs-awesome-pages-plugin>=2.10.1",
+  "mkdocstrings-python>=1.17.0",
 ]
 
 [tool.uv.build-backend]

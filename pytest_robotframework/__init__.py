@@ -1,9 +1,4 @@
-"""
-.. include:: ../README.md
-
-# API
-useful helpers for you to use in your pytest tests and `conftest.py` files
-"""
+"""useful helpers for you to use in your pytest tests and `conftest.py` files"""
 
 from __future__ import annotations
 
@@ -34,8 +29,8 @@ from typing_extensions import Literal, Never, TypeAlias, deprecated, override
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot.utils import (
-    Listener as _Listener,
-    RobotOptions as _RobotOptions,
+    Listener as Listener,
+    RobotOptions as RobotOptions,
     add_robot_error,
     escape_robot_str,
     execution_context,
@@ -549,8 +544,10 @@ def as_keyword(
 
     example:
     -------
-    >>> with as_keyword("do thing"):
-    ...     ...
+    ```py
+    with as_keyword("do thing"):
+        ...
+    ```
 
     :param name: the name for the keyword
     :param doc: the documentation to be displayed underneath the keyword in the robot log
@@ -675,11 +672,11 @@ class AssertOptions:
 
     example:
     -------
-    .. code-block:: python
-
-        assert foo == bar, AssertOptions(
-            log_pass=False, description="checking the value", fail_msg="assertion failed"
-        )
+    ```python
+    assert foo == bar, AssertOptions(
+        log_pass=False, description="checking the value", fail_msg="assertion failed"
+    )
+    ```
     """
 
     def __init__(
@@ -706,19 +703,19 @@ class AssertOptions:
 
         example:
         -------
-        .. code-block:: python
+        ```py
+        # (assuming all of these assertions pass)
 
-            # (assuming all of these assertions pass)
+        # never displays in the robot log:
+        assert foo == bar, AssertOptions(log_pass=False)
 
-            # never displays in the robot log:
-            assert foo == bar, AssertOptions(log_pass=False)
+        # always displays in the robot log (as long as the `enable_assertion_pass_hook` pytest
+        # option is enabled):
+        assert foo == bar, AssertOptions(log_pass=True)
 
-            # always displays in the robot log (as long as the `enable_assertion_pass_hook` pytest
-            # option is enabled):
-            assert foo == bar, AssertOptions(log_pass=True)
-
-            # displays in the robot log as only if all 3 conditions mentioned above are met:
-            assert foo == bar
+        # displays in the robot log as only if all 3 conditions mentioned above are met:
+        assert foo == bar
+        ```
         """
 
         self.description: str | None = description
@@ -752,12 +749,12 @@ def hide_asserts_from_robot_log() -> Iterator[None]:
 
     example:
     -------
-    .. code-block:: python
-
-        assert True  # not hidden
-        with hide_asserts_from_robot_log():
-            assert True  # hidden
-            assert True, AssertOptions(log_pass=True)  # not hidden
+    ```py
+    assert True  # not hidden
+    with hide_asserts_from_robot_log():
+        assert True  # hidden
+        assert True, AssertOptions(log_pass=True)  # not hidden
+    ```
     """
     item = current_item()
     if not item:
@@ -771,10 +768,3 @@ def hide_asserts_from_robot_log() -> Iterator[None]:
         yield
     finally:
         item.stash[_hide_asserts_context_manager_key] = previous_value
-
-
-# ideally these would just use an explicit re-export
-# https://github.com/mitmproxy/pdoc/issues/667
-Listener: TypeAlias = _Listener
-
-RobotOptions: TypeAlias = _RobotOptions

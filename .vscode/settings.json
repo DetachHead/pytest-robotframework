@@ -75,5 +75,15 @@
   "chat.commandCenter.enabled": false,
   "dprint.path": ".vscode/dprint", // https://github.com/dprint/dprint/issues/859#issuecomment-3194102785
   "ty.disableLanguageServices": true,
-  "git.blame.editorDecoration.enabled": true // we use basedpyright's language server because it's more feature-complete
+  "git.blame.editorDecoration.enabled": true, // we use basedpyright's language server because it's more feature-complete
+  "yaml.customTags": [
+    // for mkdocs config. see https://squidfunk.github.io/mkdocs-material/creating-your-site/?h=vscode#minimal-configuration
+    "!ENV scalar",
+    "!ENV sequence",
+    "!relative scalar",
+    "tag:yaml.org,2002:python/name:material.extensions.emoji.to_svg",
+    "tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji",
+    "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format",
+    "tag:yaml.org,2002:python/object/apply:pymdownx.slugs.slugify mapping"
+  ]
 }

@@ -1,0 +1,94 @@
+site_name: pytest-robotframework
+site_url: https://detachhead.github.io/pytest-robotframework
+theme:
+  name: material
+  features:
+    - navigation.indexes
+    - content.code.copy
+    - navigation.top
+    - navigation.instant
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: teal
+      accent: teal
+      scheme: default
+
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: teal
+      accent: teal
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  favicon: img/favicon.ico
+  icon:
+    repo: fontawesome/brands/github
+markdown_extensions:
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.escapeall:
+      hardbreak: true
+  - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+plugins:
+  - search
+  # https://github.com/wilhelmer/mkdocs-unused-files/issues/12
+  # - unused_files
+  - awesome-pages
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: sphinx
+            filters:
+              - "!^_"
+              - "__init__"
+              - "__new__"
+
+nav:
+  - index.md
+  - installation.md
+  - features.md
+  - ...
+  - ... | development/**/*.md
+repo_url: https://github.com/detachhead/pytest-robotframework
+repo_name: detachhead/pytest-robotframework
+extra_css:
+  - stylesheets/extra.css
+validation:
+  nav:
+    # using awesome-pages plugin so it doesn't recognize these:
+    omitted_files: info
+    absolute_links: info
+  links:
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/detachhead/pytest-robotframework
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pytest-robotframework/

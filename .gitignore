@@ -1,7 +1,6 @@
 **/__pycache__
 /.venv/
 /dist/
-/docs/
 *.log
 .pyprojectx
 output.xml
