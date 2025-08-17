@@ -185,16 +185,18 @@ class _KeywordDecorator:
     def __init__(
         self,
         *,
-        name: str | None = None,
-        tags: tuple[str, ...] | None = None,
+        name: str | None,
+        tags: tuple[str, ...] | None,
         module: str | None = None,
         doc: str | None = None,
+        max_argument_length_in_log: int | None,
     ) -> None:
         super().__init__()
         self._name: str | None = name
         self._tags: tuple[str, ...] = tags or ()
         self._module: str | None = module
         self._doc: str | None = doc
+        self._max_argument_length_in_log: int | None = max_argument_length_in_log
 
     @staticmethod
     def _save_status_reporter_failure(exception: BaseException):
@@ -243,8 +245,10 @@ class _KeywordDecorator:
                 instead, but that can sometimes be huge so we truncate it. you can see the full
                 value when running with the DEBUG loglevel anyway
                 """
-                max_length = 50
+                max_length = self._max_argument_length_in_log
                 value = str(arg)
+                if max_length is None:
+                    return value
                 return value[:max_length] + "..." if len(value) > max_length else value
 
             if self._module is None:
@@ -428,6 +432,7 @@ def keyword(
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
     wrap_context_manager: Literal[True],
+    max_argument_length_in_log: int | None = ...,
 ) -> _WrappedContextManagerKeywordDecorator: ...
 
 
@@ -438,6 +443,7 @@ def keyword(
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
     wrap_context_manager: Literal[False],
+    max_argument_length_in_log: int | None = ...,
 ) -> _NonWrappedContextManagerKeywordDecorator: ...
 
 
@@ -448,6 +454,7 @@ def keyword(
     tags: tuple[str, ...] | None = ...,
     module: str | None = ...,
     wrap_context_manager: None = ...,
+    max_argument_length_in_log: int | None = ...,
 ) -> _FunctionKeywordDecorator: ...
 
 
@@ -474,6 +481,7 @@ def keyword(  # pylint:disable=missing-param-doc
     tags: tuple[str, ...] | None = None,
     module: str | None = None,
     wrap_context_manager: bool | None = None,
+    max_argument_length_in_log: int | None = 100,
 ) -> _KeywordDecorator | Callable[P, T]:
     """
     marks a function as a keyword and makes it show in the robot log.
@@ -485,22 +493,46 @@ def keyword(  # pylint:disable=missing-param-doc
     the `@keyword` decorator is above `@contextmanager`)
 
     :param name: set a custom name for the keyword in the robot log (default is inferred from the
-    decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
+        decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument
     :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument
     :param module: customize the module that appears top the left of the keyword name in the log.
-    defaults to the function's actual module
+        defaults to the function's actual module
     :param wrap_context_manager: if the decorated function returns a context manager, whether or not
-    to wrap the context manager instead of the function. you probably always want this to be `True`,
-    unless you don't always intend to use the returned context manager.
+        to wrap the context manager instead of the function. you probably always want this to be
+        `True`, unless you don't always intend to use the returned context manager.
+    :param max_argument_length_in_log: unlike in `.robot` files, the runtime value of keyword
+        arguments are rendered in the robot log (using its `__str__` method) instead of the
+        expression from the source code. this can be noisy for some objects, so this parameter
+        controls the the maximum number of characters to display before truncating it. set to `None`
+        to disable the truncation.
     """
     if fn is None:
         if wrap_context_manager is None:
-            return _FunctionKeywordDecorator(name=name, tags=tags, module=module)
+            return _FunctionKeywordDecorator(
+                name=name,
+                tags=tags,
+                module=module,
+                max_argument_length_in_log=max_argument_length_in_log,
+            )
         if wrap_context_manager:
-            return _WrappedContextManagerKeywordDecorator(name=name, tags=tags, module=module)
-        return _NonWrappedContextManagerKeywordDecorator(name=name, tags=tags, module=module)
+            return _WrappedContextManagerKeywordDecorator(
+                name=name,
+                tags=tags,
+                module=module,
+                max_argument_length_in_log=max_argument_length_in_log,
+            )
+        return _NonWrappedContextManagerKeywordDecorator(
+            name=name,
+            tags=tags,
+            module=module,
+            max_argument_length_in_log=max_argument_length_in_log,
+        )
     return keyword(  # pyright:ignore[reportReturnType] # ty:ignore[no-matching-overload]
-        name=name, tags=tags, module=module, wrap_context_manager=wrap_context_manager
+        name=name,
+        tags=tags,
+        module=module,
+        wrap_context_manager=wrap_context_manager,
+        max_argument_length_in_log=max_argument_length_in_log,
     )(fn)  # pyright:ignore[reportArgumentType]
 
 
@@ -527,7 +559,9 @@ def as_keyword(
     :param kwargs: keyword arguments to be displayed on the keyword in the robot log
     """
 
-    @_WrappedContextManagerKeywordDecorator(name=name, tags=tags, doc=doc, module="")
+    @_WrappedContextManagerKeywordDecorator(
+        name=name, tags=tags, doc=doc, module="", max_argument_length_in_log=None
+    )
     @contextmanager
     def fn(*_args: str, **_kwargs: str) -> Iterator[None]:
         yield

@@ -3,7 +3,7 @@ from __future__ import annotations
 from pytest_robotframework import keyword
 
 
-@keyword
+@keyword(max_argument_length_in_log=60)
 def foo(*args: object, **kwargs: object):  # pyright:ignore[reportUnusedParameter]
     ...
 
@@ -13,4 +13,4 @@ def test_no_truncation():
 
 
 def test_truncation():
-    foo("a" * 51, bar="b" * 51)
+    foo("a" * 61, bar="b" * 61)
