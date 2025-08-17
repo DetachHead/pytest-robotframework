@@ -40,6 +40,7 @@ jobs:
       - run: ./pw basedpyright
 
       - run: ./pw ty
+        if: always()
 
       - name: ruff check
         if: always()
