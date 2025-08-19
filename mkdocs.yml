@@ -62,6 +62,8 @@ plugins:
           options:
             docstring_style: sphinx
             show_if_no_docstring: true
+            show_signature_annotations: true
+            show_labels: false
             filters:
               - "!^_"
               - "__init__"
