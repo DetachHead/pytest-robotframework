@@ -527,10 +527,9 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="hooks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pytest_robotframework._internal.pytest.hooks.pytest_robot_assertion" class="md-nav__link">
     <span class="md-ellipsis">
       pytest_robot_assertion
@@ -538,33 +537,13 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#pytest_robotframework._internal.pytest.hooks.pytest_robot_modify_options" class="md-nav__link">
     <span class="md-ellipsis">
       pytest_robot_modify_options
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="pytest_robot_modify_options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pytest_robotframework._internal.pytest.hooks.pytest_robot_modify_options--example" class="md-nav__link">
-    <span class="md-ellipsis">
-      example:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -712,10 +691,9 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="hooks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pytest_robotframework._internal.pytest.hooks.pytest_robot_assertion" class="md-nav__link">
     <span class="md-ellipsis">
       pytest_robot_assertion
@@ -723,33 +701,13 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#pytest_robotframework._internal.pytest.hooks.pytest_robot_modify_options" class="md-nav__link">
     <span class="md-ellipsis">
       pytest_robot_modify_options
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="pytest_robot_modify_options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pytest_robotframework._internal.pytest.hooks.pytest_robot_modify_options--example" class="md-nav__link">
-    <span class="md-ellipsis">
-      example:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -778,12 +736,7 @@
 
 
 
-<h2 id="pytest_robotframework._internal.pytest.hooks" class="doc doc-heading">
-            <code>pytest_robotframework._internal.pytest.hooks</code>
-
-
-</h2>
-
+<a id="pytest_robotframework._internal.pytest.hooks"></a>
     <div class="doc doc-contents first">
 
         <p>new pytest hooks defined by the <code>pytest_robotframework</code> plugin. these are not to be imported. see
@@ -811,10 +764,10 @@ for information on how to use them.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="pytest_robotframework._internal.pytest.hooks.pytest_robot_assertion" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">pytest_robot_assertion</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">fail_message</span><span class="p">,</span> <span class="n">line_number</span><span class="p">,</span> <span class="n">assertion_error</span><span class="p">,</span> <span class="n">explanation</span><span class="p">)</span></code>
+<h2 id="pytest_robotframework._internal.pytest.hooks.pytest_robot_assertion" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pytest_robot_assertion</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">Item</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fail_message</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">line_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">assertion_error</span><span class="p">:</span> <span class="ne">AssertionError</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">explanation</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+</h2>
 
 
     <div class="doc doc-contents ">
@@ -944,7 +897,8 @@ you're doing</p>
 
             <details class="quote">
               <summary>Source code in <code>pytest_robotframework/_internal/pytest/hooks.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">48</span>
+<span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span>
 <span class="normal">52</span>
@@ -979,8 +933,7 @@ you're doing</p>
 <span class="normal">81</span>
 <span class="normal">82</span>
 <span class="normal">83</span>
-<span class="normal">84</span>
-<span class="normal">85</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@hookspec</span>
+<span class="normal">84</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@hookspec</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">pytest_robot_assertion</span><span class="p">(</span>
     <span class="n">item</span><span class="p">:</span> <span class="n">Item</span><span class="p">,</span>
     <span class="n">expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1026,21 +979,21 @@ you're doing</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="pytest_robotframework._internal.pytest.hooks.pytest_robot_modify_options" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">pytest_robot_modify_options</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span></code>
+<h2 id="pytest_robotframework._internal.pytest.hooks.pytest_robot_modify_options" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pytest_robot_modify_options</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">RobotOptions</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+</h2>
 
 
     <div class="doc doc-contents ">
 
         <p>modify the arguments passed to robot in-place</p>
-<h5 id="pytest_robotframework._internal.pytest.hooks.pytest_robot_modify_options--example">example:</h5>
+<p>example:
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pytest_robot_modify_options</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">RobotOptions</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">collectonly</span><span class="p">:</span>
     <span class="n">options</span><span class="p">[</span><span class="s2">&quot;loglevel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DEBUG:INFO&quot;</span>
     <span class="n">options</span><span class="p">[</span><span class="s2">&quot;listener&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Foo</span><span class="p">())</span>
-</code></pre></div>
+</code></pre></div></p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1109,14 +1062,12 @@ you're doing</p>
 <span class="normal">42</span>
 <span class="normal">43</span>
 <span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@hookspec</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@hookspec</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">pytest_robot_modify_options</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">RobotOptions</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    modify the arguments passed to robot in-place</span>
 
 <span class="sd">    example:</span>
-<span class="sd">    -------</span>
 <span class="sd">    ```py</span>
 <span class="sd">    def pytest_robot_modify_options(options: RobotOptions, session: Session) -&gt; None:</span>
 <span class="sd">    if not session.config.option.collectonly:</span>
