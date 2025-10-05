@@ -15,7 +15,6 @@ from typing import (
     final,
 )
 
-from basedtyping import T
 from pytest import Item, Session, StashKey
 from robot import model, running
 from robot.api.interfaces import ListenerV2, ListenerV3, Parser
@@ -24,7 +23,7 @@ from robot.running.context import _ExecutionContext  # pyright:ignore[reportPriv
 from robot.version import VERSION
 from typing_extensions import override
 
-from pytest_robotframework._internal.utils import main_package_name
+from pytest_robotframework._internal.utils import T, main_package_name
 
 if TYPE_CHECKING:
     from types import TracebackType

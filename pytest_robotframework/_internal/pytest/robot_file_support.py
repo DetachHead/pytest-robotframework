@@ -22,7 +22,7 @@ from pytest_robotframework._internal.robot.utils import (
     robot_6,
     running_test_case_key,
 )
-from pytest_robotframework._internal.utils import patch_method
+from pytest_robotframework._internal.utils import P, patch_method
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -32,7 +32,6 @@ if TYPE_CHECKING:
     # compatibility with older versions
     from _pytest._code.code import TracebackStyle
     from _pytest._io import TerminalWriter
-    from basedtyping import P
     from robot import model
     from robot.running.model import Body
 

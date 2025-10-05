@@ -11,7 +11,6 @@ from traceback import format_stack
 from types import TracebackType
 from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, final, overload
 
-from basedtyping import Function, P, T
 from pytest import StashKey
 from robot import result, running
 from robot.api import deco, logger
@@ -38,9 +37,12 @@ from pytest_robotframework._internal.robot.utils import (
     is_robot_traceback,
     robot_6,
 )
+from pytest_robotframework._internal.utils import Function
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Mapping
+
+    from pytest_robotframework._internal.utils import P, T
 
 
 RobotVariables: TypeAlias = dict[str, object]

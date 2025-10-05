@@ -65,18 +65,6 @@ wheels = [
 ]
 
 [[package]]
-name = "basedtyping"
-version = "0.1.10"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/99/36/7ba70ab751f08f8619c9c1985899cc75223fef6b9583159414e08a1240f3/basedtyping-0.1.10.tar.gz", hash = "sha256:d7600917ec9f232c9eb4266916c2ea5a4719ffca59fb7902fc96fd59a4678110", size = 14672, upload-time = "2024-11-21T00:19:15.892Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/db/4a/76fe7ddbb90aadaeb298dbb57e562a365f21a6fa17d3c69e73cb3c0c84e8/basedtyping-0.1.10-py3-none-any.whl", hash = "sha256:8952416f8fd196d25c1f6d6bb556223183e928c944bee4bd0c49af659677dea9", size = 15045, upload-time = "2024-11-21T00:19:14.17Z" },
-]
-
-[[package]]
 name = "beautifulsoup4"
 version = "4.14.2"
 source = { registry = "https://pypi.org/simple" }
@@ -992,7 +980,6 @@ version = "4.4.0.post2"
 source = { editable = "." }
 dependencies = [
     { name = "ansi2html" },
-    { name = "basedtyping" },
     { name = "pytest" },
     { name = "robotframework" },
 ]
@@ -1021,7 +1008,6 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "ansi2html", specifier = ">=1.9.1" },
-    { name = "basedtyping", specifier = ">=0.1.0,<0.2" },
     { name = "pytest", specifier = ">=7,<9" },
     { name = "robotframework", specifier = ">=6.1,<8.0.0" },
 ]

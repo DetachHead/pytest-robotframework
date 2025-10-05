@@ -56,14 +56,13 @@ from pytest_robotframework._internal.robot.utils import (
     robot_6,
     running_test_case_key,
 )
-from pytest_robotframework._internal.utils import patch_method
+from pytest_robotframework._internal.utils import Function, P, T, patch_method
 
 if TYPE_CHECKING:
     from pathlib import Path
     from types import ModuleType
 
     from _pytest.nodes import Node
-    from basedtyping import Function, P, T
     from robot.running.builder.settings import TestDefaults
     from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 
