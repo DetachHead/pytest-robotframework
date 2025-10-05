@@ -227,9 +227,7 @@ class _KeywordDecorator:
         keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))  # ty:ignore[unresolved-attribute]
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
-        deco.keyword(  # pyright:ignore[reportUnknownMemberType]
-            name=keyword_name, tags=self._tags
-        )(fn)
+        deco.keyword(name=keyword_name, tags=self._tags)(fn)
 
         @wraps(fn)
         def inner(*args: P.args, **kwargs: P.kwargs) -> T:
@@ -261,7 +259,7 @@ class _KeywordDecorator:
             suppress = True
             # nullcontext is typed as returning None which pyright incorrectly marks as
             # unreachable. see https://github.com/DetachHead/basedpyright/issues/10
-            context_manager: AbstractContextManager[object, bool] = (  # pyright:ignore[reportAssignmentType]
+            context_manager: AbstractContextManager[object, bool] = (  # pyright:ignore[reportAssignmentType] # ty:ignore[invalid-assignment]
                 (
                     _FullStackStatusReporter(
                         data=data,
