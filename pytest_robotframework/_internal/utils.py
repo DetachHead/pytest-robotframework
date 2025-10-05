@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, cast
+from typing import TYPE_CHECKING, Callable, TypeVar, cast
 
-from basedtyping import P, T
+from typing_extensions import ParamSpec, TypeAlias
 
 if TYPE_CHECKING:
     from typing_extensions import Concatenate
+
+T = TypeVar("T")
+P = ParamSpec("P")
+
+Function: TypeAlias = Callable[..., object]
 
 
 def patch_method(

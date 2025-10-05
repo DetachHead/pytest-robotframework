@@ -8,7 +8,7 @@ from robot.api import logger
 from pytest_robotframework import keyword
 
 if TYPE_CHECKING:
-    from basedtyping import P, T
+    from pytest_robotframework._internal.utils import P, T
 
 
 def decorator(fn: Callable[P, T]) -> Callable[P, T]:
