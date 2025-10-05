@@ -57,7 +57,7 @@ if TYPE_CHECKING:
     def d() -> Iterator[None]:
         yield
 
-    _ = assert_type(d, Never)  # ty:ignore[type-assertion-failure]
+    _ = assert_type(d, Never)
 
     # keyword, non-context manager with wrap_context_manager=True:
     # expected type error
