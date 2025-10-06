@@ -63,6 +63,9 @@ clear_pycache = 'python scripts/clear_pycache.py'
 [tool.uv.build-backend]
 module-root = "."
 
+[tool.uv.sources]
+basedpyright = { git = "https://github.com/DetachHead/basedpyright" }
+
 [build-system]
 requires = ["uv_build"]
 build-backend = "uv_build"

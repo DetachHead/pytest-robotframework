@@ -55,13 +55,9 @@ wheels = [
 [[package]]
 name = "basedpyright"
 version = "1.31.6"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/DetachHead/basedpyright#554d80272becf9e8fd1d4f1639ae5dceac0c0d88" }
 dependencies = [
     { name = "nodejs-wheel-binaries" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a9/f6/c5657b1e464d04757cde2db76922a88091fe16854bd3d12e470c23b0dcf1/basedpyright-1.31.6.tar.gz", hash = "sha256:07f3602ba1582218dfd1db25b8b69cd3493e1f4367f46a44fd57bb9034b52ea9", size = 22683901, upload-time = "2025-10-01T13:11:21.317Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4e/2b/34f338b4c04fe965fd209ed872d9fdd893dacc1a06feb6c9fec13ff535c1/basedpyright-1.31.6-py3-none-any.whl", hash = "sha256:620968ee69c14eee6682f29ffd6f813a30966afb1083ecfa4caf155c5d24f2d5", size = 11805295, upload-time = "2025-10-01T13:11:18.308Z" },
 ]
 
 [[package]]
@@ -1014,7 +1010,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "basedpyright", specifier = ">=1.10.1" },
+    { name = "basedpyright", git = "https://github.com/DetachHead/basedpyright" },
     { name = "dprint-py", specifier = ">=0.49.1.2" },
     { name = "exceptiongroup", specifier = ">=1.3.0" },
     { name = "lxml", specifier = ">=4.9.3" },
