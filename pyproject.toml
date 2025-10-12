@@ -12,6 +12,7 @@ dependencies = [
   "pytest>=7,<9",
   "robotframework>=6.1,<8.0.0",
   "ansi2html>=1.9.1",
+  "pluggy", # transitive dependency of pytest that we explicitly depend on
 ]
 [dependency-groups]
 dev = [
@@ -32,6 +33,7 @@ dev = [
   "mkdocs-awesome-pages-plugin>=2.10.1",
   "mkdocstrings-python>=1.17.0",
   "mike>=2.1.3",
+  "dtach>=0.30.2",
 ]
 
 [project.urls]
@@ -57,6 +59,7 @@ robocop_lint = 'uv run robocop check'
 robocop_format = 'uv run robocop format --check .'
 robotcode = 'uv run robotcode analyze code'
 dprint = 'uv run dprint check'
+dtach = ['uv run tach check', 'uv run tach check-external']
 open_docs = 'uv run mkdocs serve'
 clear_pycache = 'python scripts/clear_pycache.py'
 
@@ -340,3 +343,33 @@ error = [
   "ResourceAlreadyImported",
   "VariablesAlreadyImported",
 ]
+
+[tool.tach]
+interfaces = []
+exclude = [
+  "**/*__pycache__",
+  "**/*egg-info",
+  "**/docs",
+  "**/tests",
+  "**/.venv",
+]
+source_roots = [
+  ".",
+]
+ignore_type_checking_imports = false
+
+[[tool.tach.modules]]
+path = "scripts"
+depends_on = []
+
+[[tool.tach.modules]]
+path = "pytest_robotframework"
+depends_on = ["pytest_robotframework._internal.*"]
+
+[[tool.tach.modules]]
+path = "pytest_robotframework._internal.robot"
+cannot_depend_on = ["pytest_robotframework._internal.pytest"]
+
+[tool.tach.rules]
+unused_ignore_directives = "error"
+unused_external_dependencies = "error"

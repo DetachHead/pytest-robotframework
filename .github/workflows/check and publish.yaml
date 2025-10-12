@@ -65,6 +65,9 @@ jobs:
       - run: ./pw dprint
         if: always()
 
+      - run: ./pw dtach
+        if: always()
+
       - run: ./pw uv run mkdocs build --strict
         if: always()
   publish:

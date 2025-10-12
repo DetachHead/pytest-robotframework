@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 def get_xdist():
     try:
         # xdist may not be installed
-        import xdist  # noqa: PLC0415 # pyright:ignore[reportMissingTypeStubs]
+        import xdist  # noqa: PLC0415 # pyright:ignore[reportMissingTypeStubs] # tach-ignore
     except ModuleNotFoundError:
         return None
     return xdist
