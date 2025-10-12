@@ -138,6 +138,17 @@
       }
     },
     {
+      "label": "dtach",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "dtach"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
       "label": "open docs",
       "type": "shell",
       "command": "./pw",
