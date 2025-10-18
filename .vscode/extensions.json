@@ -11,7 +11,8 @@
     "redhat.vscode-yaml",
     "d-biehl.robotcode",
     "github.vscode-github-actions",
-    "dprint.dprint"
+    "dprint.dprint",
+    "detachhead.dtach"
   ],
   "unwantedRecommendations": [
     "ms-python.vscode-pylance"
