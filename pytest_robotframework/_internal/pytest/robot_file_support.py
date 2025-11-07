@@ -143,7 +143,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
         if robot_6:
             with check_skipped:
                 # type checkers are only run when robot 7 is installed
-                BodyRunner(  # pyright:ignore[reportCallIssue] # ty:ignore[missing-argument]
+                BodyRunner(  # pyright:ignore[reportCallIssue]
                     context=context, templated=bool(test.template)
                 ).run(self.stash[original_body_key])
         else:

@@ -268,8 +268,8 @@ class _KeywordDecorator:
                         result=(
                             result.Keyword(
                                 # pyright is only run when robot 7 is installed
-                                kwname=keyword_name,  # pyright:ignore[reportCallIssue] # ty:ignore[unknown-argument]
-                                libname=self._module,  # pyright:ignore[reportCallIssue] # ty:ignore[unknown-argument]
+                                kwname=keyword_name,  # pyright:ignore[reportCallIssue]
+                                libname=self._module,  # pyright:ignore[reportCallIssue]
                                 doc=doc,
                                 args=log_args,
                                 tags=self._tags,
@@ -755,8 +755,7 @@ def hide_asserts_from_robot_log() -> Iterator[None]:
     item = current_item()
     if not item:
         raise InternalError(
-            # https://github.com/astral-sh/ty/issues/599
-            f"failed to get current pytest item in {hide_asserts_from_robot_log.__name__}"  # ty:ignore[unresolved-attribute]
+            f"failed to get current pytest item in {hide_asserts_from_robot_log.__name__}"
         )
     previous_value = item.stash.get(_hide_asserts_context_manager_key, False)
     item.stash[_hide_asserts_context_manager_key] = True

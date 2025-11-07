@@ -338,7 +338,7 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
     if not robot_6:
         # this listener is conditionally defined so has to be conditionally imported
         from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # noqa: PLC0415
-            KeywordUnwrapper,  # ty:ignore[possibly-unbound-import]
+            KeywordUnwrapper,
         )
 
         listeners.append(KeywordUnwrapper())

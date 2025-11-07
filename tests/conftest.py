@@ -295,7 +295,7 @@ class PytestRobotTester:
         exit_code: ExitCode | None = None,
     ):
         # checked by the overloads
-        result = self.run_pytest(*pytest_args or [], subprocess=subprocess, plugins=plugins)  # pyright:ignore[reportArgumentType]
+        result = self.run_pytest(*pytest_args or [], subprocess=subprocess, plugins=plugins)  # pyright:ignore[reportArgumentType] #ty:ignore[invalid-argument-type]
 
         # this is kinda hueristic and gross, but i cant think of a clean way to add this check to
         # every test so this will do for now

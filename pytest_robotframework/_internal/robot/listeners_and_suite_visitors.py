@@ -457,7 +457,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
                             item,  # pyright:ignore[reportUnknownArgumentType]
                             nextitem,  # pyright:ignore[reportUnknownArgumentType]
                         ),
-                        {
+                        # https://github.com/astral-sh/ty/issues/1493
+                        {  # ty:ignore[missing-typed-dict-key]
                             **hook.opts,
                             "hookwrapper": False,
                             "wrapper": False,
@@ -473,7 +474,8 @@ class PytestRuntestProtocolHooks(ListenerV3):
                         lambda hook=hook: exit_wrapper(  # pyright:ignore[reportUnknownArgumentType,reportUnknownLambdaType]
                             hook  # pyright:ignore[reportUnknownArgumentType]
                         ),
-                        {
+                        # https://github.com/astral-sh/ty/issues/1493
+                        {  # ty:ignore[missing-typed-dict-key]
                             **hook.opts,
                             "hookwrapper": False,
                             "wrapper": False,
