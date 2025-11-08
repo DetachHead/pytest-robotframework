@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Callable, cast, final
+from typing import TYPE_CHECKING, Concatenate, cast, final
 
 from _pytest._code.code import ReprFileLocation, TerminalRepr
 from pytest import Config, ExceptionInfo, File, Item, MarkDecorator, Session, StashKey, mark, skip
@@ -12,7 +12,7 @@ from robot.errors import ExecutionFailures, ExecutionStatus, RobotError
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
 from robot.running.statusreporter import StatusReporter
-from typing_extensions import Concatenate, override
+from typing_extensions import override
 
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.robot.utils import (
@@ -25,7 +25,7 @@ from pytest_robotframework._internal.robot.utils import (
 from pytest_robotframework._internal.utils import P, patch_method
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
     from os import PathLike
 
     # this type only exists in pytest 8.3+ so it should not be imported at runtime to maintain

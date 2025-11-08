@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from pytest import Session
@@ -19,7 +19,7 @@ def is_xdist_master(session: Session):
     return get_xdist() is not None and bool(
         cast(
             # 0 or None both mean xdist is disabled
-            Optional[int],
+            int | None,
             session.config.option.numprocesses,
         )
     )

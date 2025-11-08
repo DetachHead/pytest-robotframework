@@ -6,7 +6,7 @@ import contextlib
 import os
 from ast import Assert, Call, Constant, Expr, If, Raise, copy_location, stmt
 from pathlib import Path
-from typing import IO
+from typing import IO, TYPE_CHECKING, cast
 
 import pytest
 from _pytest.assertion import rewrite
@@ -37,7 +37,7 @@ from robot.rebot import Rebot
 from robot.result.resultbuilder import ExecutionResult
 from robot.run import RobotFramework, RobotSettings
 from robot.utils.error import ErrorDetails
-from typing_extensions import TYPE_CHECKING, Callable, Generator, Mapping, cast
+from typing_extensions import Generator
 
 from pytest_robotframework import (
     AssertOptions,
@@ -84,6 +84,7 @@ from pytest_robotframework._internal.robot.utils import (
 from pytest_robotframework._internal.utils import patch_method
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping
     from types import TracebackType
 
     from _pytest.terminal import TerminalReporter

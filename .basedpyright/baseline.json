@@ -1,23 +1,5 @@
 {
     "files": {
-        "./pytest_robotframework/_internal/pytest/plugin.py": [
-            {
-                "code": "reportDeprecated",
-                "range": {
-                    "startColumn": 55,
-                    "endColumn": 64,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportDeprecated",
-                "range": {
-                    "startColumn": 66,
-                    "endColumn": 73,
-                    "lineCount": 1
-                }
-            }
-        ],
         "./pytest_robotframework/_internal/pytest/robot_file_support.py": [
             {
                 "code": "reportUnusedCallResult",

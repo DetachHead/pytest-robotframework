@@ -5,14 +5,14 @@ from copy import copy as copy_object
 from pathlib import Path
 from shutil import copy, copytree
 from types import ModuleType
-from typing import TYPE_CHECKING, Literal, cast, final, overload
+from typing import TYPE_CHECKING, Literal, TypeGuard, cast, final, overload
 
 from lxml.etree import (
     XML,
     _Element,  # pyright: ignore[reportPrivateUsage]
 )
 from pytest import ExitCode, FixtureRequest, Function, Pytester, RunResult, fixture
-from typing_extensions import TypeGuard, override
+from typing_extensions import override
 
 if TYPE_CHECKING:
     from os import PathLike
@@ -169,10 +169,10 @@ class _XmlElement(Iterable["_XmlElement"]):
     def xpath(
         self,
         _path: _AnyStr,
-        # only used in TYPE_CHECKING block
-        namespaces: _NonDefaultNSMapArg | None = ...,  # ty:ignore[invalid-parameter-default]
+        namespaces: _NonDefaultNSMapArg | None = None,
         extensions: object = ...,
-        smart_strings: bool = ...,  # ty:ignore[invalid-parameter-default]  # noqa:FBT001
+        *,
+        smart_strings: bool = True,
         **_variables: _XPathObject,
     ) -> _XPathObject:
         result = self._proxied.xpath(_path, namespaces, extensions, smart_strings, **_variables)

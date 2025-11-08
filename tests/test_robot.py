@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 from pytest import ExitCode, Item, Mark
 
@@ -165,7 +165,7 @@ def test_warning_on_unknown_tag(pr: PytestRobotTester):
 def test_parameterized_tags(pr: PytestRobotTester):
     # cast because it gets narrowed on assignment but widened non-locally
     # https://github.com/DetachHead/basedpyright/issues/439
-    markers = cast(Optional[list[Mark]], None)
+    markers = cast(list[Mark] | None, None)
 
     class TagGetter:
         @staticmethod
@@ -269,7 +269,7 @@ def test_keyword_decorator_and_other_decorator(pr: PytestRobotTester):
 
 
 def test_line_number(pr: PytestRobotTester):
-    items = cast(Optional[list[Item]], None)
+    items = cast(list[Item] | None, None)
 
     class ItemGetter:
         @staticmethod
