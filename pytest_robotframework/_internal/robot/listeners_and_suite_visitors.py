@@ -163,13 +163,7 @@ class PythonParser(Parser):
                     test_case = running.TestCase(
                         name=child.name,
                         doc=documentation,
-                        tags=[
-                            ":".join([
-                                marker.name,
-                                *(str(arg) for arg in cast(tuple[object, ...], marker.args)),
-                            ])
-                            for marker in child.iter_markers()
-                        ],
+                        tags=[marker.name for marker in child.iter_markers()],
                         parent=parent_suite,
                     )
                     child.stash[running_test_case_key] = test_case

@@ -440,7 +440,7 @@ def test_parameterized_tags(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     xml = output_xml()
-    assert xml.xpath(".//test[@name='test_tags']/tag[.='foo:bar']")
+    assert xml.xpath(".//test[@name='test_tags']/tag[.='foo']")
 
 
 def test_keyword_names(pr: PytestRobotTester):
