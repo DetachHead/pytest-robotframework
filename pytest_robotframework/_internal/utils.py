@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, TypeVar, cast
+from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast
 
-from typing_extensions import ParamSpec, TypeAlias
+from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate
+    from typing import Concatenate
 
 T = TypeVar("T")
 P = ParamSpec("P")

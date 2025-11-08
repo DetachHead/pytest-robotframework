@@ -5,7 +5,7 @@ description = "a pytest plugin that can run both python and robotframework tests
 authors = [
   { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
 ]
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.10,<4.0"
 readme = "README.md"
 license = { text = "MIT" }
 dependencies = [
@@ -182,13 +182,14 @@ enable_assertion_pass_hook = true
 
 [tool.basedpyright]
 ignore = ["pw"]
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 allowedUntypedLibraries = [
   'robot', # https://github.com/robotframework/robotframework/issues/4822
 ]
 reportImplicitStringConcatenation = false # handled by ruff
 reportUnusedImport = false # covered by ruff (has quickfix)
 reportUnusedVariable = false # covered by ruff (has quickfix)
+deprecateTypingAliases = false # covered by ruff (has quickfix)
 # even though we enable this rule we still keep reportUnannotatedClassAttribute enabled since this is a library
 reportIncompatibleUnannotatedOverride = 'error'
 
@@ -207,7 +208,7 @@ error-on-warning = true
 
 [tool.ruff]
 unsafe-fixes = true
-target-version = "py39"
+target-version = "py310"
 respect-gitignore = true
 line-length = 100
 preview = true
@@ -254,9 +255,6 @@ ignore = [
   "C901", # max-complexity
   "SLF001", # private-member-access (covered by pyright)
   "PLC2701", # import-private-name (covered by pyright)
-  "UP006", # non-pep585-annotation (covered by pyright)
-  "UP007", # non-pep604-annotation (covered by pyright)
-  "UP035", # deprecated-import (covered by pyright)
   "ISC001", # single-line-implicit-string-concatenation (conflicts with formatter)
   "COM812", # missing-trailing-comma (conflicts with formatter)
   "PLE1507", # invalid-envvar-value (covered by pyright)

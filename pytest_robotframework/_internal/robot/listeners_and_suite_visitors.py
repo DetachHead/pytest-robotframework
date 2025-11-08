@@ -5,13 +5,13 @@ robot (some of them are not activated when running pytest in `--collect-only` mo
 
 from __future__ import annotations
 
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import suppress
 from functools import wraps
 from inspect import getdoc
 from re import sub
 from types import MethodType
-from typing import TYPE_CHECKING, Callable, Final, Literal, Optional, TypeVar, cast, final
+from typing import TYPE_CHECKING, Concatenate, Final, Literal, TypeVar, cast, final
 
 from _pytest import runner
 from _pytest.python import PyobjMixin
@@ -26,7 +26,7 @@ from robot.model import Message, SuiteVisitor
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.model import Body
 from robot.utils.error import ErrorDetails
-from typing_extensions import Concatenate, override
+from typing_extensions import override
 
 from pytest_robotframework import (
     _get_status_reporter_failures,  # pyright:ignore[reportPrivateUsage]
@@ -315,7 +315,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
                 )
             # need to set nextitem on all the items, because for some reason the attribute
             # exists on the class but is never used
-            if self._previous_item and not cast(Optional[Item], self._previous_item.nextitem):
+            if self._previous_item and not cast(Item | None, self._previous_item.nextitem):
                 self._previous_item.nextitem = (  # pyright:ignore[reportAttributeAccessIssue]
                     item
                 )
@@ -395,7 +395,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                     hookimpl
                 )
             hook_result = cast(
-                object, hook_caller(item=item, nextitem=cast(Optional[Item], item.nextitem))
+                object, hook_caller(item=item, nextitem=cast(Item | None, item.nextitem))
             )
         finally:
             mutable_hook_caller._hookimpls[:] = (  # pyright:ignore[reportPrivateUsage]

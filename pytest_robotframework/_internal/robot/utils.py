@@ -1,19 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from functools import reduce
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Final,
-    Generic,
-    Literal,
-    Optional,
-    TypedDict,
-    Union,
-    cast,
-    final,
-)
+from typing import TYPE_CHECKING, Final, Generic, Literal, TypedDict, cast, final
 
 from pytest import Item, Session, StashKey
 from robot import model, running
@@ -35,7 +24,7 @@ ModelTestCase = model.TestCase[model.Keyword]
 ModelTestSuite = model.TestSuite[model.Keyword, ModelTestCase]
 """robot `model.TestSuite` with the default generic values"""
 
-Listener = Union[ListenerV2, ListenerV3]
+Listener = ListenerV2 | ListenerV3
 
 
 def get_arg_with_type(
@@ -171,7 +160,7 @@ def execution_context() -> _ExecutionContext | None:
     # need to import it every time because it changes
     from robot.running import EXECUTION_CONTEXTS  # noqa: PLC0415
 
-    return cast(Union[_ExecutionContext, None], EXECUTION_CONTEXTS.current)
+    return cast(_ExecutionContext | None, EXECUTION_CONTEXTS.current)
 
 
 running_test_case_key = StashKey[running.TestCase]()
@@ -238,10 +227,9 @@ def _merge_robot_options(
     result: dict[str, object] = {}
     for key, value in dict1.items():
         if isinstance(value, list):
-            other_value = cast(Optional[list[object]], dict2.get(key, []))
+            other_value = cast(list[object] | None, dict2.get(key, []))
             new_value = cast(
-                Optional[list[object]],
-                other_value if other_value is None else [*value, *other_value],
+                list[object] | None, other_value if other_value is None else [*value, *other_value]
             )
         elif key in dict2:
             new_value = dict2[key]
@@ -292,9 +280,7 @@ def is_robot_traceback(tb: TracebackType) -> bool | str | None:
     import pytest  # noqa: PLC0415
     import robot  # noqa: PLC0415
 
-    module_name = cast(
-        Optional[str], cast(dict[str, object], tb.tb_frame.f_globals).get("__name__")
-    )
+    module_name = cast(str | None, cast(dict[str, object], tb.tb_frame.f_globals).get("__name__"))
     # not importing pytest_robotframework itself because it would cause circular imports
     return module_name == main_package_name or (
         module_name

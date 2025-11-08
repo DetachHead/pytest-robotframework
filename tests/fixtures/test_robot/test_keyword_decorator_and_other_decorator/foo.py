@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from robot.api import logger
 
 from pytest_robotframework import keyword
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pytest_robotframework._internal.utils import P, T
 
 

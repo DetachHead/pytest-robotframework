@@ -13,6 +13,8 @@ def pytest_runtest_setup(item: RobotItem):
     markers = list(item.iter_markers())
     # TODO: use strict=True instead when dropping support for <3.10 # noqa: TD003
     assert len(marker_names) == len(marker_kwargs) == len(markers)
-    for marker, marker_name, marker_kwarg in zip(markers, marker_names, marker_kwargs):
+    for marker, marker_name, marker_kwarg in zip(
+        markers, marker_names, marker_kwargs, strict=False
+    ):
         assert marker.name == marker_name
         assert marker.kwargs == marker_kwarg
