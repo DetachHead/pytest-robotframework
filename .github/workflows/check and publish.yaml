@@ -12,7 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.10", null]
+        # ideally we would use the version from .python-version when referring to the latest version, but we currently pin
+        # python 3.13 for local development due to https://github.com/microsoft/vscode-python/issues/25581
+        python_version: ["3.10", "3.14"]
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         robot_version: ["6.1.1", "from lockfile"]
         pytest_version: ["8.0", "8.4.2", "from lockfile"]
