@@ -211,12 +211,22 @@ def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
     if session._initialpaths:  # pyright:ignore[reportPrivateUsage]
         return session._initialpaths  # pyright:ignore[reportPrivateUsage]
     result: set[Path] = set()
-    for arg in session.config.args:
-        collection_argument = resolve_collection_argument(
-            session.config.invocation_params.dir,
-            arg,
-            as_pypath=session.config.option.pyargs,  # pyright:ignore[reportAny]
-        )
+    for i, arg in enumerate(session.config.args):
+        if pytest_version > (9, 0):
+            collection_argument = resolve_collection_argument(
+                session.config.invocation_params.dir,
+                arg,
+                i,
+                as_pypath=session.config.option.pyargs,  # pyright:ignore[reportAny]
+            )
+        elif not TYPE_CHECKING:
+            # we only run pyright on pytest >=9. we use `TYPE_CHECKING` here instead of suppressing
+            # type errors to prevent collection_argument from being reported as `Any` below
+            collection_argument = resolve_collection_argument(
+                session.config.invocation_params.dir, arg, as_pypath=session.config.option.pyargs
+            )
+        else:
+            raise InternalError(f"{TYPE_CHECKING=}")
         path = (
             collection_argument.path
             if pytest_version >= (8, 1)

@@ -5,14 +5,18 @@ description = "a pytest plugin that can run both python and robotframework tests
 authors = [
   { name = "DetachHead", email = "detachhead@users.noreply.github.com" },
 ]
+# remember to update the version range mentioned in compatibility.md
 requires-python = ">=3.10,<4.0"
 readme = "README.md"
 license = { text = "MIT" }
 dependencies = [
-  "pytest>=7,<9",
-  "robotframework>=6.1,<8.0.0",
   "ansi2html>=1.9.1",
   "pluggy", # transitive dependency of pytest that we explicitly depend on
+  # we use uppper bounds deliberately here because we rely a lot on pytest and robotframework internals. a major version update
+  # will almost certainly cause pytest-robotframework to break.
+  # when updating these version ranges, remember to update the versions in compatibility.md
+  "pytest>=7,<10",
+  "robotframework>=6.1,<8.0.0",
 ]
 [dependency-groups]
 dev = [
