@@ -452,7 +452,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                             nextitem,  # pyright:ignore[reportUnknownArgumentType]
                         ),
                         # https://github.com/astral-sh/ty/issues/1493
-                        {  # ty:ignore[missing-typed-dict-key]
+                        {  # ty:ignore[missing-typed-dict-key,invalid-argument-type]
                             **hook.opts,
                             "hookwrapper": False,
                             "wrapper": False,
@@ -469,7 +469,7 @@ class PytestRuntestProtocolHooks(ListenerV3):
                             hook  # pyright:ignore[reportUnknownArgumentType]
                         ),
                         # https://github.com/astral-sh/ty/issues/1493
-                        {  # ty:ignore[missing-typed-dict-key]
+                        {  # ty:ignore[missing-typed-dict-key,invalid-argument-type]
                             **hook.opts,
                             "hookwrapper": False,
                             "wrapper": False,
