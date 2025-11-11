@@ -36,6 +36,7 @@ from robot.output import LOGGER
 from robot.rebot import Rebot
 from robot.result.resultbuilder import ExecutionResult
 from robot.run import RobotFramework, RobotSettings
+from robot.utils import printable_name
 from robot.utils.error import ErrorDetails
 from typing_extensions import Generator
 
@@ -645,7 +646,9 @@ def _keywordify_pytest_functions():
     # robot_library
     # https://github.com/DetachHead/pytest-robotframework/issues/51
     for method in ("fail", "xfail"):
-        keywordify(pytest, method, module=module)
+        # we specify the name argument explicitly because as of pytest 9.0 these are variables now
+        # instead of functions, so they don't have a __name__ attribute
+        keywordify(pytest, method, module=module, name=printable_name(method))
     methods_to_wrap = {"deprecated_call", "warns", "raises"}
     if pytest_version >= (8, 4):
         # RaisesGroup was only introduced in pytest 8.4
