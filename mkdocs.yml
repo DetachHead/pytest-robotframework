@@ -60,6 +60,8 @@ plugins:
       handlers:
         python:
           options:
+            extensions:
+              - griffe_public_redundant_aliases
             docstring_style: sphinx
             show_if_no_docstring: true
             show_signature_annotations: true

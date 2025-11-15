@@ -325,6 +325,18 @@ wheels = [
 ]
 
 [[package]]
+name = "griffe-public-redundant-aliases"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "griffe" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/b8/a6515669cb0c000e0d05768c92e1f1e673e7ebea66ba1ddaf70cc87714f6/griffe_public_redundant_aliases-0.3.0.tar.gz", hash = "sha256:45cbcfbe7f28408d043b446f699f4b92ee2477b4933f97d344f3edb2970325ec", size = 25325, upload-time = "2025-11-08T17:48:30.443Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8e/bb/7c27ce87737b0a170052de0356023a8fafb77d01a76ed455e6517cd6090d/griffe_public_redundant_aliases-0.3.0-py3-none-any.whl", hash = "sha256:091af6f2d3fbcf3baba21ae3a8cca284812da4cddf3c564d6cc1013ffb005901", size = 5510, upload-time = "2025-11-08T17:48:29.142Z" },
+]
+
+[[package]]
 name = "idna"
 version = "3.11"
 source = { registry = "https://pypi.org/simple" }
@@ -1026,6 +1038,7 @@ dev = [
     { name = "dprint-py" },
     { name = "dtach" },
     { name = "exceptiongroup" },
+    { name = "griffe-public-redundant-aliases" },
     { name = "lxml" },
     { name = "lxml-stubs" },
     { name = "mike" },
@@ -1058,6 +1071,7 @@ dev = [
     { name = "dprint-py", specifier = ">=0.49.1.2" },
     { name = "dtach", specifier = ">=0.30.2" },
     { name = "exceptiongroup", specifier = ">=1.3.0" },
+    { name = "griffe-public-redundant-aliases", specifier = ">=0.3.0" },
     { name = "lxml", specifier = ">=4.9.3" },
     { name = "lxml-stubs", specifier = ">=0.4.0" },
     { name = "mike", specifier = ">=2.1.3" },
