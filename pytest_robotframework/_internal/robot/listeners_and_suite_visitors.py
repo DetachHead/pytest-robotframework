@@ -244,7 +244,7 @@ class RobotTestFilterer(SuiteVisitor):
 
     @override
     # https://github.com/robotframework/robotframework/issues/4940
-    def visit_test(  # pyright:ignore[reportIncompatibleMethodOverride]
+    def visit_test(  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[invalid-method-override]
         self, test: running.TestCase
     ):
         for item in self.items:
@@ -298,7 +298,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
     @override
     # https://github.com/robotframework/robotframework/issues/4940
-    def start_test(self, test: running.TestCase) -> bool | None:  # pyright:ignore[reportIncompatibleMethodOverride]
+    def start_test(self, test: running.TestCase) -> bool | None:  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[invalid-method-override]
         if self.xdist_item:
             item = self.xdist_item
         else:

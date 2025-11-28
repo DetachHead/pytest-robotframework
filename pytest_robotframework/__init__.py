@@ -120,7 +120,7 @@ class _FullStackStatusReporter(StatusReporter):
             in_framework = False
             tb = trace
             # find a frame from a module that should always be in the trace
-            if Path(frame.filename) == Path(model.__file__):
+            if Path(frame.filename) == Path(model.__file__):  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/860
                 break
         else:
             # using logger.error because raising an exception here would screw up the output xml
@@ -355,7 +355,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> T:
+    ) -> T:  # ty:ignore[invalid-method-override] https://github.com/astral-sh/ty/issues/1820
         T_WrappedContextManager = TypeVar("T_WrappedContextManager")
 
         @final
