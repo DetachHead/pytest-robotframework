@@ -120,7 +120,7 @@ class _FullStackStatusReporter(StatusReporter):
             in_framework = False
             tb = trace
             # find a frame from a module that should always be in the trace
-            if Path(frame.filename) == Path(model.__file__):
+            if Path(frame.filename) == Path(model.__file__):  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/860
                 break
         else:
             # using logger.error because raising an exception here would screw up the output xml
@@ -229,7 +229,7 @@ class _KeywordDecorator:
         keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))  # ty:ignore[unresolved-attribute]
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
-        deco.keyword(name=keyword_name, tags=self._tags)(fn)
+        deco.keyword(name=keyword_name, tags=self._tags)(fn)  # ty:ignore[invalid-argument-type] probably https://github.com/astral-sh/ty/issues/157
 
         @wraps(fn)
         def inner(*args: P.args, **kwargs: P.kwargs) -> T:
