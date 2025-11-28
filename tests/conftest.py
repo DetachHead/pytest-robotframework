@@ -178,7 +178,8 @@ class _XmlElement(Iterable["_XmlElement"]):
         result = self._proxied.xpath(_path, namespaces, extensions, smart_strings, **_variables)
         if _is_element_list(result):
             # variance moment, but we aren't storing the value anywhere so it's fine
-            return [_XmlElement(element) for element in result]  # pyright:ignore[reportReturnType]
+            # not-iterable & invalid-argument-type errors due to https://github.com/astral-sh/ty/issues/117
+            return [_XmlElement(element) for element in result]  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type,not-iterable,invalid-argument-type]
         return result
 
     def count_children(self) -> int:

@@ -207,7 +207,6 @@ reportIncompatibleUnannotatedOverride = 'error'
 division-by-zero = "error"
 possibly-unresolved-reference = "warn"
 unused-ignore-comment = "warn"
-invalid-type-form = "ignore" # https://github.com/astral-sh/ty/issues/157
 
 [tool.ty.environment]
 python-platform = "all"

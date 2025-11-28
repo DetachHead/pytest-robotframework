@@ -16,15 +16,15 @@ if TYPE_CHECKING:
 
     # keyword, args:
     @keyword(name="foo bar", tags=("a", "b"))
-    def a(): ...
+    def a() -> None: ...
 
-    # https://github.com/astral-sh/ty/issues/157
+    # https://github.com/astral-sh/ty/issues/1821
 
     _ = assert_type(a, Callable[[], None])  # ty:ignore[type-assertion-failure]
 
     # keyword, no args:
     @keyword
-    def g(): ...
+    def g() -> None: ...
 
     _ = assert_type(g, Callable[[], None])  # ty:ignore[type-assertion-failure]
 
@@ -61,10 +61,10 @@ if TYPE_CHECKING:
 
     # keyword, non-context manager with wrap_context_manager=True:
     # expected type error
-    @keyword(wrap_context_manager=True)  # pyright:ignore[reportArgumentType]
-    def e(): ...
+    @keyword(wrap_context_manager=True)  # pyright:ignore[reportArgumentType]  # ty:ignore[invalid-argument-type]
+    def e() -> None: ...
 
     # keyword, non-context manager with wrap_context_manager=False:
     # expected type error
     @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]
-    def f(): ...
+    def f() -> None: ...
