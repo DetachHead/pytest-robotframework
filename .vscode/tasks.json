@@ -138,11 +138,11 @@
       }
     },
     {
-      "label": "dtach",
+      "label": "tach",
       "type": "shell",
       "command": "./pw",
       "args": [
-        "dtach"
+        "tach"
       ],
       "presentation": {
         "clear": true
