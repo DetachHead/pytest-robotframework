@@ -378,7 +378,11 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
             # https://github.com/DetachHead/basedpyright/issues/294
             def __enter__(self) -> object:  # pyright:ignore[reportMissingSuperCall]
                 _ = self.status_reporter.__enter__()
-                return self.wrapped.__enter__()
+                try:
+                    return self.wrapped.__enter__()
+                except BaseException as e:
+                    _ = self.status_reporter.__exit__(type(e), e, e.__traceback__)
+                    raise
 
             @override
             def __exit__(
