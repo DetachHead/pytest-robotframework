@@ -5,5 +5,5 @@ from robot.libraries.BuiltIn import BuiltIn
 
 
 def test_asdf():
-    BuiltIn().set_log_level("DEBUG")
+    _ = BuiltIn().set_log_level("DEBUG")
     debug("hello???")
