@@ -318,7 +318,7 @@ def test_keyword_decorator_docstring(pr: PytestRobotTester):
     assert output_xml().xpath(".//kw[@name='Run Test']/kw[@name='Foo']/doc[.='hie']")
 
 
-def test_keyword_decorator_docstring_on_next_line(pr: PytestRobotTester):
+def test_keyword_decorator_docstring_on_next_line(pr: PytestRobotTester) -> None:
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
     assert output_xml().xpath(".//kw[@name='Run Test']/kw[@name='Foo']/doc[.='hie']")
@@ -354,6 +354,15 @@ def test_keyword_decorator_context_manager_that_doesnt_suppress(pr: PytestRobotT
     assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='0']")
     assert xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='end']")
     assert xml.xpath("//kw[@name='Asdf' and ./status[@status='FAIL'] and ./msg[.='Exception']]")
+    assert not xml.xpath("//msg[.='1']")
+
+
+def test_keyword_decorator_context_manager_that_raises_in_enter(pr: PytestRobotTester):
+    pr.run_and_assert_result(failed=1)
+    pr.assert_log_file_exists()
+    xml = output_xml()
+    assert xml.xpath("//kw[@name='Asdf']/msg[@level='FAIL' and .='asdf']")
+    assert not xml.xpath("//kw[@name='Asdf']/msg[@level='INFO' and .='0']")
     assert not xml.xpath("//msg[.='1']")
 
 
