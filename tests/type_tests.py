@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     @keyword(name="foo bar", tags=("a", "b"))
     def a() -> None: ...
 
-    # https://github.com/astral-sh/ty/issues/1821
+    # https://github.com/astral-sh/ty/issues/1495#issuecomment-3668125131
 
     _ = assert_type(a, Callable[[], None])  # ty:ignore[type-assertion-failure]
 
