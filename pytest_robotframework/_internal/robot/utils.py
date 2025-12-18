@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Final, Generic, Literal, TypedDict, cast, fina
 from pytest import Item, Session, StashKey
 from robot import model, running
 from robot.api.interfaces import ListenerV2, ListenerV3, Parser
-from robot.api.types import KeywordArgument, KeywordName
 from robot.conf.settings import RobotSettings, _BaseSettings  # pyright:ignore[reportPrivateUsage]
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
@@ -298,4 +297,12 @@ def run_keyword(name: str, *args: str):
     robot 7.4 introduced these stupid nonsense fake types for keyword names and arguments, so
     this utility function just wraps the original `run_keyword` method but with the correct types.
     """
-    _ = BuiltIn().run_keyword(KeywordName(name), *(cast(tuple[KeywordArgument], args)))
+    builtin = BuiltIn()
+    # this modiule was only introduced in robot 7.4, so fall back to calling the method normally if
+    # it doesn't exist
+    try:
+        from robot.api.types import KeywordArgument, KeywordName  # noqa: PLC0415
+    except ModuleNotFoundError:
+        builtin.run_keyword(name, *args)  # pyright: ignore[reportUnusedCallResult, reportArgumentType]
+    else:
+        _ = builtin.run_keyword(KeywordName(name), *(cast(tuple[KeywordArgument], args)))
