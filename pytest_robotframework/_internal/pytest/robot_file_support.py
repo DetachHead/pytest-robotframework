@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Concatenate, cast, final
 from _pytest._code.code import ReprFileLocation, TerminalRepr
 from pytest import Config, ExceptionInfo, File, Item, MarkDecorator, Session, StashKey, mark, skip
 from robot.errors import ExecutionFailures, ExecutionStatus, RobotError
-from robot.libraries.BuiltIn import BuiltIn
 from robot.running.bodyrunner import BodyRunner
 from robot.running.statusreporter import StatusReporter
 from typing_extensions import override
@@ -20,6 +19,7 @@ from pytest_robotframework._internal.robot.utils import (
     execution_context,
     get_arg_with_type,
     robot_6,
+    run_keyword,
     running_test_case_key,
 )
 from pytest_robotframework._internal.utils import P, patch_method
@@ -127,7 +127,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
     def _run_keyword(self, keyword: model.Keyword | None):
         if keyword and keyword.name is not None and keyword.name.lower() != "none":
             with self._check_execution_status():
-                BuiltIn().run_keyword(keyword.name, *keyword.args)
+                run_keyword(keyword.name, *keyword.args)
 
     @override
     def setup(self):

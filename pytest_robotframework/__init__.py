@@ -355,7 +355,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
         /,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> T:  # ty:ignore[invalid-method-override] https://github.com/astral-sh/ty/issues/1820
+    ) -> T:
         T_WrappedContextManager = TypeVar("T_WrappedContextManager")
 
         @final

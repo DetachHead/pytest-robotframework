@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Final, Generic, Literal, TypedDict, cast, fina
 from pytest import Item, Session, StashKey
 from robot import model, running
 from robot.api.interfaces import ListenerV2, ListenerV3, Parser
+from robot.api.types import KeywordArgument, KeywordName
 from robot.conf.settings import RobotSettings, _BaseSettings  # pyright:ignore[reportPrivateUsage]
+from robot.libraries.BuiltIn import BuiltIn
 from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 from robot.version import VERSION
 from typing_extensions import override
@@ -245,7 +247,7 @@ def merge_robot_options(*robot_options: InternalRobotOptions) -> dict[str, objec
     merges two dicts of robot options, combining lists, or overriding them with `None` if a later
     object explicitly sets the value to `None`
     """
-    return reduce(_merge_robot_options, robot_options, {})
+    return dict(reduce(_merge_robot_options, robot_options, {}))
 
 
 def cli_defaults(settings_class: Callable[[dict[str, object]], _BaseSettings]) -> RobotOptions:
@@ -289,3 +291,11 @@ def is_robot_traceback(tb: TracebackType) -> bool | str | None:
             main_package_name,
         ))
     )
+
+
+def run_keyword(name: str, *args: str):
+    """
+    robot 7.4 introduced these stupid nonsense fake types for keyword names and arguments, so
+    this utility function just wraps the original `run_keyword` method but with the correct types.
+    """
+    _ = BuiltIn().run_keyword(KeywordName(name), *(cast(tuple[KeywordArgument], args)))
