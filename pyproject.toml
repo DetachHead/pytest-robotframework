@@ -207,6 +207,7 @@ reportIncompatibleUnannotatedOverride = 'error'
 division-by-zero = "error"
 possibly-unresolved-reference = "warn"
 unused-ignore-comment = "warn"
+possibly-missing-import = "error"
 
 [tool.ty.environment]
 python-platform = "all"
