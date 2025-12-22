@@ -36,6 +36,9 @@
   "[toml][json][jsonc][yaml][markdown][github-actions-workflow]": {
     "editor.defaultFormatter": "dprint.dprint"
   },
+  "[robotframework]": {
+    "editor.defaultFormatter": "d-biehl.robotcode"
+  },
   "robotcode.testExplorer.enabled": false,
   "explorer.compactFolders": false,
   "search.exclude": {
