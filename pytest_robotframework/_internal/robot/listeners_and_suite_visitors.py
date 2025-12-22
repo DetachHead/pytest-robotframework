@@ -656,6 +656,9 @@ else:
         printed a second time since they would already have been printed in a child keyword
         """
 
+        def __init__(self) -> None:
+            self.__original_keyword_stack = list[Function | None]()
+
         @override
         def start_library_keyword(
             self,
@@ -663,15 +666,17 @@ else:
             implementation: running.LibraryKeyword,
             result: result.Keyword,  # pylint:disable=redefined-outer-name
         ):
+            """replaces a decorated keyword for when it gets called from a `.robot` file"""
             if not isinstance(implementation, StaticKeyword):
                 return
-            original_function: Function | None = getattr(
+            original_function = getattr(
                 implementation.method, _keyword_original_function_attr, None
             )
-
+            self.__original_keyword_stack.append(
+                getattr(implementation.owner.instance, implementation.method_name, None)  # pyright:ignore[reportAny]
+            )
             if original_function is None:
                 return
-
             setattr(
                 implementation.owner.instance,  # pyright:ignore[reportAny]
                 implementation.method_name,
@@ -680,4 +685,26 @@ else:
                     if isinstance(implementation.owner, ClassLibrary)
                     else original_function
                 ),
+            )
+
+        @override
+        def end_library_keyword(
+            self,
+            data: running.Keyword,
+            implementation: running.LibraryKeyword,
+            result: result.Keyword,  # pylint:disable=redefined-outer-name
+        ):
+            """
+            after the keyword is finished, restore its original value. otherwise if it gets called
+            again from a `.py` file, it won't show up as a keyword in the robot log.
+            """
+            if not isinstance(implementation, StaticKeyword):
+                return
+            original_keyword = self.__original_keyword_stack.pop()
+            if original_keyword is None:
+                return
+            setattr(
+                implementation.owner.instance,  # pyright:ignore[reportAny]
+                implementation.method_name,
+                original_keyword,
             )

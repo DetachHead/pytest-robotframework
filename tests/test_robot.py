@@ -342,3 +342,11 @@ def test_keyword_decorator_class_library(pr: PytestRobotTester):
 def test_pass_execution(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
+
+
+def test_keyword_called_twice_in_robot_test(pr: PytestRobotTester):
+    pr.run_and_assert_result(passed=1)
+    pr.assert_log_file_exists()
+    results = output_xml().xpath("//kw[@name='Run Test']/kw[@name='Bar']/kw[@name='Foo']")
+    assert isinstance(results, list)
+    assert len(results) == 2
