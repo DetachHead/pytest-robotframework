@@ -34,8 +34,6 @@ jobs:
           fetch-depth: 0 # fetch all commits/branches
       - uses: actions/setup-python@v5
         id: install_python
-        with:
-          python-version: 3.12
       - name: Configure Git user
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
