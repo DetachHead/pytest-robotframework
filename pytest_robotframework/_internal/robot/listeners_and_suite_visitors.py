@@ -28,10 +28,10 @@ from robot.running.model import Body
 from robot.utils.error import ErrorDetails
 from typing_extensions import override
 
-from pytest_robotframework import (
+from pytest_robotframework import catch_errors
+from pytest_robotframework._internal.api import (
     _get_status_reporter_failures,  # pyright:ignore[reportPrivateUsage]
     _keyword_original_function_attr,  # pyright:ignore[reportPrivateUsage]
-    catch_errors,
 )
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest.robot_file_support import (

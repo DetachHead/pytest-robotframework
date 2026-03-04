@@ -35,14 +35,16 @@ from pytest_robotframework import (
     AssertOptions,
     Listener,
     RobotOptions,
-    _hide_asserts_context_manager_key,  # pyright:ignore[reportPrivateUsage]
-    _resources,  # pyright:ignore[reportPrivateUsage]
-    _suite_variables,  # pyright:ignore[reportPrivateUsage]
     as_keyword,
     import_resource,
     keywordify,
 )
 from pytest_robotframework._internal import cringe_globals
+from pytest_robotframework._internal.api import (
+    _hide_asserts_context_manager_key,  # pyright:ignore[reportPrivateUsage]
+    _resources,  # pyright:ignore[reportPrivateUsage]
+    _suite_variables,  # pyright:ignore[reportPrivateUsage]
+)
 from pytest_robotframework._internal.cringe_globals import current_item
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest import hooks
