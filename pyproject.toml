@@ -202,6 +202,9 @@ deprecateTypingAliases = false # covered by ruff (has quickfix)
 # even though we enable this rule we still keep reportUnannotatedClassAttribute enabled since this is a library
 reportIncompatibleUnannotatedOverride = 'error'
 
+[tool.ty.src]
+exclude = ["pw"]
+
 [tool.ty.rules]
 # https://github.com/astral-sh/ty/issues/174
 division-by-zero = "error"
