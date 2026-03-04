@@ -76,7 +76,7 @@
   },
   "chat.commandCenter.enabled": false,
   "dprint.path": ".vscode/dprint", // https://github.com/dprint/dprint/issues/859#issuecomment-3194102785
-  "ty.disableLanguageServices": true, // we use basedpyright's language server because it's more feature-complete
+  "basedpyright.disableLanguageServices": true,
   "git.blame.editorDecoration.enabled": true,
   "yaml.customTags": [
     // for mkdocs config. see https://squidfunk.github.io/mkdocs-material/creating-your-site/?h=vscode#minimal-configuration
