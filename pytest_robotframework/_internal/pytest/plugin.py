@@ -16,16 +16,7 @@ from _pytest.assertion.rewrite import (
     traverse_node,
 )
 from _pytest.main import resolve_collection_argument
-from pytest import (
-    Collector,
-    Config,
-    StashKey,
-    TempPathFactory,
-    TestReport,
-    hookimpl,
-    skip,
-    version_tuple as pytest_version,
-)
+from pytest import Collector, Config, StashKey, TempPathFactory, TestReport, hookimpl, skip
 from robot.api import logger
 from robot.conf.settings import (
     RebotSettings,
@@ -57,6 +48,7 @@ from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest import hooks
 from pytest_robotframework._internal.pytest.exception_getter import exception_key
 from pytest_robotframework._internal.pytest.robot_file_support import RobotFile, RobotItem
+from pytest_robotframework._internal.pytest.utils import pytest_version
 from pytest_robotframework._internal.pytest.xdist_utils import (
     is_xdist,
     is_xdist_master,
@@ -232,7 +224,7 @@ def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
             collection_argument.path
             if pytest_version >= (8, 1)
             # we only run pyright on pytest >=8.1
-            else cast(Path, collection_argument[0])  # pyright:ignore[reportIndexIssue] # ty:ignore[non-subscriptable]
+            else cast(Path, collection_argument[0])  # pyright:ignore[reportIndexIssue] # ty:ignore[not-subscriptable]
         )
         result.add(path)
     return frozenset(result)

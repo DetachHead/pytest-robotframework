@@ -120,7 +120,7 @@ class _FullStackStatusReporter(StatusReporter):
             in_framework = False
             tb = trace
             # find a frame from a module that should always be in the trace
-            if Path(frame.filename) == Path(model.__file__):  # ty:ignore[invalid-argument-type] https://github.com/astral-sh/ty/issues/860
+            if Path(frame.filename) == Path(model.__file__):
                 break
         else:
             # using logger.error because raising an exception here would screw up the output xml

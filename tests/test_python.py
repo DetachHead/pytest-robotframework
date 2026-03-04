@@ -9,8 +9,9 @@ from typing import TYPE_CHECKING, cast
 # on pytest <9 this function is defined here and on >=9 it's defined in _pytest.compat
 # so we intentionally rely on an implicit re-export so it works in both cases
 from _pytest.assertion.util import running_on_ci  # pyright: ignore[reportPrivateImportUsage]
-from pytest import ExitCode, MonkeyPatch, mark, skip, version_tuple as pytest_version
+from pytest import ExitCode, MonkeyPatch, mark, skip
 
+from pytest_robotframework._internal.pytest.utils import pytest_version
 from pytest_robotframework._internal.robot.utils import robot_6
 from tests.conftest import (
     PytestRobotTester,
