@@ -134,10 +134,11 @@ def _is_dunder(name: str) -> bool:
 
 
 def _is_element_list(xpath_object: _XPathObject) -> TypeGuard[list[_Element]]:
-    result = isinstance(xpath_object, list)
-    if result and xpath_object:
-        return isinstance(xpath_object[0], _Element)
-    return result
+    if isinstance(xpath_object, list):
+        if xpath_object:
+            return isinstance(xpath_object[0], _Element)
+        return True
+    return False
 
 
 @final
@@ -178,8 +179,7 @@ class _XmlElement(Iterable["_XmlElement"]):
         result = self._proxied.xpath(_path, namespaces, extensions, smart_strings, **_variables)
         if _is_element_list(result):
             # variance moment, but we aren't storing the value anywhere so it's fine
-            # not-iterable & invalid-argument-type errors due to https://github.com/astral-sh/ty/issues/117
-            return [_XmlElement(element) for element in result]  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type,not-iterable,invalid-argument-type]
+            return [_XmlElement(element) for element in result]  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type]
         return result
 
     def count_children(self) -> int:
@@ -296,7 +296,7 @@ class PytestRobotTester:
         exit_code: ExitCode | None = None,
     ):
         # checked by the overloads
-        result = self.run_pytest(*pytest_args or [], subprocess=subprocess, plugins=plugins)  # pyright:ignore[reportArgumentType] #ty:ignore[invalid-argument-type]
+        result = self.run_pytest(*pytest_args or [], subprocess=subprocess, plugins=plugins)  # pyright:ignore[reportArgumentType] #ty:ignore[no-matching-overload]
 
         # this is kinda hueristic and gross, but i cant think of a clean way to add this check to
         # every test so this will do for now

@@ -5,7 +5,7 @@ library by `robot_classes.PytestRuntestProtocolInjector`
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Literal
+from typing import TYPE_CHECKING, Final, Literal, cast
 
 from _pytest._code.code import TerminalRepr
 from _pytest.runner import (
@@ -45,7 +45,11 @@ def _call_and_report_robot_edition(
         # empty string means xfail with no reason, None means it was not an xfail
         xfail_reason = report.wasxfail if hasattr(report, "wasxfail") else None
         if xfail_reason is None:
-            skip_reason = report.longrepr[2] if isinstance(report.longrepr, tuple) else ""
+            # ty accounts for the possibility that it's a different subtype of tuple and one of the
+            # other types in the union but that's not actually possible
+            skip_reason = cast(  # pyright:ignore[reportUnnecessaryCast]
+                str, report.longrepr[2] if isinstance(report.longrepr, tuple) else ""
+            )
         else:
             skip_reason = "xfail" + (f": {xfail_reason}" if xfail_reason else "")
         BuiltIn().skip(skip_reason)
@@ -83,7 +87,7 @@ def setup(arg: Cloaked[Item]):
     ):
         # This only happens if the item is re-run, as is done by
         # pytest-rerunfailures.
-        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType] # ty:ignore[possibly-missing-attribute]
+        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType] # ty:ignore[unresolved-attribute]
     _call_and_report_robot_edition(item, "setup")
 
 

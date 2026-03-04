@@ -231,7 +231,7 @@ def _merge_robot_options(
             other_value = cast(list[object] | None, dict2.get(key, []))
             new_value = cast(
                 list[object] | None, other_value if other_value is None else [*value, *other_value]
-            )
+            )  # ty:ignore[redundant-cast] pyright thinks otherwise
         elif key in dict2:
             new_value = dict2[key]
         else:
