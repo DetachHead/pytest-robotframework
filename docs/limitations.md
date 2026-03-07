@@ -13,9 +13,9 @@ if you want a function you wrote to show up as a keyword in the log, decorate it
 ```py
 from pytest_robotframework import keyword
 
+
 @keyword
-def foo():
-    ...
+def foo(): ...
 ```
 
 ### pytest functions are patched by the plugin
@@ -65,7 +65,7 @@ or if the exception is conditionally raised, use a `try`/`except` statement like
 try:
     some_keyword_that_fails()
 except SomeException:
-    ... # ignore the exception, or re-raise it later
+    ...  # ignore the exception, or re-raise it later
 ```
 
 the keyword will still show as failed in the log (as long as it's decorated with `pytest_robotframework.keyword`), but it won't effect the status of the test unless the exception is re-raised.
