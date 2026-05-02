@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -1065,13 +1065,16 @@
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pytest_robotframework</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotOptions</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">robot.api.interfaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">ListenerV3</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Foo</span><span class="p">(</span><span class="n">ListenerV3</span><span class="p">):</span>
-    <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Foo</span><span class="p">(</span><span class="n">ListenerV3</span><span class="p">):</span> <span class="o">...</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">pytest_robot_modify_options</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">RobotOptions</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">collectonly</span><span class="p">:</span>
         <span class="n">options</span><span class="p">[</span><span class="s2">&quot;loglevel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DEBUG:INFO&quot;</span>
-        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;listener&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Foo</span><span class="p">())</span> <span class="c1"># you can specify instances as listeners, prerebotmodifiers, etc.</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;listener&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Foo</span><span class="p">()</span>
+        <span class="p">)</span>  <span class="c1"># you can specify instances as listeners, prerebotmodifiers, etc.</span>
 </code></pre></div>
 <p>note that not all arguments that the plugin passes to robot will be present in the <code>args</code> list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook</p>
 <h3 id="robot_options-environment-variable"><code>ROBOT_OPTIONS</code> environment variable</h3>
@@ -1088,6 +1091,7 @@
 <p>you may have existing <code>assert</code> statements in your codebase that are not intended to be part of your tests (eg. for narrowing types/validating input data) and don't want them to show up in the robot log. there are two ways you can can hide individual <code>assert</code> statements from the log:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pytest_robotframework</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssertOptions</span><span class="p">,</span> <span class="n">hide_asserts_from_robot_log</span>
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">test_foo</span><span class="p">():</span>
     <span class="c1"># hide a single passing `assert` statement:</span>
     <span class="k">assert</span> <span class="n">foo</span> <span class="o">==</span> <span class="n">bar</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">log_pass</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1101,9 +1105,10 @@
 <p>you can also run pytest with the <code>--no-assertions-in-robot-log</code> argument to disable <code>assert</code> statements in the robot log by default, then use <code>AssertOptions</code> to explicitly enable individual <code>assert</code> statements:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pytest_robotframework</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssertOptions</span>
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">test_foo</span><span class="p">():</span>
-    <span class="k">assert</span> <span class="s2">&quot;foo&quot;</span> <span class="o">==</span> <span class="s2">&quot;bar&quot;</span> <span class="c1"># hidden from the robot log (when run with --no-assertions-in-robot-log)</span>
-    <span class="k">assert</span> <span class="s2">&quot;bar&quot;</span> <span class="o">==</span> <span class="s2">&quot;baz&quot;</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">log_pass</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># not hidden</span>
+    <span class="k">assert</span> <span class="s2">&quot;foo&quot;</span> <span class="o">==</span> <span class="s2">&quot;bar&quot;</span>  <span class="c1"># hidden from the robot log (when run with --no-assertions-in-robot-log)</span>
+    <span class="k">assert</span> <span class="s2">&quot;bar&quot;</span> <span class="o">==</span> <span class="s2">&quot;baz&quot;</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">log_pass</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># not hidden</span>
 </code></pre></div>
 <h3 id="customizing-assertions">customizing assertions</h3>
 <p>pytest-robotframework allows you to customize the message for the <code>assert</code> keyword which appears on both passing and failing assertions:</p>
