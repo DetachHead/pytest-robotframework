@@ -41,7 +41,7 @@ jobs:
       - name: install dependencies
         run: ./pw uv sync
       - name: validate docs
-        run: ./pw uv run mkdocs build --strict
+        run: ./pw uv run zensical build --strict
       - name: deploy dev docs
         if: github.ref == 'refs/heads/master'
         run: ./pw uv run mike deploy --push --update-aliases dev

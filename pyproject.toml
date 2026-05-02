@@ -30,15 +30,13 @@ dev = [
   "robotcode[analyze]>=0.97.0",
   "dprint-py>=0.49.1.2",
   "ty>=0.0.0a8",
-  "mkdocs-material>=9.6.17",
-  "mkdocs-unused-files>=0.2.0",
-  "mkdocs-awesome-pages-plugin>=2.10.1",
   "mkdocstrings-python>=1.17.0",
   "mike>=2.1.3",
   "tach>=0.32.2",
   "griffe-public-redundant-aliases>=0.3.0",
   "types-lxml>=2026.2.16",
   "pyrefly>=1.4.0.dev3",
+  "zensical>=0.0.33",
 ]
 
 [project.urls]
@@ -72,7 +70,7 @@ robotcode = "uv run robotcode analyze code"
 dprint = "uv run dprint check"
 dprint_fix = "uv run dprint fmt"
 tach = ["uv run tach check", "uv run tach check-external"]
-open_docs = "uv run mkdocs serve"
+open_docs = "uv run zensical serve"
 clear_pycache = "python scripts/clear_pycache.py"
 
 [tool.uv.build-backend]
@@ -80,6 +78,9 @@ module-root = "."
 
 [tool.uv]
 prerelease-package = { pytest = "allow", robotframework = "allow" }
+
+[tool.uv.sources]
+mike = { git = "https://github.com/squidfunk/mike.git" }
 
 [build-system]
 requires = ["uv_build"]

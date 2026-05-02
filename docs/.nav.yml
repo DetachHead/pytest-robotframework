@@ -1,0 +1,6 @@
+nav:
+  - index.md
+  - installation.md
+  - features.md
+  - "*"
+  - development
