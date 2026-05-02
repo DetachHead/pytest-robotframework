@@ -79,7 +79,8 @@
   "python.pyrefly.disableLanguageServices": true,
   "git.blame.editorDecoration.enabled": true,
   "yaml.customTags": [
-    // for mkdocs config. see https://squidfunk.github.io/mkdocs-material/creating-your-site/?h=vscode#minimal-configuration
+    // for zensical config (using old mkdocs config format). see https://squidfunk.github.io/mkdocs-material/creating-your-site/?h=vscode#minimal-configuration
+    // TODO: use zensical.toml instead
     "!ENV scalar",
     "!ENV sequence",
     "!relative scalar",
