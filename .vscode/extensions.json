@@ -6,7 +6,6 @@
     "ms-python.debugpy",
     "charliermarsh.ruff",
     "astral-sh.ty",
-    "mhutchie.git-graph",
     "tamasfe.even-better-toml",
     "redhat.vscode-yaml",
     "d-biehl.robotcode",
