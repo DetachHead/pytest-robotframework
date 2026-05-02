@@ -1,8 +1,15 @@
+# python stuff
 **/__pycache__
 /.venv/
 /dist/
-*.log
+
+# robot stuff
 output.xml
 log.html
 report.html
 .robotcode_cache
+
+# zensical
+site
+
+*.log

@@ -71,7 +71,7 @@ jobs:
       - run: ./pw tach
         if: always()
 
-      - run: ./pw uv run mkdocs build --strict
+      - run: ./pw uv run zensical build --strict
         if: always()
   publish:
     runs-on: "ubuntu-latest"

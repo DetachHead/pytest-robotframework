@@ -32,9 +32,7 @@ dev = [
   "dprint-py>=0.49.1.2",
   "ty>=0.0.0a8",
   "exceptiongroup>=1.3.0",
-  "mkdocs-material>=9.6.17",
   "mkdocs-unused-files>=0.2.0",
-  "mkdocs-awesome-pages-plugin>=2.10.1",
   "mkdocstrings-python>=1.17.0",
   "mike>=2.1.3",
   "tach>=0.32.2",
@@ -43,6 +41,7 @@ dev = [
   # versions. see https://github.com/astral-sh/uv/issues/16650#issuecomment-3508516822
   "pytest>=7a0",
   "robotframework>=6.1a0",
+  "zensical>=0.0.33",
 ]
 
 [project.urls]
@@ -69,11 +68,14 @@ robocop_format = 'uv run robocop format --check .'
 robotcode = 'uv run robotcode analyze code'
 dprint = 'uv run dprint check'
 tach = ['uv run tach check', 'uv run tach check-external']
-open_docs = 'uv run mkdocs serve'
+open_docs = 'uv run zensical serve'
 clear_pycache = 'python scripts/clear_pycache.py'
 
 [tool.uv.build-backend]
 module-root = "."
+
+[tool.uv.sources]
+mike = { git = "https://github.com/squidfunk/mike.git" }
 
 [build-system]
 requires = ["uv_build"]
