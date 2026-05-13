@@ -148,7 +148,7 @@ def test_tags(pr: PytestRobotTester):
 
 
 def test_tags_in_settings(pr: PytestRobotTester):
-    pr.run_and_assert_result("-m", "m1", passed=2)
+    pr.run_and_assert_result("-m", "m1", passed=2, subprocess=True)
     pr.assert_log_file_exists()
     xml = output_xml()
     assert xml.xpath(".//test[@name='Foo']/tag[.='m1']")
@@ -218,9 +218,7 @@ def test_run_keyword_and_ignore_error(pr: PytestRobotTester):
 def test_init_file(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
-    assert cast(str, xpath(output_xml(), "/robot/suite").attrib["name"]).startswith(
-        "Test Init File"
-    )
+    assert xpath(output_xml(), "/robot/suite").attrib["name"].startswith("Test Init File")
 
 
 def test_init_file_nested(pr: PytestRobotTester):
@@ -347,6 +345,9 @@ def test_pass_execution(pr: PytestRobotTester):
 def test_keyword_called_twice_in_robot_test(pr: PytestRobotTester):
     pr.run_and_assert_result(passed=1)
     pr.assert_log_file_exists()
-    results = output_xml().xpath("//kw[@name='Run Test']/kw[@name='Bar']/kw[@name='Foo']")
+    # https://github.com/abelcheung/types-lxml/issues/125
+    results = cast(
+        object, output_xml().xpath("//kw[@name='Run Test']/kw[@name='Bar']/kw[@name='Foo']")
+    )
     assert isinstance(results, list)
-    assert len(results) == 2
+    assert len(results) == 2  # pyright:ignore[reportUnknownArgumentType] see issue above

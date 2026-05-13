@@ -25,7 +25,6 @@ dev = [
   "ruff>=0.2.0",
   "robotframework-robocop>=6",
   "lxml>=4.9.3",
-  "lxml-stubs>=0.4.0",
   "pytest-xdist>=3.5.0",
   "pytest-github-actions-annotate-failures>=0.2.0",
   "robotcode[analyze]>=0.97.0",
@@ -43,6 +42,7 @@ dev = [
   # versions. see https://github.com/astral-sh/uv/issues/16650#issuecomment-3508516822
   "pytest>=7a0",
   "robotframework>=6.1a0",
+  "types-lxml>=2026.2.16",
 ]
 
 [project.urls]

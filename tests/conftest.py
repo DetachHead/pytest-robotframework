@@ -18,10 +18,11 @@ if TYPE_CHECKING:
     from os import PathLike
 
     from _typeshed import StrPath
-    from lxml.etree import (
-        _AnyStr,  # pyright: ignore[reportPrivateUsage]
-        _NonDefaultNSMapArg,  # pyright: ignore[reportPrivateUsage]
-        _XPathObject,  # pyright: ignore[reportPrivateUsage]
+    from lxml._types import (  # pyright:ignore[reportMissingModuleSource] https://github.com/DetachHead/basedpyright/issues/615
+        _TextArg,  # pyright: ignore[reportPrivateUsage]
+        _XPathExtFuncArg,  # pyright: ignore[reportPrivateUsage]
+        _XPathNSArg,  # pyright: ignore[reportPrivateUsage]
+        _XPathVarArg,  # pyright: ignore[reportPrivateUsage]
     )
     from typing_extensions import Never
 
@@ -133,7 +134,8 @@ def _is_dunder(name: str) -> bool:
     return len(name) > 4 and name[:2] == name[-2:] == "__" and name[2] != "_" and name[-3] != "_"
 
 
-def _is_element_list(xpath_object: _XPathObject) -> TypeGuard[list[_Element]]:
+# ideally should be _XPathObject, see https://github.com/abelcheung/types-lxml/issues/125
+def _is_element_list(xpath_object: object) -> TypeGuard[list[_Element]]:
     if isinstance(xpath_object, list):
         if xpath_object:
             return isinstance(xpath_object[0], _Element)
@@ -149,7 +151,7 @@ class _XmlElement(Iterable["_XmlElement"]):
 
     @override
     def __getattribute__(self, /, name: str) -> object:
-        if _is_dunder(name) or name not in vars(_Element):
+        if _is_dunder(name) or name in vars(_XmlElement) or name in vars(self):
             return super().__getattribute__(name)  # pyright:ignore[reportAny]
         return getattr(self._proxied, name)  # pyright:ignore[reportAny]
 
@@ -169,17 +171,28 @@ class _XmlElement(Iterable["_XmlElement"]):
 
     def xpath(
         self,
-        _path: _AnyStr,
-        namespaces: _NonDefaultNSMapArg | None = None,
-        extensions: object = ...,
+        _path: _TextArg,
+        namespaces: _XPathNSArg | None = None,
+        extensions: _XPathExtFuncArg | None = None,
         *,
         smart_strings: bool = True,
-        **_variables: _XPathObject,
-    ) -> _XPathObject:
-        result = self._proxied.xpath(_path, namespaces, extensions, smart_strings, **_variables)
+        **_variables: _XPathVarArg,
+    ):
+        # https://github.com/abelcheung/types-lxml/issues/125
+        result = cast(
+            object,
+            self._proxied.xpath(
+                _path,
+                namespaces=namespaces,
+                extensions=extensions,
+                smart_strings=smart_strings,
+                **_variables,
+            ),
+        )
         if _is_element_list(result):
-            # variance moment, but we aren't storing the value anywhere so it's fine
-            return [_XmlElement(element) for element in result]  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type]
+            # once the issue linked above resolved, a variance related type error will probably
+            # appear here, but we aren't storing the value anywhere it's fine to ignore.
+            return [_XmlElement(element) for element in result]
         return result
 
     def count_children(self) -> int:
@@ -194,13 +207,14 @@ if TYPE_CHECKING:
         behavior
         """
 
-        def __init__(self, element: _Element) -> None: ...
+        # https://github.com/DetachHead/basedpyright/issues/615
+        def __init__(self, element: _Element) -> None: ...  # pyright:ignore[reportMissingSuperCall]
 
-        def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType]
+        def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType] see issue above
             """normally this returns `True` only if it has children"""
 
         @override
-        def __len__(self) -> Never:  # pyright:ignore[reportReturnType]
+        def __len__(self) -> Never:  # pyright:ignore[reportReturnType] see issue above
             """
             normally this returns how many children it has. but if you want to check than then
             call `count_children` instead
@@ -217,11 +231,12 @@ def output_xml() -> XmlElement:
 
 
 def xpath(xml: _Element, query: str) -> XmlElement:
-    results = xml.xpath(query)
+    # https://github.com/abelcheung/types-lxml/issues/125
+    results = cast(object, xml.xpath(query))
     assert isinstance(results, list)
-    (result,) = results
-    assert isinstance(result, _Element)
-    return XmlElement(result)
+    (result,) = results  # pyright:ignore[reportUnknownVariableType] see issue above
+    assert isinstance(result, XmlElement)
+    return result
 
 
 def assert_robot_total_stats(*, passed: int = 0, skipped: int = 0, failed: int = 0):
