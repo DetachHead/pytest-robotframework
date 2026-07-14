@@ -15,8 +15,10 @@ if TYPE_CHECKING:
 @contextmanager
 def asdf() -> Iterator[None]:
     logger.info("start")
-    yield
-    raise Exception("asdf")
+    try:
+        yield
+    finally:
+        raise Exception("asdf")
 
 
 def test_foo():
