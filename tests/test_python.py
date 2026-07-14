@@ -6,9 +6,6 @@ from pathlib import Path
 from re import search
 from typing import TYPE_CHECKING, cast
 
-# on pytest <9 this function is defined here and on >=9 it's defined in _pytest.compat
-# so we intentionally rely on an implicit re-export so it works in both cases
-from _pytest.assertion.util import running_on_ci  # pyright: ignore[reportPrivateImportUsage]
 from pytest import ExitCode, MonkeyPatch, mark, skip
 
 from pytest_robotframework._internal.pytest.utils import pytest_version
@@ -23,6 +20,14 @@ from tests.conftest import (
 
 if TYPE_CHECKING:
     from tests.conftest import PytesterDir
+
+
+if pytest_version < (9,):
+    from _pytest.assertion.util import (
+        running_on_ci,  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]  # ty:ignore[unresolved-import]
+    )
+else:
+    from _pytest.compat import running_on_ci
 
 
 def test_one_test_passes(pr: PytestRobotTester):
