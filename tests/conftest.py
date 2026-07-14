@@ -17,6 +17,8 @@ from typing_extensions import override
 if TYPE_CHECKING:
     from os import PathLike
 
+    # only available in pytest >=9.1
+    from _pytest.pytester import _FileContent  # pyright:ignore[reportPrivateUsage]
     from _typeshed import StrPath
     from lxml._types import (  # pyright:ignore[reportMissingModuleSource] https://github.com/DetachHead/basedpyright/issues/615
         _TextArg,  # pyright: ignore[reportPrivateUsage]
@@ -89,7 +91,7 @@ if TYPE_CHECKING:
         """
 
         @override
-        def makepyfile(self, *args: Never, **kwargs: Never) -> Never: ...
+        def makepyfile(self, *args: _FileContent, **kwargs: _FileContent) -> Path: ...
 
         @override
         def makefile(self, ext: str, *args: str, **kwargs: str) -> Never: ...
@@ -101,7 +103,7 @@ if TYPE_CHECKING:
         def makepyprojecttoml(self, source: str) -> Never: ...
 
         @override
-        def maketxtfile(self, *args: Never, **kwargs: Never) -> Never: ...
+        def maketxtfile(self, *args: _FileContent, **kwargs: _FileContent) -> Never: ...
 
         @override
         def runpytest(self, *args: str | PathLike[str], **kwargs: Never) -> Never: ...

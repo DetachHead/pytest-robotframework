@@ -22,6 +22,7 @@ from pytest_robotframework._internal.api import (
 )
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest.exception_getter import exception_key
+from pytest_robotframework._internal.pytest.utils import pytest_version
 
 if TYPE_CHECKING:
     from pytest_robotframework._internal.robot.utils import Cloaked
@@ -98,7 +99,11 @@ def run_test(arg: Cloaked[Item]):
     reports = item.stash[_report_key]
     if reports[0].passed:
         if item.config.getoption("setupshow", default=False):
-            show_test_item(item)
+            if pytest_version >= (9, 1):
+                setup_only = item.config.getoption("setuponly", default=False)
+                show_test_item(item, add_space=not setup_only)
+            else:
+                show_test_item(item)  # ty:ignore[missing-argument] #pyright:ignore[reportCallIssue]
         if not item.config.getoption("setuponly", default=False):
             _call_and_report_robot_edition(item, "call")
 
