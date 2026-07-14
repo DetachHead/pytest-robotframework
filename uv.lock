@@ -1022,7 +1022,6 @@ dependencies = [
     { name = "pluggy" },
     { name = "pygments" },
     { name = "tomli", version = "2.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "tomli", version = "2.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_version < '0'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e4/47/b9efed96c114afcfa3c9d3fe98a76a1d14c74a9e266d397cf6eb64be5e01/pytest-9.1.1.tar.gz", hash = "sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313", size = 1636369, upload-time = "2026-06-19T10:58:32.857Z" }
 wheels = [
@@ -1043,7 +1042,7 @@ wheels = [
 
 [[package]]
 name = "pytest-robotframework"
-version = "4.6.2"
+version = "4.6.3"
 source = { editable = "." }
 dependencies = [
     { name = "ansi2html" },
