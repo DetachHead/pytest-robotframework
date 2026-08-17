@@ -10,4 +10,4 @@ def test_foo():
     right = 1
     assert left == right, show_in_log
     assert right == left
-    assert right == right, show_in_log  # noqa: PLR0124
+    assert right == right, show_in_log  # ruff: ignore[comparison-with-itself]

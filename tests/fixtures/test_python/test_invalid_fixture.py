@@ -1,4 +1,4 @@
 from __future__ import annotations
 
 
-def test_foo(_asdf: int): ...  # noqa: PT019
+def test_foo(_asdf: int): ...  # ruff: ignore[pytest-fixture-param-without-value]
