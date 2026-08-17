@@ -38,7 +38,7 @@ from pytest_robotframework._internal.robot.utils import (
 from pytest_robotframework._internal.utils import Function
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator, Mapping
+    from collections.abc import Callable, Generator, Iterable, Mapping
 
     from pytest_robotframework._internal.utils import P, T
 
@@ -561,7 +561,7 @@ def as_keyword(
         name=name, tags=tags, doc=doc, module="", max_argument_length_in_log=None
     )
     @contextmanager
-    def fn(*_args: str, **_kwargs: str) -> Iterator[None]:
+    def fn(*_args: str, **_kwargs: str) -> Generator[None, None, None]:
         yield
 
     return fn(*(args or []), **(kwargs or {}))
@@ -740,7 +740,7 @@ _hide_asserts_context_manager_key: StashKey[bool] = StashKey()
 
 
 @contextmanager
-def hide_asserts_from_robot_log() -> Iterator[None]:
+def hide_asserts_from_robot_log() -> Generator[None, None, None]:
     """
     context manager for hiding multiple passing `assert` statements from the robot log. note that
     individual `assert` statements using `AssertOptions(log_pass=True)` take precedence, and that

@@ -17,9 +17,7 @@ from robot.libraries.BuiltIn import BuiltIn
 
 from pytest_robotframework import keyword
 from pytest_robotframework._internal import cringe_globals
-from pytest_robotframework._internal.api import (
-    _get_status_reporter_failures,  # pyright:ignore[reportPrivateUsage]
-)
+from pytest_robotframework._internal.api import _get_status_reporter_failures  # pyright:ignore[reportPrivateUsage]
 from pytest_robotframework._internal.errors import InternalError
 from pytest_robotframework._internal.pytest.exception_getter import exception_key
 from pytest_robotframework._internal.pytest.utils import pytest_version

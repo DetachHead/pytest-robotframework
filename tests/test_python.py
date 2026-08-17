@@ -23,9 +23,7 @@ if TYPE_CHECKING:
 
 
 if pytest_version < (9,):
-    from _pytest.assertion.util import (
-        running_on_ci,  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]  # ty:ignore[unresolved-import]
-    )
+    from _pytest.assertion.util import running_on_ci  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]  # ty:ignore[unresolved-import]
 else:
     from _pytest.compat import running_on_ci
 
@@ -597,7 +595,8 @@ def test_assertion_passes_hide_assert(pr: PytestRobotTester):
     )
     assert not xml.xpath("//kw[@name='assert']/arg[.='right == left']")
     assert xml.xpath(
-        "//kw[@name='assert' and ./arg[.='right == right  # noqa: PLR0124']]/msg[@level='INFO' and "
+        "//kw[@name='assert' and ./arg[.='right == right  # ruff: ignore[comparison-with-itself]']]"
+        "/msg[@level='INFO' and "
         ".='1 == 1']"
     )
 

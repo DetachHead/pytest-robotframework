@@ -25,7 +25,7 @@ from pytest_robotframework._internal.robot.utils import (
 from pytest_robotframework._internal.utils import P, patch_method
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator
+    from collections.abc import Callable, Generator, Iterator
     from os import PathLike
 
     # this type only exists in pytest 8.3+ so it should not be imported at runtime to maintain
@@ -111,7 +111,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
 
     @staticmethod
     @contextmanager
-    def _check_execution_status() -> Iterator[None]:
+    def _check_execution_status() -> Generator[None, None, None]:
         """
         catches robot execution status exceptions to turn them into their pytest equivalent
         """
