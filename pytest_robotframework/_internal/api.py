@@ -217,9 +217,9 @@ class _KeywordDecorator:
                 raise
         if error:
             raise error
-        # pyright assumes the assignment to error could raise an exception but that will NEVER
-        # happen
-        return result_  # pyright:ignore[reportReturnType,reportPossiblyUnboundVariable]
+        # https://github.com/DetachHead/basedpyright/issues/10
+        # https://github.com/astral-sh/ty/issues/4486
+        return result_  # pyright:ignore[reportReturnType,reportPossiblyUnboundVariable]  # ty: ignore[possibly-unresolved-reference]
 
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):

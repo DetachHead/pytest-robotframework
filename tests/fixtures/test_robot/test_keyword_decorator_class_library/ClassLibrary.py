@@ -11,6 +11,6 @@ class ClassLibrary:
     def __init__(self):
         pass
 
-    @keyword
+    @keyword  # ty: ignore[deprecated] wrong overload being matched due to https://github.com/astral-sh/ty/issues/128
     def foo(self):  # ruff: ignore[no-self-use]
         logger.info("hi")
