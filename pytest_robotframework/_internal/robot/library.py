@@ -76,7 +76,7 @@ def _call_and_report_robot_edition(
         )
 
 
-@keyword
+@keyword  # ty: ignore[deprecated] wrong overload being matched due to https://github.com/astral-sh/ty/issues/128
 def setup(arg: Cloaked[Item]):
     item = arg.value
     cringe_globals._current_item = item  # pyright:ignore[reportPrivateUsage]
@@ -90,7 +90,7 @@ def setup(arg: Cloaked[Item]):
     _call_and_report_robot_edition(item, "setup")
 
 
-@keyword
+@keyword  # ty: ignore[deprecated] see above
 def run_test(arg: Cloaked[Item]):
     item = arg.value
     # mostly copied from the middle of `_pytest.runner.runtestprotocol`:
@@ -106,7 +106,7 @@ def run_test(arg: Cloaked[Item]):
             _call_and_report_robot_edition(item, "call")
 
 
-@keyword
+@keyword  # ty: ignore[deprecated] see above
 def teardown(arg: Cloaked[Item]):
     item = arg.value
     # mostly copied from the end of `_pytest.runner.runtestprotocol`:

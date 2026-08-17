@@ -22,6 +22,6 @@ def decorator(fn: Callable[P, T]) -> Callable[P, T]:
 
 
 @decorator
-@keyword
+@keyword  # ty: ignore[deprecated] wrong overload being matched due to https://github.com/astral-sh/ty/issues/128
 def bar():
     logger.info("1")

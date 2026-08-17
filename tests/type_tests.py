@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     _ = assert_type(c, Callable[[], _GeneratorContextManager[None]])  # ty:ignore[type-assertion-failure]
 
     # keyword, context manager with no wrap_context_manager arg:
-    @keyword  # pyright:ignore[reportDeprecated] # pyrefly: ignore[deprecated]
+    @keyword  # pyright:ignore[reportDeprecated] # ty: ignore[deprecated] # pyrefly: ignore[deprecated]
     @contextmanager
     def d() -> Generator[None, None, None]:
         yield
@@ -65,5 +65,5 @@ if TYPE_CHECKING:
 
     # keyword, non-context manager with wrap_context_manager=False:
     # expected type error
-    @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType] # pyrefly: ignore[bad-specialization]
+    @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]  # ty:ignore[invalid-argument-type] # pyrefly: ignore[bad-specialization]
     def f() -> None: ...

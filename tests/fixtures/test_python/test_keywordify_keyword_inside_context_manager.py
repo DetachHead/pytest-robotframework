@@ -6,7 +6,7 @@ from robot.api import logger
 from pytest_robotframework import keyword
 
 
-@keyword
+@keyword  # ty: ignore[deprecated] wrong overload being matched due to https://github.com/astral-sh/ty/issues/128
 def asdf():
     logger.info("1")
 
