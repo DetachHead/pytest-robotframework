@@ -12,6 +12,6 @@ class FooError(Exception):
 def test_foo():
     try:
         with as_keyword("hi"):
-            raise FooError  # noqa: TRY301
+            raise FooError  # ruff: ignore[raise-within-try]
     except FooError:
         logger.info("2")

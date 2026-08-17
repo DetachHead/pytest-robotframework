@@ -1,4 +1,4 @@
-# noqa: N999
+# ruff: ignore[invalid-module-name]
 # module needs to have the same name as the class when registering the listener with the cli
 from __future__ import annotations
 

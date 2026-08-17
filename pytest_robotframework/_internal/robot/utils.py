@@ -115,7 +115,7 @@ class RobotOptions(TypedDict):
     consolemarkers: Literal["AUTO", "ON", "OFF"]
     pythonpath: list[str]
     # argumentfile is not supported because it's not in the _cli_opts dict for some reason
-    # argumentfile: str | None  # noqa: ERA001
+    # argumentfile: str | None  # ruff: ignore[commented-out-code]
     parser: list[str | Parser]
     legacyoutput: bool
     parseinclude: list[str]
@@ -159,7 +159,7 @@ class Cloaked(Generic[T]):
 
 def execution_context() -> _ExecutionContext | None:
     # need to import it every time because it changes
-    from robot.running import EXECUTION_CONTEXTS  # noqa: PLC0415
+    from robot.running import EXECUTION_CONTEXTS  # ruff: ignore[import-outside-top-level]
 
     return cast(_ExecutionContext | None, EXECUTION_CONTEXTS.current)
 
@@ -276,10 +276,10 @@ def is_robot_traceback(tb: TracebackType) -> bool | str | None:
     """Consider all the extended framework as 'robot'"""
     # importing these modules here because i don't want whole module imports to be available at the
     # top level
-    import _pytest  # noqa: PLC0415
-    import pluggy  # noqa: PLC0415
-    import pytest  # noqa: PLC0415
-    import robot  # noqa: PLC0415
+    import _pytest  # ruff: ignore[import-outside-top-level]
+    import pluggy  # ruff: ignore[import-outside-top-level]
+    import pytest  # ruff: ignore[import-outside-top-level]
+    import robot  # ruff: ignore[import-outside-top-level]
 
     module_name = cast(str | None, cast(dict[str, object], tb.tb_frame.f_globals).get("__name__"))
     # not importing pytest_robotframework itself because it would cause circular imports
@@ -301,7 +301,7 @@ def run_keyword(name: str, *args: str):
     # this modiule was only introduced in robot 7.4, so fall back to calling the method normally if
     # it doesn't exist
     try:
-        from robot.api.types import KeywordArgument, KeywordName  # noqa: PLC0415
+        from robot.api.types import KeywordArgument, KeywordName  # ruff: ignore[import-outside-top-level]
     except ModuleNotFoundError:
         builtin.run_keyword(name, *args)  # pyright: ignore[reportUnusedCallResult, reportArgumentType]
     else:

@@ -8,4 +8,4 @@ def test_foo():
     right = 1
     assert left == right
     assert right == left, AssertOptions(log_pass=False)
-    assert right == right  # noqa: PLR0124
+    assert right == right  # ruff: ignore[comparison-with-itself]

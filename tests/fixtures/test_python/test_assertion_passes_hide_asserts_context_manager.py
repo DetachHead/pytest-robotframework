@@ -10,5 +10,5 @@ def test_foo():
     with hide_asserts_from_robot_log():
         assert left == right
         assert right == left, AssertOptions(log_pass=True)
-        assert right == right  # noqa: PLR0124
+        assert right == right  # ruff: ignore[comparison-with-itself]
     assert 2

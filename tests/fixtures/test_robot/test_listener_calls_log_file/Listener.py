@@ -1,4 +1,4 @@
-# noqa: N999
+# ruff: ignore[invalid-module-name]
 # in robot if a class has the same name as the file you don't have to specify both
 from __future__ import annotations
 
