@@ -1,5 +1,5 @@
 *** Settings ***
-Library     ./foo.py
+Library    ./foo.py
 
 
 *** Test Cases ***

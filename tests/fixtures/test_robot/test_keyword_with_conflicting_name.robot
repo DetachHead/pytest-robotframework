@@ -1,5 +1,5 @@
 *** Settings ***
-Test Teardown       Actual Teardown
+Test Teardown    Actual Teardown
 
 
 *** Test Cases ***
