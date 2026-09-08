@@ -153,7 +153,7 @@
       "type": "shell",
       "command": "./pw",
       "args": [
-        "robocop_format"
+        "robocop_format_fix"
       ],
       "presentation": {
         "clear": true
