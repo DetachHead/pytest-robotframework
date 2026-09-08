@@ -1,5 +1,5 @@
 *** Settings ***
-Library     ./ClassLibrary.py
+Library    ./ClassLibrary.py
 
 
 *** Test Cases ***

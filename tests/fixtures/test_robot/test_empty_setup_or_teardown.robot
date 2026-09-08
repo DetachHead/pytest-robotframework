@@ -1,6 +1,6 @@
 *** Settings ***
-Test Setup          Log    setup ran
-Test Teardown       Log    teardown ran
+Test Setup       Log    setup ran
+Test Teardown    Log    teardown ran
 
 
 *** Test Cases ***
