@@ -62,6 +62,7 @@ ruff_fix = ['uv run ruff check --fix', 'uv run ruff format']
 pylint = 'uv run pylint pytest_robotframework tests'
 robocop_lint = 'uv run robocop check'
 robocop_format = 'uv run robocop format --check .'
+robocop_format_fix = 'uv run robocop format --overwrite .'
 robotcode = 'uv run robotcode analyze code'
 dprint = 'uv run dprint check'
 tach = ['uv run tach check', 'uv run tach check-external']
