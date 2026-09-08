@@ -1,5 +1,5 @@
 *** Settings ***
-Test Tags       m1
+Test Tags    m1
 
 
 *** Test Cases ***

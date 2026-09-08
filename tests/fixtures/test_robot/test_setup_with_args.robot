@@ -1,5 +1,5 @@
 *** Settings ***
-Test Setup      Run Keywords    Bar    AND    Baz
+Test Setup    Run Keywords    Bar    AND    Baz
 
 
 *** Test Cases ***
