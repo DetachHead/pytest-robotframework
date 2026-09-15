@@ -1,4 +1,4 @@
-# noqa: N999
+# ruff: ignore[invalid-module-name]
 # robot class libraries need to have the same name as the module
 from __future__ import annotations
 
@@ -12,5 +12,5 @@ class ClassLibrary:
         pass
 
     @keyword
-    def foo(self):  # noqa: PLR6301
+    def foo(self):  # ruff: ignore[no-self-use]
         logger.info("hi")

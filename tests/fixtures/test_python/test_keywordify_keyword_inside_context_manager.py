@@ -12,6 +12,6 @@ def asdf():
 
 
 def test_foo():
-    with raises(ZeroDivisionError):  # noqa: PT012
+    with raises(ZeroDivisionError):  # ruff: ignore[pytest-raises-with-multiple-statements]
         asdf()
         _ = 1 / 0  # ty:ignore[division-by-zero]

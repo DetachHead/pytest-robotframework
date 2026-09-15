@@ -25,7 +25,7 @@ from pytest_robotframework._internal.robot.utils import (
 from pytest_robotframework._internal.utils import P, patch_method
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator, Sequence
     from os import PathLike
 
     # this type only exists in pytest 8.3+ so it should not be imported at runtime to maintain
@@ -36,14 +36,14 @@ if TYPE_CHECKING:
     from robot.running.model import Body
 
 
-collected_robot_tests_key: StashKey[list[ModelTestCase]] = StashKey()
+collected_robot_tests_key: StashKey[Sequence[ModelTestCase]] = StashKey()
 original_setup_key: StashKey[model.Keyword] = StashKey()
 original_body_key: StashKey[Body] = StashKey()
 original_teardown_key: StashKey[model.Keyword] = StashKey()
 
 
 @patch_method(StatusReporter)
-def _get_failure(  # pyright: ignore[reportUnusedFunction]
+def _get_failure(
     og: Callable[Concatenate[StatusReporter, P], object],
     self: StatusReporter,
     *args: P.args,

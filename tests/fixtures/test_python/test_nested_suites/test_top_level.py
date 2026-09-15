@@ -1,4 +1,4 @@
-# noqa: INP001
+# ruff: ignore[implicit-namespace-package]
 # testing without init file
 from __future__ import annotations
 

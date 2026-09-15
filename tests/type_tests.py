@@ -66,5 +66,5 @@ if TYPE_CHECKING:
 
     # keyword, non-context manager with wrap_context_manager=False:
     # expected type error
-    @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]
+    @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]  # ty:ignore[invalid-argument-type]
     def f() -> None: ...

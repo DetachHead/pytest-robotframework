@@ -122,7 +122,7 @@ rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttr
 
 
 @patch_method(AssertionRewriter)
-def visit_Assert(  # noqa: N802
+def visit_Assert(  # ruff: ignore[invalid-function-name]
     og: Callable[[AssertionRewriter, Assert], list[stmt]], self: AssertionRewriter, assert_: Assert
 ) -> list[stmt]:
     """
@@ -343,7 +343,7 @@ def _robot_run_tests(session: Session, xdist_item: Item | None = None):
     listeners: list[Listener] = [ErrorDetector(session=session, item=xdist_item), AnsiLogger()]
     if not robot_6:
         # this listener is conditionally defined so has to be conditionally imported
-        from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # noqa: PLC0415
+        from pytest_robotframework._internal.robot.listeners_and_suite_visitors import (  # ruff: ignore[import-outside-top-level]
             KeywordUnwrapper,
         )
 
@@ -689,7 +689,7 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, config: Config):
 
 
 @patch_method(ErrorDetails)
-def _is_robot_traceback(  # pyright: ignore[reportUnusedFunction]
+def _is_robot_traceback(
     _old_method: object, _self: ErrorDetails, tb: TracebackType
 ) -> bool | str | None:
     return is_robot_traceback(tb)

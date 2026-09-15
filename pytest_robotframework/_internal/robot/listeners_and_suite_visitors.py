@@ -217,7 +217,7 @@ class RobotSuiteCollector(SuiteVisitor):
         if not isinstance(suite, running.TestSuite):
             raise _NotRunningTestSuiteError
         if not suite.parent:  # only do this once, on the top level suite
-            self.session.stash[collected_robot_tests_key] = list(suite.all_tests)  # pyright:ignore[reportUnknownMemberType,reportUnknownArgumentType]
+            self.session.stash[collected_robot_tests_key] = list(suite.all_tests)
         suite.tests.clear()
 
     @override
@@ -557,7 +557,7 @@ class ErrorDetector(ListenerV3):
             item_or_session = (
                 get_item_from_robot_test(self.session, self.current_test) or self.session
             )
-        add_robot_error(item_or_session, message.message)
+        add_robot_error(item_or_session, str(message.message))
 
 
 @catch_errors
@@ -575,7 +575,7 @@ class AnsiLogger(ListenerV3):
 
     @override
     def log_message(self, message: Message):
-        if self.esc in message.message and not message.html:
+        if message.message is not None and self.esc in message.message and not message.html:
             self.current_test_status_contains_ansi = True
             message.html = True
             message.message = Ansi2HTMLConverter(inline=True).convert(message.message, full=False)
@@ -622,7 +622,7 @@ def _bound_method(instance: T, fn: Callable[Concatenate[T, P], _R]) -> Callable[
 if robot_6:
 
     @patch_method(LibraryKeywordRunner)
-    def _runner_for(  # pyright:ignore[reportUnusedFunction] # noqa: PLR0917
+    def _runner_for(  # ruff: ignore[too-many-positional-arguments]
         old_method: Callable[
             [LibraryKeywordRunner, _ExecutionContext, Function, list[object], dict[str, object]],
             Function,

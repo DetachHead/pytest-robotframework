@@ -1,5 +1,5 @@
 *** Settings ***
-Test Teardown       Bar
+Test Teardown    Bar
 
 
 *** Test Cases ***
