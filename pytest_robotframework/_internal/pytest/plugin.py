@@ -689,7 +689,7 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, config: Config):
 
 
 @patch_method(ErrorDetails)
-def _is_robot_traceback(  # pyright: ignore[reportUnusedFunction]
+def _is_robot_traceback(
     _old_method: object, _self: ErrorDetails, tb: TracebackType
 ) -> bool | str | None:
     return is_robot_traceback(tb)
