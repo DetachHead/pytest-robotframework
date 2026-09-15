@@ -622,7 +622,7 @@ def _bound_method(instance: T, fn: Callable[Concatenate[T, P], _R]) -> Callable[
 if robot_6:
 
     @patch_method(LibraryKeywordRunner)
-    def _runner_for(  # pyright:ignore[reportUnusedFunction] # ruff: ignore[too-many-positional-arguments]
+    def _runner_for(  # ruff: ignore[too-many-positional-arguments]
         old_method: Callable[
             [LibraryKeywordRunner, _ExecutionContext, Function, list[object], dict[str, object]],
             Function,

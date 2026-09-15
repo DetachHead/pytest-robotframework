@@ -7,14 +7,13 @@ count_2 = 0
 
 
 @fixture(scope="class")
-# https://github.com/DetachHead/basedpyright/issues/22
-def _fixture_1():  # pyright:ignore[reportUnusedFunction]
+def _fixture_1():
     global count_1
     count_1 += 1
 
 
 @fixture
-def _fixture_2(_fixture_1: None):  # pyright:ignore[reportUnusedFunction]
+def _fixture_2(_fixture_1: None):
     global count_2
     count_2 += 1
 
