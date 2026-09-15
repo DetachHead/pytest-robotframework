@@ -43,7 +43,7 @@ original_teardown_key: StashKey[model.Keyword] = StashKey()
 
 
 @patch_method(StatusReporter)
-def _get_failure(  # pyright: ignore[reportUnusedFunction]
+def _get_failure(
     og: Callable[Concatenate[StatusReporter, P], object],
     self: StatusReporter,
     *args: P.args,
