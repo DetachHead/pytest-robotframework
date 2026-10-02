@@ -969,7 +969,7 @@ def test_console_output(pr: PytestRobotTester):
         assert "Output:  None" not in result.outlines
 
         result = pr.run_pytest("--capture=no")
-        if sys.platform == "win32" and running_on_ci():
+        if sys.platform == "win32" and sys.version_info < (3, 15) and running_on_ci():  # ruff:ignore[bad-version-info-order] in this case its easier to read this way
             # don't ask
             assert "I'm console ?" in result.outlines
         else:
