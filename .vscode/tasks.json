@@ -50,11 +50,44 @@
       }
     },
     {
+      "label": "basedpyright - update baseline",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "basedpyright_update_baseline"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
       "label": "ty",
       "type": "shell",
       "command": "./pw",
       "args": [
         "ty"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "pyrefly",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "pyrefly"
+      ],
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "pyrefly - update baseline",
+      "type": "shell",
+      "command": "./pw",
+      "args": [
+        "pyrefly_update_baseline"
       ],
       "presentation": {
         "clear": true

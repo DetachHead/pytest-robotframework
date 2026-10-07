@@ -48,7 +48,7 @@ def _call_and_report_robot_edition(
         if xfail_reason is None:
             # ty accounts for the possibility that it's a different subtype of tuple and one of the
             # other types in the union but that's not actually possible
-            skip_reason = cast(  # pyright:ignore[reportUnnecessaryCast]
+            skip_reason = cast(  # pyright:ignore[reportUnnecessaryCast] # pyrefly: ignore[redundant-cast]
                 str, report.longrepr[2] if isinstance(report.longrepr, tuple) else ""
             )
         else:
@@ -88,7 +88,7 @@ def setup(arg: Cloaked[Item]):
     ):
         # This only happens if the item is re-run, as is done by
         # pytest-rerunfailures.
-        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType] # ty:ignore[unresolved-attribute]
+        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType] # ty:ignore[unresolved-attribute] # pyrefly: ignore[missing-attribute]
     _call_and_report_robot_edition(item, "setup")
 
 
@@ -103,7 +103,7 @@ def run_test(arg: Cloaked[Item]):
                 setup_only = item.config.getoption("setuponly", default=False)
                 show_test_item(item, add_space=not setup_only)
             else:
-                show_test_item(item)  # ty:ignore[missing-argument] #pyright:ignore[reportCallIssue]
+                show_test_item(item)  # ty:ignore[missing-argument] #pyright:ignore[reportCallIssue] # pyrefly: ignore[missing-argument]
         if not item.config.getoption("setuponly", default=False):
             _call_and_report_robot_edition(item, "call")
 

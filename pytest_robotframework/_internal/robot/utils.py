@@ -305,4 +305,4 @@ def run_keyword(name: str, *args: str):
     except ModuleNotFoundError:
         builtin.run_keyword(name, *args)  # pyright: ignore[reportUnusedCallResult, reportArgumentType]
     else:
-        _ = builtin.run_keyword(KeywordName(name), *(cast(tuple[KeywordArgument], args)))
+        _ = builtin.run_keyword(KeywordName(name), *(cast(tuple[KeywordArgument], args)))  # pyrefly: ignore[unknown-variable-type] untyped decorator, which pyright just ignores

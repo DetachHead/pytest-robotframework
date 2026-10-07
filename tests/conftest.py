@@ -20,7 +20,10 @@ if TYPE_CHECKING:
     # only available in pytest >=9.1
     from _pytest.pytester import _FileContent  # pyright:ignore[reportPrivateUsage]
     from _typeshed import StrPath
-    from lxml._types import (  # pyright:ignore[reportMissingModuleSource] https://github.com/DetachHead/basedpyright/issues/615
+
+    # https://github.com/DetachHead/basedpyright/issues/615
+    # https://github.com/facebook/pyrefly/issues/5135
+    from lxml._types import (  # pyright:ignore[reportMissingModuleSource] # pyrefly: ignore[missing-source]
         _TextArg,  # pyright: ignore[reportPrivateUsage]
         _XPathExtFuncArg,  # pyright: ignore[reportPrivateUsage]
         _XPathNSArg,  # pyright: ignore[reportPrivateUsage]
@@ -82,7 +85,7 @@ def pytester_dir(pytester: Pytester, request: FixtureRequest) -> PytesterDir:
 
 if TYPE_CHECKING:
     # Pytester is final so it's probably a bad idea to rely on extending this at runtime
-    class PytesterDir(Pytester):  # pyright:ignore[reportGeneralTypeIssues] #ty:ignore[subclass-of-final-class]
+    class PytesterDir(Pytester):  # pyright:ignore[reportGeneralTypeIssues] #ty:ignore[subclass-of-final-class] # pyrefly: ignore[invalid-inheritance]
         """
         fake subtype of `Pytester` that bans you from using file creation and runpytest methods.
         you should put real life files in `tests/fixtures/[test file path]/[test name]` instead,
@@ -210,7 +213,8 @@ if TYPE_CHECKING:
         """
 
         # https://github.com/DetachHead/basedpyright/issues/615
-        def __init__(self, element: _Element) -> None: ...  # pyright:ignore[reportMissingSuperCall]
+        # https://github.com/facebook/pyrefly/issues/5136
+        def __init__(self, element: _Element) -> None: ...  # pyright:ignore[reportMissingSuperCall] # pyrefly: ignore[missing-super-call]
 
         def __bool__(self) -> Literal[True]:  # pyright:ignore[reportReturnType] see issue above
             """normally this returns `True` only if it has children"""
@@ -313,7 +317,7 @@ class PytestRobotTester:
         exit_code: ExitCode | None = None,
     ):
         # checked by the overloads
-        result = self.run_pytest(*pytest_args or [], subprocess=subprocess, plugins=plugins)  # pyright:ignore[reportArgumentType] #ty:ignore[no-matching-overload]
+        result = self.run_pytest(*pytest_args or [], subprocess=subprocess, plugins=plugins)  # pyright:ignore[reportArgumentType] #ty:ignore[no-matching-overload] # pyrefly: ignore[no-matching-overload]
 
         # this is kinda hueristic and gross, but i cant think of a clean way to add this check to
         # every test so this will do for now

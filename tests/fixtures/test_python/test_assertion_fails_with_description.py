@@ -5,4 +5,4 @@ from pytest_robotframework import AssertOptions
 
 def test_foo():
     right = 1
-    assert right == "wrong", AssertOptions(log_pass=False, description="asdf")
+    assert right == "wrong", AssertOptions(log_pass=False, description="asdf")  # pyrefly: ignore[incompatible-comparison] intentional

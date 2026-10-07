@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, cast
 
 import pytest
-from _pytest.assertion import rewrite
+
+# https://github.com/facebook/pyrefly/issues/5134
+from _pytest.assertion import rewrite  # pyrefly: ignore[implicit-reexport]
 from _pytest.assertion.rewrite import (
     AssertionRewriter,
     _get_assertion_exprs,  # pyright:ignore[reportPrivateUsage]
@@ -18,6 +20,7 @@ from _pytest.assertion.rewrite import (
 from _pytest.main import resolve_collection_argument
 from pytest import Collector, Config, StashKey, TempPathFactory, TestReport, hookimpl, skip
 from robot.api import logger
+from robot.conf import RobotSettings
 from robot.conf.settings import (
     RebotSettings,
     _BaseSettings,  # pyright:ignore[reportPrivateUsage]
@@ -26,7 +29,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.output import LOGGER
 from robot.rebot import Rebot
 from robot.result.resultbuilder import ExecutionResult
-from robot.run import RobotFramework, RobotSettings
+from robot.run import RobotFramework
 from robot.utils import printable_name
 from robot.utils.error import ErrorDetails
 from typing_extensions import Generator
@@ -118,7 +121,7 @@ def _call_assertion_hook(
 
 # we aren't patching an existing function here but instead adding a new one to the rewrite module,
 # since the rewritten assert statement needs to call it, and this is the easist way to do that
-rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute]
+rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute] # pyrefly: ignore[missing-attribute]
 
 
 @patch_method(AssertionRewriter)
@@ -188,7 +191,7 @@ def _xdist_temp_dir(session: Session) -> Path:
     return Path(
         cast(
             TempPathFactory,
-            session.config._tmp_path_factory,  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute]
+            session.config._tmp_path_factory,  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute] # pyrefly: ignore[missing-attribute]
         ).getbasetemp()
     )
 
@@ -226,7 +229,7 @@ def _get_pytest_collection_paths(session: Session) -> frozenset[Path]:
             collection_argument.path
             if pytest_version >= (8, 1)
             # we only run pyright on pytest >=8.1
-            else cast(Path, collection_argument[0])  # pyright:ignore[reportIndexIssue] # ty:ignore[not-subscriptable]
+            else cast(Path, collection_argument[0])  # pyright:ignore[reportIndexIssue] # ty:ignore[not-subscriptable]  # pyrefly: ignore[bad-index]
         )
         result.add(path)
     return frozenset(result)
@@ -290,7 +293,7 @@ def _run_robot(session: Session, robot_options: InternalRobotOptions):
     # listener gets set to None in collection when we want to override user-defined preferences, but
     # robot 6 doesn't support that
     if robot_6 and robot_options["listener"] is None:
-        robot_options["listener"] = []
+        robot_options["listener"] = []  # pyrefly: ignore[implicit-any-empty-container]
 
     robot = RobotFramework()
     # LOGGER is needed for log_file listener methods to prevent logger from deactivating after
@@ -455,7 +458,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                     # Here we create a jenkem huffer because you can't control rebots console output
                     #  Rebot uses __stdout__, which doesn't have an implementation in contextlib
                     result = contextlib._RedirectStream(file)  # pyright: ignore[reportPrivateUsage]
-                    result._stream = "__stdout__"  # pyright: ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute]
+                    result._stream = "__stdout__"  # pyright: ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute] # pyrefly: ignore[missing-attribute]
                     return result
 
                 with Path(os.devnull).open("w", encoding="UTF8") as devull, redirector(devull):
@@ -466,11 +469,8 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                     if len(outputs) > 1:
                         merged_suite_name = cast(str, ExecutionResult(*outputs).suite.name)  # pyright:ignore[reportUnknownMemberType]
                         for output in outputs:
-                            _ = cast(
-                                int,
-                                rebot.main(
-                                    [output], output=output, name=merged_suite_name, stdout=None
-                                ),
+                            _ = rebot.main(  # pyright: ignore[reportUnknownVariableType]
+                                [output], output=output, name=merged_suite_name, stdout=None
                             )
                     rebot_options = merge_robot_options(
                         {
@@ -642,7 +642,7 @@ def _keywordify_pytest_functions():
     for method in ("fail", "xfail"):
         # we specify the name argument explicitly because as of pytest 9.0 these are variables now
         # instead of functions, so they don't have a __name__ attribute
-        keywordify(pytest, method, module=module, name=printable_name(method))
+        keywordify(pytest, method, module=module, name=printable_name(method))  # pyrefly: ignore[unknown-argument-type] string argument is untyped
     methods_to_wrap = {"deprecated_call", "warns", "raises"}
     if pytest_version >= (8, 4):
         # RaisesGroup was only introduced in pytest 8.4

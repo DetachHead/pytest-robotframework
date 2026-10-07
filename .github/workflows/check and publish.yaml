@@ -45,6 +45,9 @@ jobs:
       - run: ./pw ty
         if: always()
 
+      - run: ./pw uv run pyrefly check --error-stale-baseline
+        if: always()
+
       - name: ruff check
         if: always()
         run: ./pw uv run ruff check --output-format github

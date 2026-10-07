@@ -14,4 +14,4 @@ def asdf():
 def test_foo():
     with raises(ZeroDivisionError):  # noqa: PT012
         asdf()
-        _ = 1 / 0  # ty:ignore[division-by-zero]
+        _ = 1 / 0  # ty:ignore[division-by-zero] # pyrefly: ignore[division-by-zero]
