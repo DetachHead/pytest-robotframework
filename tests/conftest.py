@@ -16,6 +16,7 @@ from typing_extensions import override
 
 if TYPE_CHECKING:
     from os import PathLike
+    from typing import Never
 
     # only available in pytest >=9.1
     from _pytest.pytester import _FileContent  # pyright:ignore[reportPrivateUsage]
@@ -29,7 +30,6 @@ if TYPE_CHECKING:
         _XPathNSArg,  # pyright: ignore[reportPrivateUsage]
         _XPathVarArg,  # pyright: ignore[reportPrivateUsage]
     )
-    from typing_extensions import Never
 
 # needed for fixtures that depend on other fixtures
 # pylint:disable=redefined-outer-name
