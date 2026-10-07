@@ -1,5 +1,5 @@
 {
-  "json": {},
+  "json": { "trailingCommas": "never" },
   "markdown": {},
   "toml": {},
   "yaml": {},
