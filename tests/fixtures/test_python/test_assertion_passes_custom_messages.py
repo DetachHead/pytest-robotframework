@@ -11,5 +11,5 @@ def test_foo():
     assert left == right, "doesn't appear"
     assert right == left, AssertOptions(description="does appear1")
     with raises(AssertionError):
-        assert right == "wrong", AssertOptions(log_pass=True, fail_message="does appear2")
+        assert right == "wrong", AssertOptions(log_pass=True, fail_message="does appear2")  # pyrefly: ignore[incompatible-comparison] intentional
     assert right == "wrong", "does appear3"

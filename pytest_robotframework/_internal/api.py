@@ -12,13 +12,13 @@ from typing import TYPE_CHECKING, Literal, TypeAlias, TypeVar, cast, final, over
 from pytest import StashKey
 from robot import result, running
 from robot.api import deco, logger
-from robot.errors import DataError, ExecutionFailed
+from robot.errors import DataError, ExecutionFailed, ExecutionStatus, HandlerExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.model.visitor import SuiteVisitor
 from robot.running import model
 from robot.running.context import _ExecutionContext  # pyright:ignore[reportPrivateUsage]
 from robot.running.librarykeywordrunner import LibraryKeywordRunner
-from robot.running.statusreporter import ExecutionStatus, HandlerExecutionFailed, StatusReporter
+from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc, printable_name
 from robot.utils.error import ErrorDetails
 from typing_extensions import Never, deprecated, override
@@ -87,7 +87,7 @@ class _FullStackStatusReporter(StatusReporter):
     """
 
     @override
-    def _get_failure(self, *args: Never, **kwargs: Never):
+    def _get_failure(self, *args: Never, **kwargs: Never):  # pyrefly: ignore[unannotated-return] https://github.com/facebook/pyrefly/issues/5132
         exc_value = get_arg_with_type(BaseException, args, kwargs)
         context = get_arg_with_type(_ExecutionContext, args, kwargs)
         if not context:
@@ -194,7 +194,7 @@ class _KeywordDecorator:
         self._max_argument_length_in_log: int | None = max_argument_length_in_log
 
     @staticmethod
-    def _save_status_reporter_failure(exception: BaseException):
+    def _save_status_reporter_failure(exception: BaseException):  # pyrefly: ignore[unannotated-return] https://github.com/facebook/pyrefly/issues/5132
         stack = _get_status_reporter_failures(exception)
         stack.append(HandlerExecutionFailed(ErrorDetails(exception)))
 
@@ -260,14 +260,14 @@ class _KeywordDecorator:
             # nullcontext is typed as returning None which pyright incorrectly marks as
             # unreachable. see https://github.com/DetachHead/basedpyright/issues/10
             context_manager: AbstractContextManager[object, bool] = (  # pyright:ignore[reportAssignmentType] # ty:ignore[invalid-assignment]
-                (
+                (  # pyrefly:ignore[bad-assignment]
                     _FullStackStatusReporter(
                         data=data,
                         result=(
                             result.Keyword(
                                 # pyright is only run when robot 7 is installed
-                                kwname=keyword_name,  # pyright:ignore[reportCallIssue]
-                                libname=self._module,  # pyright:ignore[reportCallIssue]
+                                kwname=keyword_name,  # pyright:ignore[reportCallIssue] # pyrefly:ignore[unexpected-keyword]
+                                libname=self._module,  # pyright:ignore[reportCallIssue] # pyrefly:ignore[unexpected-keyword]
                                 doc=doc,
                                 args=log_args,
                                 tags=self._tags,
@@ -412,7 +412,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                 f"keyword decorator expected a context manager but instead got {fn_result!r}"
             )
         # 🚀 independently verified for safety by the overloads
-        return WrappedContextManager(  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type]
+        return WrappedContextManager(  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type] # pyrefly: ignore[bad-return]
             fn_result, status_reporter
         )
 
@@ -524,7 +524,7 @@ def keyword(  # pylint:disable=missing-param-doc
             module=module,
             max_argument_length_in_log=max_argument_length_in_log,
         )
-    return keyword(  # pyright:ignore[reportReturnType] # ty:ignore[no-matching-overload]
+    return keyword(  # pyright:ignore[reportReturnType] # ty:ignore[no-matching-overload] # pyrefly: ignore[no-matching-overload]
         name=name,
         tags=tags,
         module=module,

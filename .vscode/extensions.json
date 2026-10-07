@@ -11,7 +11,8 @@
     "d-biehl.robotcode",
     "github.vscode-github-actions",
     "dprint.dprint",
-    "detachhead.dtach"
+    "detachhead.dtach",
+    "meta.pyrefly"
   ],
   "unwantedRecommendations": [
     "ms-python.vscode-pylance"

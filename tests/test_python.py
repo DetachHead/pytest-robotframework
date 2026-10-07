@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 if pytest_version < (9,):
     from _pytest.assertion.util import (
-        running_on_ci,  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]  # ty:ignore[unresolved-import]
+        running_on_ci,  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]  # ty:ignore[unresolved-import] # pyrefly: ignore[missing-module-attribute]
     )
 else:
     from _pytest.compat import running_on_ci

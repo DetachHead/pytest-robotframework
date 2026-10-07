@@ -54,7 +54,7 @@ def _get_failure(  # pyright: ignore[reportUnusedFunction]
     if result:
         # this function's signature is different depewnding on the robot version, so we just accept
         # any arguments and iterate over them to find the one we need
-        result.error = get_arg_with_type(BaseException, args, kwargs)  # pyright: ignore[reportAttributeAccessIssue] #ty:ignore[invalid-assignment]
+        result.error = get_arg_with_type(BaseException, args, kwargs)  # pyright: ignore[reportAttributeAccessIssue] #ty:ignore[invalid-assignment] # pyrefly: ignore[missing-attribute]
     return result
 
 
@@ -145,7 +145,7 @@ class RobotItem(Item):  # pyright:ignore[reportUninitializedInstanceVariable]
                 # type checkers are only run when robot 7 is installed
                 BodyRunner(  # pyright:ignore[reportCallIssue]
                     context=context, templated=bool(test.template)
-                ).run(self.stash[original_body_key])
+                ).run(self.stash[original_body_key])  # pyrefly: ignore[missing-argument]
         else:
             wrapped_body = test.body
             test.body = self.stash[original_body_key]

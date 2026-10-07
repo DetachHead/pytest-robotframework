@@ -244,7 +244,7 @@ class RobotTestFilterer(SuiteVisitor):
 
     @override
     # https://github.com/robotframework/robotframework/issues/4940
-    def visit_test(  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[invalid-method-override]
+    def visit_test(  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[invalid-method-override] # pyrefly: ignore[bad-override]
         self, test: running.TestCase
     ):
         for item in self.items:
@@ -298,7 +298,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
     @override
     # https://github.com/robotframework/robotframework/issues/4940
-    def start_test(self, test: running.TestCase) -> bool | None:  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[invalid-method-override]
+    def start_test(self, test: running.TestCase) -> bool | None:  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[invalid-method-override] # pyrefly: ignore[bad-override]
         if self.xdist_item:
             item = self.xdist_item
         else:
@@ -446,10 +446,10 @@ class PytestRuntestProtocolHooks(ListenerV3):
                     HookImpl(
                         hook.plugin,
                         hook.plugin_name,
-                        lambda item, nextitem, *, hook=hook: enter_wrapper(  # pyright:ignore[reportUnknownArgumentType,reportUnknownLambdaType]
+                        lambda item, nextitem, *, hook=hook: enter_wrapper(  # pyright:ignore[reportUnknownArgumentType,reportUnknownLambdaType] # pyrefly: ignore[implicit-any-lambda]
                             hook,
-                            item,  # pyright:ignore[reportUnknownArgumentType]
-                            nextitem,  # pyright:ignore[reportUnknownArgumentType]
+                            item,  # pyright:ignore[reportUnknownArgumentType] # pyrefly: ignore[unknown-argument-type]
+                            nextitem,  # pyright:ignore[reportUnknownArgumentType] # pyrefly: ignore[unknown-argument-type]
                         ),
                         {
                             **hook.opts,

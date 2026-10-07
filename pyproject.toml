@@ -43,6 +43,7 @@ dev = [
   "pytest>=7a0",
   "robotframework>=6.1a0",
   "types-lxml>=2026.2.16",
+  "pyrefly>=1.3.2",
 ]
 
 [project.urls]
@@ -60,7 +61,12 @@ basedpyright = [
   "uv run basedpyright",
   "uv run basedpyright --verifytypes pytest_robotframework --ignoreexternal",
 ]
+basedpyright_update_baseline = [
+  "uv run basedpyright --writebaseline",
+]
 ty = 'uv run ty check'
+pyrefly = 'uv run pyrefly check'
+pyrefly_update_baseline = 'uv run pyrefly check --update-baseline'
 ruff_check = ['uv run ruff check', 'uv run ruff format --check --diff']
 ruff_fix = ['uv run ruff check --fix', 'uv run ruff format']
 pylint = 'uv run pylint pytest_robotframework tests'
@@ -192,6 +198,7 @@ enable_assertion_pass_hook = true
 [tool.basedpyright]
 ignore = ["pw"]
 pythonVersion = "3.10"
+baselineFile = ".baselines/basedpyright.json"
 allowedUntypedLibraries = [
   'robot', # https://github.com/robotframework/robotframework/issues/4822
 ]
@@ -217,6 +224,30 @@ python-platform = "all"
 
 [tool.ty.terminal]
 error-on-warning = true
+
+[tool.pyrefly]
+preset = "all"
+python-platform = "all"
+min-severity = "info"
+treat-all-caps-as-final = true
+baseline = ".baselines/pyrefly.json"
+
+[tool.pyrefly.errors]
+implicit-bool = false
+unannotated-return = false # only enforced for public API, otherwise we can rely on inferred return type
+
+# public API
+[[tool.pyrefly.sub-config]]
+matches = "pytest_robotframework/_internal/api.py"
+[tool.pyrefly.sub-config.errors]
+unannotated-return = true
+
+# fake tests full of dummy assertions
+[[tool.pyrefly.sub-config]]
+matches = "tests/fixtures/test_python/test_*.py"
+[tool.pyrefly.sub-config.errors]
+incompatible-comparison = false
+redundant-condition = false
 
 [tool.ruff]
 unsafe-fixes = true

@@ -5,7 +5,7 @@
   "yaml": {},
   "excludes": [
     "**/*-lock.json",
-    ".basedpyright/baseline.json"
+    ".baselines"
   ],
   "plugins": [
     "https://plugins.dprint.dev/json-0.23.0.wasm",
