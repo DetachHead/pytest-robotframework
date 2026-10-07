@@ -8,12 +8,12 @@ from robot.api import logger
 from pytest_robotframework import keyword
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Generator
 
 
 @keyword(wrap_context_manager=True)
 @contextmanager
-def asdf() -> Iterator[None]:
+def asdf() -> Generator[None, None, None]:
     logger.info("start")
     try:
         yield

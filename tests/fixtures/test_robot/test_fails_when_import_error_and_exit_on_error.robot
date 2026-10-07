@@ -1,5 +1,5 @@
 *** Settings ***
-Library     asdf    # robotcode: ignore
+Library    asdf    # robotcode: ignore
 
 
 *** Test Cases ***

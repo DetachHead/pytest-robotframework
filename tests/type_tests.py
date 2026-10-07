@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable, Generator
     from contextlib import (
         AbstractContextManager,
         _GeneratorContextManager,  # pyright:ignore[reportPrivateUsage]
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     # keyword, wrap_context_manager=True:
     @keyword(wrap_context_manager=True)
     @contextmanager
-    def b() -> Iterator[None]:
+    def b() -> Generator[None, None, None]:
         yield
 
     _ = assert_type(b, Callable[[], AbstractContextManager[None]])  # ty:ignore[type-assertion-failure]
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     # keyword, wrap_context_manager=False:
     @keyword(wrap_context_manager=False)
     @contextmanager
-    def c() -> Iterator[None]:
+    def c() -> Generator[None, None, None]:
         yield
 
     _ = assert_type(c, Callable[[], _GeneratorContextManager[None]])  # ty:ignore[type-assertion-failure]
@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     # keyword, context manager with no wrap_context_manager arg:
     @keyword  # pyright:ignore[reportDeprecated]
     @contextmanager
-    def d() -> Iterator[None]:
+    def d() -> Generator[None, None, None]:
         yield
 
     _ = assert_type(d, Never)
@@ -66,5 +66,5 @@ if TYPE_CHECKING:
 
     # keyword, non-context manager with wrap_context_manager=False:
     # expected type error
-    @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]
+    @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]  # ty:ignore[invalid-argument-type]
     def f() -> None: ...

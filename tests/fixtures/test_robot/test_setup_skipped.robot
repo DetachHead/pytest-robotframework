@@ -1,5 +1,5 @@
 *** Settings ***
-Test Setup      Bar
+Test Setup    Bar
 
 
 *** Test Cases ***
