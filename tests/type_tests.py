@@ -9,8 +9,7 @@ if TYPE_CHECKING:
         _GeneratorContextManager,  # pyright:ignore[reportPrivateUsage]
         contextmanager,
     )
-
-    from typing_extensions import Never, assert_type
+    from typing import Never, assert_type
 
     from pytest_robotframework import keyword
 

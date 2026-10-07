@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from exceptiongroup import ExceptionGroup
 from pytest import RaisesGroup
 
 

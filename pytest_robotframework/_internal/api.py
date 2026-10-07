@@ -7,7 +7,7 @@ from functools import wraps
 from pathlib import Path
 from traceback import format_stack
 from types import TracebackType
-from typing import TYPE_CHECKING, Literal, TypeAlias, TypeVar, cast, final, overload
+from typing import TYPE_CHECKING, Literal, Never, TypeAlias, TypeVar, cast, final, overload
 
 from pytest import StashKey
 from robot import result, running
@@ -21,7 +21,7 @@ from robot.running.librarykeywordrunner import LibraryKeywordRunner
 from robot.running.statusreporter import StatusReporter
 from robot.utils import getshortdoc, printable_name
 from robot.utils.error import ErrorDetails
-from typing_extensions import Never, deprecated, override
+from typing_extensions import deprecated, override
 
 from pytest_robotframework._internal.cringe_globals import current_item, current_session
 from pytest_robotframework._internal.errors import InternalError
