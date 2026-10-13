@@ -164,7 +164,7 @@
       "type": "shell",
       "command": "./pw",
       "args": [
-        "dprint"
+        "dprint_fix"
       ],
       "presentation": {
         "clear": true

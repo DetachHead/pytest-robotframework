@@ -59,20 +59,21 @@ basedpyright = [
 basedpyright_update_baseline = [
   "uv run basedpyright --writebaseline",
 ]
-ty = 'uv run ty check'
-pyrefly = 'uv run pyrefly check'
-pyrefly_update_baseline = 'uv run pyrefly check --update-baseline'
-ruff_check = ['uv run ruff check', 'uv run ruff format --check --diff']
-ruff_fix = ['uv run ruff check --fix', 'uv run ruff format']
-pylint = 'uv run pylint pytest_robotframework tests'
-robocop_lint = 'uv run robocop check'
-robocop_format = 'uv run robocop format --check .'
-robocop_format_fix = 'uv run robocop format --overwrite .'
-robotcode = 'uv run robotcode analyze code'
-dprint = 'uv run dprint check'
-tach = ['uv run tach check', 'uv run tach check-external']
-open_docs = 'uv run mkdocs serve'
-clear_pycache = 'python scripts/clear_pycache.py'
+ty = "uv run ty check"
+pyrefly = "uv run pyrefly check"
+pyrefly_update_baseline = "uv run pyrefly check --update-baseline"
+ruff_check = ["uv run ruff check", "uv run ruff format --check --diff"]
+ruff_fix = ["uv run ruff check --fix", "uv run ruff format"]
+pylint = "uv run pylint pytest_robotframework tests"
+robocop_lint = "uv run robocop check"
+robocop_format = "uv run robocop format --check ."
+robocop_format_fix = "uv run robocop format --overwrite ."
+robotcode = "uv run robotcode analyze code"
+dprint = "uv run dprint check"
+dprint_fix = "uv run dprint fmt"
+tach = ["uv run tach check", "uv run tach check-external"]
+open_docs = "uv run mkdocs serve"
+clear_pycache = "python scripts/clear_pycache.py"
 
 [tool.uv.build-backend]
 module-root = "."
@@ -190,7 +191,7 @@ score = "no"
 max-line-length = 200
 
 [tool.pytest.ini_options]
-addopts = ['-p', 'no:robotframework', '--ignore=tests/fixtures', '-vv']
+addopts = ["-p", "no:robotframework", "--ignore=tests/fixtures", "-vv"]
 xfail_strict = true
 enable_assertion_pass_hook = true
 
@@ -199,14 +200,14 @@ ignore = ["pw"]
 pythonVersion = "3.11"
 baselineFile = ".baselines/basedpyright.json"
 allowedUntypedLibraries = [
-  'robot', # https://github.com/robotframework/robotframework/issues/4822
+  "robot", # https://github.com/robotframework/robotframework/issues/4822
 ]
 reportImplicitStringConcatenation = false # handled by ruff
 reportUnusedImport = false # covered by ruff (has quickfix)
 reportUnusedVariable = false # covered by ruff (has quickfix)
 deprecateTypingAliases = false # covered by ruff (has quickfix)
 # even though we enable this rule we still keep reportUnannotatedClassAttribute enabled since this is a library
-reportIncompatibleUnannotatedOverride = 'error'
+reportIncompatibleUnannotatedOverride = "error"
 
 [tool.ty.src]
 exclude = ["pw"]
