@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2399,7 +2399,7 @@
 robot log.</p>
 <p>example:
 <div class="highlight"><pre><span></span><code><span class="k">assert</span> <span class="n">foo</span> <span class="o">==</span> <span class="n">bar</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span>
-    <span class="n">log_pass</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;checking the value&quot;</span><span class="p">,</span> <span class="n">fail_msg</span><span class="o">=</span><span class="s2">&quot;assertion failed&quot;</span>
+    <span class="n">log_pass</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"checking the value"</span><span class="p">,</span> <span class="n">fail_msg</span><span class="o">=</span><span class="s2">"assertion failed"</span>
 <span class="p">)</span>
 </code></pre></div></p>
 
@@ -2478,17 +2478,17 @@ robot log.</p>
 <span class="normal">734</span>
 <span class="normal">735</span>
 <span class="normal">736</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AssertOptions</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    pass this as the second argument to an `assert` statement to customize how it appears in the</span>
 <span class="sd">    robot log.</span>
 
 <span class="sd">    example:</span>
 <span class="sd">    ```python</span>
 <span class="sd">    assert foo == bar, AssertOptions(</span>
-<span class="sd">        log_pass=False, description=&quot;checking the value&quot;, fail_msg=&quot;assertion failed&quot;</span>
+<span class="sd">        log_pass=False, description="checking the value", fail_msg="assertion failed"</span>
 <span class="sd">    )</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2499,7 +2499,7 @@ robot log.</p>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_pass</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">log_pass</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;whether to display the assertion as a keyword in the robot log when it passes.</span>
+<span class="w">        </span><span class="sd">"""whether to display the assertion as a keyword in the robot log when it passes.</span>
 
 <span class="sd">        by default, a passing `assert` statement will display in the robot log as long as the</span>
 <span class="sd">        following conditions are met:</span>
@@ -2509,7 +2509,7 @@ robot log.</p>
 <span class="sd">        - pytest is not run with the `--no-asserts-in-robot-log` argument</span>
 
 <span class="sd">        failing `assert` statements will show as keywords in the log as long as the</span>
-<span class="sd">        `enable_assertion_pass_hook` pytest option is enabled. if it&#39;s disabled, the assertion error</span>
+<span class="sd">        `enable_assertion_pass_hook` pytest option is enabled. if it's disabled, the assertion error</span>
 <span class="sd">        will be logged, but not within a keyword.</span>
 
 <span class="sd">        example:</span>
@@ -2526,23 +2526,23 @@ robot log.</p>
 <span class="sd">        # displays in the robot log as only if all 3 conditions mentioned above are met:</span>
 <span class="sd">        assert foo == bar</span>
 <span class="sd">        ```</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">description</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;normally, the asserted expression as it was written is displayed as the argument to the</span>
+<span class="w">        </span><span class="sd">"""normally, the asserted expression as it was written is displayed as the argument to the</span>
 <span class="sd">        `assert` keyword in the robot log, but setting this value will display a custom message</span>
 <span class="sd">        instead. when a custom description is used, the original expression is logged inside the</span>
-<span class="sd">        keyword instead.&quot;&quot;&quot;</span>
+<span class="sd">        keyword instead."""</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">fail_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">fail_message</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;optional description for the `assert` statement that will be included in the</span>
-<span class="sd">        `AssertionError` message if the assertion fails. equivalent to a normal `assert` statement&#39;s</span>
-<span class="sd">        second argument&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""optional description for the `assert` statement that will be included in the</span>
+<span class="sd">        `AssertionError` message if the assertion fails. equivalent to a normal `assert` statement's</span>
+<span class="sd">        second argument"""</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;make the custom fail message appear in the call to `AssertionError`&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fail_message</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""make the custom fail message appear in the call to `AssertionError`"""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fail_message</span> <span class="ow">or</span> <span class="s2">""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2710,7 +2710,7 @@ will be logged, but not within a keyword.</p>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">log_pass</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">log_pass</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;whether to display the assertion as a keyword in the robot log when it passes.</span>
+<span class="w">    </span><span class="sd">"""whether to display the assertion as a keyword in the robot log when it passes.</span>
 
 <span class="sd">    by default, a passing `assert` statement will display in the robot log as long as the</span>
 <span class="sd">    following conditions are met:</span>
@@ -2720,7 +2720,7 @@ will be logged, but not within a keyword.</p>
 <span class="sd">    - pytest is not run with the `--no-asserts-in-robot-log` argument</span>
 
 <span class="sd">    failing `assert` statements will show as keywords in the log as long as the</span>
-<span class="sd">    `enable_assertion_pass_hook` pytest option is enabled. if it&#39;s disabled, the assertion error</span>
+<span class="sd">    `enable_assertion_pass_hook` pytest option is enabled. if it's disabled, the assertion error</span>
 <span class="sd">    will be logged, but not within a keyword.</span>
 
 <span class="sd">    example:</span>
@@ -2737,18 +2737,18 @@ will be logged, but not within a keyword.</p>
 <span class="sd">    # displays in the robot log as only if all 3 conditions mentioned above are met:</span>
 <span class="sd">    assert foo == bar</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">description</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;normally, the asserted expression as it was written is displayed as the argument to the</span>
+<span class="w">    </span><span class="sd">"""normally, the asserted expression as it was written is displayed as the argument to the</span>
 <span class="sd">    `assert` keyword in the robot log, but setting this value will display a custom message</span>
 <span class="sd">    instead. when a custom description is used, the original expression is logged inside the</span>
-<span class="sd">    keyword instead.&quot;&quot;&quot;</span>
+<span class="sd">    keyword instead."""</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">fail_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">fail_message</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;optional description for the `assert` statement that will be included in the</span>
-<span class="sd">    `AssertionError` message if the assertion fails. equivalent to a normal `assert` statement&#39;s</span>
-<span class="sd">    second argument&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""optional description for the `assert` statement that will be included in the</span>
+<span class="sd">    `AssertionError` message if the assertion fails. equivalent to a normal `assert` statement's</span>
+<span class="sd">    second argument"""</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2782,10 +2782,10 @@ will be logged, but not within a keyword.</p>
 
         <p>robot command-line arguments after being parsed by robot into a <code>dict</code>.</p>
 <p>for example, the following robot options:</p>
-<div class="highlight"><pre><span></span><code>ROBOT_OPTIONS=&quot;--listener Foo --listener Bar -d baz&quot;
+<div class="highlight"><pre><span></span><code>ROBOT_OPTIONS="--listener Foo --listener Bar -d baz"
 </code></pre></div>
 <p>will be converted to a <code>dict</code> like so:
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="s2">&quot;listener&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Foo&quot;</span><span class="p">,</span> <span class="s2">&quot;Bar&quot;</span><span class="p">],</span> <span class="s2">&quot;outputdir&quot;</span><span class="p">:</span> <span class="s2">&quot;baz&quot;</span><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="s2">"listener"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"Foo"</span><span class="p">,</span> <span class="s2">"Bar"</span><span class="p">],</span> <span class="s2">"outputdir"</span><span class="p">:</span> <span class="s2">"baz"</span><span class="p">}</span>
 </code></pre></div></p>
 <p>any options missing from this <code>TypedDict</code> are not allowed to be modified as they interfere with
 the functionality of this plugin. see <a href="../../configuration/">configuration</a>
@@ -2881,24 +2881,24 @@ for alternatives</p>
 <span class="normal">122</span>
 <span class="normal">123</span>
 <span class="normal">124</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RobotOptions</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    robot command-line arguments after being parsed by robot into a `dict`.</span>
 
 <span class="sd">    for example, the following robot options:</span>
 
 <span class="sd">    ```dotenv</span>
-<span class="sd">    ROBOT_OPTIONS=&quot;--listener Foo --listener Bar -d baz&quot;</span>
+<span class="sd">    ROBOT_OPTIONS="--listener Foo --listener Bar -d baz"</span>
 <span class="sd">    ```</span>
 
 <span class="sd">    will be converted to a `dict` like so:</span>
 <span class="sd">    ```py</span>
-<span class="sd">    {&quot;listener&quot;: [&quot;Foo&quot;, &quot;Bar&quot;], &quot;outputdir&quot;: &quot;baz&quot;}</span>
+<span class="sd">    {"listener": ["Foo", "Bar"], "outputdir": "baz"}</span>
 <span class="sd">    ```</span>
 
 <span class="sd">    any options missing from this `TypedDict` are not allowed to be modified as they interfere with</span>
 <span class="sd">    the functionality of this plugin. see [configuration](../configuration.md)</span>
 <span class="sd">    for alternatives</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">rpa</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">language</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
@@ -2939,27 +2939,27 @@ for alternatives</p>
     <span class="n">skipteardownonexit</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">prerunmodifier</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">model</span><span class="o">.</span><span class="n">SuiteVisitor</span><span class="p">]</span>
     <span class="n">prerebotmodifier</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">model</span><span class="o">.</span><span class="n">SuiteVisitor</span><span class="p">]</span>
-    <span class="n">randomize</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ALL&quot;</span><span class="p">,</span> <span class="s2">&quot;SUITES&quot;</span><span class="p">,</span> <span class="s2">&quot;TESTS&quot;</span><span class="p">,</span> <span class="s2">&quot;NONE&quot;</span><span class="p">]</span>
-    <span class="n">console</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="s2">&quot;dotted&quot;</span><span class="p">,</span> <span class="s2">&quot;quiet&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;the default in robot is `&quot;verbose&quot;, however pytest-robotframework changes the default to</span>
-<span class="sd">    `&quot;quiet&quot;`, if you change this, then pytest and robot outputs will overlap.&quot;&quot;&quot;</span>
+    <span class="n">randomize</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"ALL"</span><span class="p">,</span> <span class="s2">"SUITES"</span><span class="p">,</span> <span class="s2">"TESTS"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">]</span>
+    <span class="n">console</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"verbose"</span><span class="p">,</span> <span class="s2">"dotted"</span><span class="p">,</span> <span class="s2">"quiet"</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""the default in robot is `"verbose", however pytest-robotframework changes the default to</span>
+<span class="sd">    `"quiet"`, if you change this, then pytest and robot outputs will overlap."""</span>
     <span class="n">dotted</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">quiet</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">consolewidth</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">consolecolors</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span> <span class="s2">&quot;ON&quot;</span><span class="p">,</span> <span class="s2">&quot;ANSI&quot;</span><span class="p">,</span> <span class="s2">&quot;OFF&quot;</span><span class="p">]</span>
-    <span class="n">consolelinks</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span> <span class="s2">&quot;OFF&quot;</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;only available in robotframework &gt;=7.1.</span>
+    <span class="n">consolecolors</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"AUTO"</span><span class="p">,</span> <span class="s2">"ON"</span><span class="p">,</span> <span class="s2">"ANSI"</span><span class="p">,</span> <span class="s2">"OFF"</span><span class="p">]</span>
+    <span class="n">consolelinks</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"AUTO"</span><span class="p">,</span> <span class="s2">"OFF"</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""only available in robotframework &gt;=7.1.</span>
 
-<span class="sd">    currently does nothing. see https://github.com/DetachHead/pytest-robotframework/issues/305&quot;&quot;&quot;</span>
-    <span class="n">consolemarkers</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span> <span class="s2">&quot;ON&quot;</span><span class="p">,</span> <span class="s2">&quot;OFF&quot;</span><span class="p">]</span>
+<span class="sd">    currently does nothing. see https://github.com/DetachHead/pytest-robotframework/issues/305"""</span>
+    <span class="n">consolemarkers</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"AUTO"</span><span class="p">,</span> <span class="s2">"ON"</span><span class="p">,</span> <span class="s2">"OFF"</span><span class="p">]</span>
     <span class="n">pythonpath</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="c1"># argumentfile is not supported because it&#39;s not in the _cli_opts dict for some reason</span>
-    <span class="c1"># argumentfile: str | None  # noqa: ERA001</span>
+    <span class="c1"># argumentfile is not supported because it's not in the _cli_opts dict for some reason</span>
+    <span class="c1"># argumentfile: str | None  # ruff: ignore[commented-out-code]</span>
     <span class="n">parser</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Parser</span><span class="p">]</span>
     <span class="n">legacyoutput</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">parseinclude</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">stdout</span><span class="p">:</span> <span class="nb">object</span>  <span class="c1"># no idea what this is, it&#39;s not in the robot docs</span>
-    <span class="n">stderr</span><span class="p">:</span> <span class="nb">object</span>  <span class="c1"># no idea what this is, it&#39;s not in the robot docs</span>
+    <span class="n">stdout</span><span class="p">:</span> <span class="nb">object</span>  <span class="c1"># no idea what this is, it's not in the robot docs</span>
+    <span class="n">stderr</span><span class="p">:</span> <span class="nb">object</span>  <span class="c1"># no idea what this is, it's not in the robot docs</span>
     <span class="n">exitonerror</span><span class="p">:</span> <span class="nb">bool</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -2979,7 +2979,7 @@ for alternatives</p>
 
 
 <h3 id="pytest_robotframework.RobotOptions.console" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">console</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;dotted&#39;</span><span class="p">,</span> <span class="s1">&#39;quiet&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">]</span></code>
+            <code class="highlight language-python"><span class="n">console</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">'verbose'</span><span class="p">,</span> <span class="s1">'dotted'</span><span class="p">,</span> <span class="s1">'quiet'</span><span class="p">,</span> <span class="s1">'none'</span><span class="p">]</span></code>
 
 </h3>
 
@@ -2997,7 +2997,7 @@ for alternatives</p>
 
 
 <h3 id="pytest_robotframework.RobotOptions.consolecolors" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">consolecolors</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;AUTO&#39;</span><span class="p">,</span> <span class="s1">&#39;ON&#39;</span><span class="p">,</span> <span class="s1">&#39;ANSI&#39;</span><span class="p">,</span> <span class="s1">&#39;OFF&#39;</span><span class="p">]</span></code>
+            <code class="highlight language-python"><span class="n">consolecolors</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">'AUTO'</span><span class="p">,</span> <span class="s1">'ON'</span><span class="p">,</span> <span class="s1">'ANSI'</span><span class="p">,</span> <span class="s1">'OFF'</span><span class="p">]</span></code>
 
 </h3>
 
@@ -3013,7 +3013,7 @@ for alternatives</p>
 
 
 <h3 id="pytest_robotframework.RobotOptions.consolelinks" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">consolelinks</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;AUTO&#39;</span><span class="p">,</span> <span class="s1">&#39;OFF&#39;</span><span class="p">]</span></code>
+            <code class="highlight language-python"><span class="n">consolelinks</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">'AUTO'</span><span class="p">,</span> <span class="s1">'OFF'</span><span class="p">]</span></code>
 
 </h3>
 
@@ -3032,7 +3032,7 @@ for alternatives</p>
 
 
 <h3 id="pytest_robotframework.RobotOptions.consolemarkers" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">consolemarkers</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;AUTO&#39;</span><span class="p">,</span> <span class="s1">&#39;ON&#39;</span><span class="p">,</span> <span class="s1">&#39;OFF&#39;</span><span class="p">]</span></code>
+            <code class="highlight language-python"><span class="n">consolemarkers</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">'AUTO'</span><span class="p">,</span> <span class="s1">'ON'</span><span class="p">,</span> <span class="s1">'OFF'</span><span class="p">]</span></code>
 
 </h3>
 
@@ -3464,7 +3464,7 @@ for alternatives</p>
 
 
 <h3 id="pytest_robotframework.RobotOptions.randomize" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">randomize</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;ALL&#39;</span><span class="p">,</span> <span class="s1">&#39;SUITES&#39;</span><span class="p">,</span> <span class="s1">&#39;TESTS&#39;</span><span class="p">,</span> <span class="s1">&#39;NONE&#39;</span><span class="p">]</span></code>
+            <code class="highlight language-python"><span class="n">randomize</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">'ALL'</span><span class="p">,</span> <span class="s1">'SUITES'</span><span class="p">,</span> <span class="s1">'TESTS'</span><span class="p">,</span> <span class="s1">'NONE'</span><span class="p">]</span></code>
 
 </h3>
 
@@ -3859,7 +3859,7 @@ for alternatives</p>
 
 
 <h2 id="pytest_robotframework.as_keyword" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">as_keyword</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span></code>
+            <code class="highlight language-python"><span class="n">as_keyword</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span></code>
 
 </h2>
 
@@ -3868,7 +3868,7 @@ for alternatives</p>
 
         <p>runs the body as a robot keyword.</p>
 <p>example:
-<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">as_keyword</span><span class="p">(</span><span class="s2">&quot;do thing&quot;</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">as_keyword</span><span class="p">(</span><span class="s2">"do thing"</span><span class="p">):</span>
     <span class="o">...</span>
 </code></pre></div></p>
 
@@ -4004,17 +4004,17 @@ for alternatives</p>
 <span class="normal">567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">as_keyword</span><span class="p">(</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">doc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">doc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">tags</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">args</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbstractContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    runs the body as a robot keyword.</span>
 
 <span class="sd">    example:</span>
 <span class="sd">    ```py</span>
-<span class="sd">    with as_keyword(&quot;do thing&quot;):</span>
+<span class="sd">    with as_keyword("do thing"):</span>
 <span class="sd">        ...</span>
 <span class="sd">    ```</span>
 
@@ -4023,13 +4023,13 @@ for alternatives</p>
 <span class="sd">    :param tags: tags for the keyword</span>
 <span class="sd">    :param args: positional arguments to be displayed on the keyword in the robot log</span>
 <span class="sd">    :param kwargs: keyword arguments to be displayed on the keyword in the robot log</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nd">@_WrappedContextManagerKeywordDecorator</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">doc</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">max_argument_length_in_log</span><span class="o">=</span><span class="kc">None</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">doc</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">max_argument_length_in_log</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">)</span>
     <span class="nd">@contextmanager</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fn</span><span class="p">(</span><span class="o">*</span><span class="n">_args</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fn</span><span class="p">(</span><span class="o">*</span><span class="n">_args</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="k">yield</span>
 
     <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">args</span> <span class="ow">or</span> <span class="p">[]),</span> <span class="o">**</span><span class="p">(</span><span class="n">kwargs</span> <span class="ow">or</span> <span class="p">{}))</span>
@@ -4117,18 +4117,18 @@ those decorators use <code>catch_errors</code> as well</p>
 <span class="normal">666</span>
 <span class="normal">667</span>
 <span class="normal">668</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">catch_errors</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">_T_ListenerOrSuiteVisitor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_T_ListenerOrSuiteVisitor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    errors that occur inside suite visitors and listeners do not cause the test run to fail. even</span>
-<span class="sd">    `--exitonerror` doesn&#39;t catch every exception (see &lt;https://github.com/robotframework/robotframework/issues/4853&gt;).</span>
+<span class="sd">    `--exitonerror` doesn't catch every exception (see &lt;https://github.com/robotframework/robotframework/issues/4853&gt;).</span>
 
 <span class="sd">    this decorator will remember any errors that occurred inside listeners and suite visitors, then</span>
 <span class="sd">    raise them after robot has finished running.</span>
 
-<span class="sd">    you don&#39;t need this if you are using the `listener` or `pre_rebot_modifier` decorator, as</span>
+<span class="sd">    you don't need this if you are using the `listener` or `pre_rebot_modifier` decorator, as</span>
 <span class="sd">    those decorators use `catch_errors` as well</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># prevent classes from being wrapped twice</span>
-    <span class="n">marker</span> <span class="o">=</span> <span class="s2">&quot;_catch_errors&quot;</span>
+    <span class="n">marker</span> <span class="o">=</span> <span class="s2">"_catch_errors"</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">marker</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">cls</span>
 
@@ -4141,10 +4141,10 @@ those decorators use <code>catch_errors</code> as well</p>
                 <span class="n">item_or_session</span> <span class="o">=</span> <span class="n">current_item</span><span class="p">()</span> <span class="ow">or</span> <span class="n">current_session</span><span class="p">()</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">item_or_session</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span>
-                        <span class="c1"># stack trace isn&#39;t showsn so we neewd to include the original error in the</span>
+                        <span class="c1"># stack trace isn't showsn so we neewd to include the original error in the</span>
                         <span class="c1"># message as well</span>
-                        <span class="sa">f</span><span class="s2">&quot;an error occurred inside </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> and failed to get the&quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot; current pytest item/session: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"an error occurred inside </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> and failed to get the"</span>
+                        <span class="sa">f</span><span class="s2">" current pytest item/session: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
                 <span class="n">add_robot_error</span><span class="p">(</span><span class="n">item_or_session</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
                 <span class="k">raise</span>
@@ -4157,16 +4157,16 @@ those decorators use <code>catch_errors</code> as well</p>
             <span class="bp">cls</span><span class="p">,</span>
             <span class="n">predicate</span><span class="o">=</span><span class="k">lambda</span> <span class="n">attr</span><span class="p">:</span> <span class="p">(</span>  <span class="c1"># pyright:ignore[reportAny]</span>
                 <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>  <span class="c1"># pyright:ignore[reportAny]</span>
-                <span class="c1"># the wrapper breaks static methods idk why, but we shouldn&#39;t need to wrap them</span>
-                <span class="c1"># anyway because robot listeners/suite visitors don&#39;t call any static/class methods</span>
+                <span class="c1"># the wrapper breaks static methods idk why, but we shouldn't need to wrap them</span>
+                <span class="c1"># anyway because robot listeners/suite visitors don't call any static/class methods</span>
                 <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
                     <span class="n">inspect</span><span class="o">.</span><span class="n">getattr_static</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">attr</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span> <span class="p">(</span><span class="nb">staticmethod</span><span class="p">,</span> <span class="nb">classmethod</span><span class="p">)</span>
                 <span class="p">)</span>
                 <span class="c1"># only wrap methods that are overwritten on the subclass</span>
                 <span class="ow">and</span> <span class="n">attr</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
-                <span class="c1"># don&#39;t wrap private/dunder methods since they&#39;ll get called by the public ones and</span>
-                <span class="c1"># we don&#39;t want to duplicate errors</span>
-                <span class="ow">and</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                <span class="c1"># don't wrap private/dunder methods since they'll get called by the public ones and</span>
+                <span class="c1"># we don't want to duplicate errors</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">attr</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
             <span class="p">),</span>
         <span class="p">),</span>
     <span class="p">):</span>
@@ -4183,7 +4183,7 @@ those decorators use <code>catch_errors</code> as well</p>
 
 
 <h2 id="pytest_robotframework.hide_asserts_from_robot_log" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">hide_asserts_from_robot_log</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span></code>
+            <code class="highlight language-python"><span class="n">hide_asserts_from_robot_log</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span></code>
 
 </h2>
 
@@ -4232,8 +4232,8 @@ failing assertions will always appear in the log.</p>
 <span class="normal">767</span>
 <span class="normal">768</span>
 <span class="normal">769</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">hide_asserts_from_robot_log</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">hide_asserts_from_robot_log</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    context manager for hiding multiple passing `assert` statements from the robot log. note that</span>
 <span class="sd">    individual `assert` statements using `AssertOptions(log_pass=True)` take precedence, and that</span>
 <span class="sd">    failing assertions will always appear in the log.</span>
@@ -4247,11 +4247,11 @@ failing assertions will always appear in the log.</p>
 <span class="sd">        assert True  # hidden</span>
 <span class="sd">        assert True, AssertOptions(log_pass=True)  # not hidden</span>
 <span class="sd">    ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">item</span> <span class="o">=</span> <span class="n">current_item</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">item</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;failed to get current pytest item in </span><span class="si">{</span><span class="n">hide_asserts_from_robot_log</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"failed to get current pytest item in </span><span class="si">{</span><span class="n">hide_asserts_from_robot_log</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="n">previous_value</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">stash</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_hide_asserts_context_manager_key</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">item</span><span class="o">.</span><span class="n">stash</span><span class="p">[</span><span class="n">_hide_asserts_context_manager_key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -4294,12 +4294,12 @@ use this when specifying robot resource imports at the top of the file.</p>
 <span class="normal">74</span>
 <span class="normal">75</span>
 <span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_resource</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    imports the specified robot `.resource` file when the suite execution begins.</span>
 <span class="sd">    use this when specifying robot resource imports at the top of the file.</span>
 
 <span class="sd">    to import libraries, use a regular python import</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">execution_context</span><span class="p">():</span>
         <span class="n">BuiltIn</span><span class="p">()</span><span class="o">.</span><span class="n">import_resource</span><span class="p">(</span><span class="n">escape_robot_str</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span>
     <span class="k">else</span><span class="p">:</span>
@@ -4532,29 +4532,29 @@ to disable the truncation.</p>
     <span class="n">wrap_context_manager</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">max_argument_length_in_log</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_KeywordDecorator</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    marks a function as a keyword and makes it show in the robot log.</span>
 
-<span class="sd">    unlike robot&#39;s `deco.keyword` decorator, this one will make your function appear as a keyword in</span>
+<span class="sd">    unlike robot's `deco.keyword` decorator, this one will make your function appear as a keyword in</span>
 <span class="sd">    the robot log even when ran from a python file.</span>
 
 <span class="sd">    if the function returns a context manager, its body is included in the keyword (just make sure</span>
 <span class="sd">    the `@keyword` decorator is above `@contextmanager`)</span>
 
 <span class="sd">    :param name: set a custom name for the keyword in the robot log (default is inferred from the</span>
-<span class="sd">        decorated function name). equivalent to `robot.api.deco.keyword`&#39;s `name` argument</span>
-<span class="sd">    :param tags: equivalent to `robot.api.deco.keyword`&#39;s `tags` argument</span>
+<span class="sd">        decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument</span>
+<span class="sd">    :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument</span>
 <span class="sd">    :param module: customize the module that appears top the left of the keyword name in the log.</span>
-<span class="sd">        defaults to the function&#39;s actual module</span>
+<span class="sd">        defaults to the function's actual module</span>
 <span class="sd">    :param wrap_context_manager: if the decorated function returns a context manager, whether or not</span>
 <span class="sd">        to wrap the context manager instead of the function. you probably always want this to be</span>
-<span class="sd">        `True`, unless you don&#39;t always intend to use the returned context manager.</span>
+<span class="sd">        `True`, unless you don't always intend to use the returned context manager.</span>
 <span class="sd">    :param max_argument_length_in_log: unlike in `.robot` files, the runtime value of keyword</span>
 <span class="sd">        arguments are rendered in the robot log (using its `__str__` method) instead of the</span>
 <span class="sd">        expression from the source code. this can be noisy for some objects, so this parameter</span>
 <span class="sd">        controls the the maximum number of characters to display before truncating it. set to `None`</span>
 <span class="sd">        to disable the truncation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">fn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">wrap_context_manager</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_FunctionKeywordDecorator</span><span class="p">(</span>
@@ -4767,10 +4767,10 @@ unless you don't always intend to use the returned context manager</p>
     <span class="n">module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">wrap_context_manager</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    patches a function to make it show as a keyword in the robot log.</span>
 
-<span class="sd">    you should only use this on third party modules that you don&#39;t control. if you want your own</span>
+<span class="sd">    you should only use this on third party modules that you don't control. if you want your own</span>
 <span class="sd">    function to show as a keyword you should decorate it with `@keyword` instead (the one from this</span>
 <span class="sd">    module, not the one from robot)</span>
 
@@ -4778,14 +4778,14 @@ unless you don't always intend to use the returned context manager</p>
 <span class="sd">    the object itself needs to be modified with the patched method)</span>
 <span class="sd">    :param method_name: the name of the method to patch</span>
 <span class="sd">    :param name: set a custom name for the keyword in the robot log (default is inferred from the</span>
-<span class="sd">    decorated function name). equivalent to `robot.api.deco.keyword`&#39;s `name` argument</span>
-<span class="sd">    :param tags: equivalent to `robot.api.deco.keyword`&#39;s `tags` argument</span>
+<span class="sd">    decorated function name). equivalent to `robot.api.deco.keyword`'s `name` argument</span>
+<span class="sd">    :param tags: equivalent to `robot.api.deco.keyword`'s `tags` argument</span>
 <span class="sd">    :param module: customize the module that appears top the left of the keyword name in the log.</span>
-<span class="sd">    defaults to the function&#39;s actual module</span>
+<span class="sd">    defaults to the function's actual module</span>
 <span class="sd">    :param wrap_context_manager: if the decorated function returns a context manager, whether or not</span>
 <span class="sd">    to wrap the context manager instead of the function. you probably always want this to be `True`,</span>
-<span class="sd">    unless you don&#39;t always intend to use the returned context manager</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    unless you don't always intend to use the returned context manager</span>
+<span class="sd">    """</span>
     <span class="nb">setattr</span><span class="p">(</span>
         <span class="n">obj</span><span class="p">,</span>
         <span class="n">method_name</span><span class="p">,</span>
@@ -4826,12 +4826,12 @@ correct type matching its prefix.</p>
 <span class="normal">58</span>
 <span class="normal">59</span>
 <span class="normal">60</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">:</span> <span class="n">RobotVariables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    sets suite-level variables, equivalent to the `*** Variables ***` section in a `.robot` file.</span>
 
-<span class="sd">    also performs some validation checks that robot doesn&#39;t to make sure the variable has the</span>
+<span class="sd">    also performs some validation checks that robot doesn't to make sure the variable has the</span>
 <span class="sd">    correct type matching its prefix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">suite_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
     <span class="n">_suite_variables</span><span class="p">[</span><span class="n">suite_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">variables</span>
 </code></pre></div></td></tr></table></div>
@@ -4932,7 +4932,7 @@ correct type matching its prefix.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.indexes", "content.code.copy", "navigation.top", "navigation.instant"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

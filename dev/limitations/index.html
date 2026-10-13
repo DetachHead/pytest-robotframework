@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -947,9 +947,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">some_module</span>
 
 <span class="c1"># patch a function from the module:</span>
-<span class="n">keywordify</span><span class="p">(</span><span class="n">some_module</span><span class="p">,</span> <span class="s2">&quot;some_function&quot;</span><span class="p">)</span>
+<span class="n">keywordify</span><span class="p">(</span><span class="n">some_module</span><span class="p">,</span> <span class="s2">"some_function"</span><span class="p">)</span>
 <span class="c1"># works on classes too:</span>
-<span class="n">keywordify</span><span class="p">(</span><span class="n">some_module</span><span class="o">.</span><span class="n">SomeClass</span><span class="p">,</span> <span class="s2">&quot;some_method&quot;</span><span class="p">)</span>
+<span class="n">keywordify</span><span class="p">(</span><span class="n">some_module</span><span class="o">.</span><span class="n">SomeClass</span><span class="p">,</span> <span class="s2">"some_method"</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="continuable-failures-dont-work">continuable failures don't work</h2>
 <p>keywords that raise <a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#continuable-failures"><code>ContinuableFailure</code></a> don't work properly when called from python code. this includes builtin keywords such as <code>Run Keyword And Continue On Failure</code>.</p>
@@ -983,10 +983,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">robot.libraries.BuiltIn</span><span class="w"> </span><span class="kn">import</span> <span class="n">BuiltIn</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">BuiltIn</span><span class="p">()</span><span class="o">.</span><span class="n">run_keyword_and_continue_on_failure</span><span class="p">(</span><span class="s2">&quot;fail&quot;</span><span class="p">)</span>
-    <span class="n">info</span><span class="p">(</span><span class="s2">&quot;this is executed because an exception was not actually raised&quot;</span><span class="p">)</span>
+    <span class="n">BuiltIn</span><span class="p">()</span><span class="o">.</span><span class="n">run_keyword_and_continue_on_failure</span><span class="p">(</span><span class="s2">"fail"</span><span class="p">)</span>
+    <span class="n">info</span><span class="p">(</span><span class="s2">"this is executed because an exception was not actually raised"</span><span class="p">)</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="n">info</span><span class="p">(</span><span class="s2">&quot;this is NOT executed, but the test will still fail&quot;</span><span class="p">)</span>
+    <span class="n">info</span><span class="p">(</span><span class="s2">"this is NOT executed, but the test will still fail"</span><span class="p">)</span>
 </code></pre></div>
 
 
@@ -1073,7 +1073,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes", "content.code.copy", "navigation.top", "navigation.instant"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

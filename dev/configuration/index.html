@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1071,14 +1071,14 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">pytest_robot_modify_options</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">RobotOptions</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">collectonly</span><span class="p">:</span>
-        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;loglevel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DEBUG:INFO&quot;</span>
-        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;listener&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">"loglevel"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"DEBUG:INFO"</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">"listener"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="n">Foo</span><span class="p">()</span>
         <span class="p">)</span>  <span class="c1"># you can specify instances as listeners, prerebotmodifiers, etc.</span>
 </code></pre></div>
 <p>note that not all arguments that the plugin passes to robot will be present in the <code>args</code> list. arguments required for the plugin to function (eg. the plugin's listeners and prerunmodifiers) cannot be viewed or modified with this hook</p>
 <h3 id="robot_options-environment-variable"><code>ROBOT_OPTIONS</code> environment variable</h3>
-<div class="highlight"><pre><span></span><code>ROBOT_OPTIONS=&quot;-d results --listener foo.Foo&quot;
+<div class="highlight"><pre><span></span><code>ROBOT_OPTIONS="-d results --listener foo.Foo"
 </code></pre></div>
 <h2 id="enabling-pytest-assertions-in-the-robot-log">enabling pytest assertions in the robot log</h2>
 <p>by default, only failed assertions will appear in the log. to make passed assertions show up, you'll have to add <code>enable_assertion_pass_hook = true</code> to your pytest ini options:</p>
@@ -1107,21 +1107,21 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">test_foo</span><span class="p">():</span>
-    <span class="k">assert</span> <span class="s2">&quot;foo&quot;</span> <span class="o">==</span> <span class="s2">&quot;bar&quot;</span>  <span class="c1"># hidden from the robot log (when run with --no-assertions-in-robot-log)</span>
-    <span class="k">assert</span> <span class="s2">&quot;bar&quot;</span> <span class="o">==</span> <span class="s2">&quot;baz&quot;</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">log_pass</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># not hidden</span>
+    <span class="k">assert</span> <span class="s2">"foo"</span> <span class="o">==</span> <span class="s2">"bar"</span>  <span class="c1"># hidden from the robot log (when run with --no-assertions-in-robot-log)</span>
+    <span class="k">assert</span> <span class="s2">"bar"</span> <span class="o">==</span> <span class="s2">"baz"</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">log_pass</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># not hidden</span>
 </code></pre></div>
 <h3 id="customizing-assertions">customizing assertions</h3>
 <p>pytest-robotframework allows you to customize the message for the <code>assert</code> keyword which appears on both passing and failing assertions:</p>
 <div class="highlight"><pre><span></span><code><span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span>  <span class="c1"># no custom description</span>
-<span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;custom description&quot;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"custom description"</span><span class="p">)</span>
 </code></pre></div>
 <p><img alt="" src="../images/customizing-assertions-1.png" /></p>
 <p>you can still pass a custom message to be displayed only when your assertion fails:</p>
-<div class="highlight"><pre><span></span><code><span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;the values did not match&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"the values did not match"</span>
 </code></pre></div>
 <p>however if you want to specify both a custom description and a failure message, you can use the <code>fail_message</code> argument:</p>
-<div class="highlight"><pre><span></span><code><span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;failure message&quot;</span>
-<span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;checking values&quot;</span><span class="p">,</span> <span class="n">fail_message</span><span class="o">=</span><span class="s2">&quot;failure message&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"failure message"</span>
+<span class="k">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="n">AssertOptions</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"checking values"</span><span class="p">,</span> <span class="n">fail_message</span><span class="o">=</span><span class="s2">"failure message"</span><span class="p">)</span>
 </code></pre></div>
 <p><img alt="" src="../images/customizing-assertions-2.png" /></p>
 <p>note that <code>enable_assertion_pass_hook</code> pytest option needs to be enabled for this to work.</p>
@@ -1210,7 +1210,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes", "content.code.copy", "navigation.top", "navigation.instant"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

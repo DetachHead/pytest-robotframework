@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1035,7 +1035,7 @@ assertion passed or failed</p>
     <span class="n">assertion_error</span><span class="p">:</span> <span class="ne">AssertionError</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">explanation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    gets called when an assertion runs. unlike `pytest_assertrepr_compare` and</span>
 <span class="sd">    `pytest_assertion_pass`, this hook is executed on both passing and failing assertions, and</span>
 <span class="sd">    allows you to see the second argument passed to `assert` statement</span>
@@ -1045,7 +1045,7 @@ assertion passed or failed</p>
 <span class="sd">    !!! warning</span>
 <span class="sd">        this hook is experimental and relies heavily on patching the internals of pytest. it may</span>
 <span class="sd">        break, change or be removed at any time. you should only use this hook if you know what</span>
-<span class="sd">        you&#39;re doing</span>
+<span class="sd">        you're doing</span>
 
 <span class="sd">    :param item:</span>
 <span class="sd">        the currently running item</span>
@@ -1060,9 +1060,9 @@ assertion passed or failed</p>
 <span class="sd">        you must re-raise the assertion error for the assertion to fail (useful if you want to</span>
 <span class="sd">        conditionally ignore an assertion error)</span>
 <span class="sd">    :param explanation:</span>
-<span class="sd">        pytest&#39;s explanation of the result. the format will be different depending on whether the</span>
+<span class="sd">        pytest's explanation of the result. the format will be different depending on whether the</span>
 <span class="sd">        assertion passed or failed</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1084,8 +1084,8 @@ assertion passed or failed</p>
 <p>example:
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pytest_robot_modify_options</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">RobotOptions</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">collectonly</span><span class="p">:</span>
-    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;loglevel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DEBUG:INFO&quot;</span>
-    <span class="n">options</span><span class="p">[</span><span class="s2">&quot;listener&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Foo</span><span class="p">())</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">"loglevel"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"DEBUG:INFO"</span>
+    <span class="n">options</span><span class="p">[</span><span class="s2">"listener"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Foo</span><span class="p">())</span>
 </code></pre></div></p>
 
 
@@ -1159,22 +1159,22 @@ instances of classes to <code>listener</code> and <code>prerebotmodifier</code><
 <span class="normal">44</span>
 <span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@hookspec</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">pytest_robot_modify_options</span><span class="p">(</span><span class="n">options</span><span class="p">:</span> <span class="n">RobotOptions</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    modify the arguments passed to robot in-place</span>
 
 <span class="sd">    example:</span>
 <span class="sd">    ```py</span>
 <span class="sd">    def pytest_robot_modify_options(options: RobotOptions, session: Session) -&gt; None:</span>
 <span class="sd">    if not session.config.option.collectonly:</span>
-<span class="sd">        options[&quot;loglevel&quot;] = &quot;DEBUG:INFO&quot;</span>
-<span class="sd">        options[&quot;listener&quot;].append(Foo())</span>
+<span class="sd">        options["loglevel"] = "DEBUG:INFO"</span>
+<span class="sd">        options["listener"].append(Foo())</span>
 <span class="sd">    ```</span>
 
 <span class="sd">    :param options: the arguments to be passed to robot in dict format. for example,</span>
-<span class="sd">    `{&quot;listener&quot;: [&quot;Foo&quot;, &quot;Bar&quot;]}`means `--listener Foo --listener Bar`). you can also specify</span>
+<span class="sd">    `{"listener": ["Foo", "Bar"]}`means `--listener Foo --listener Bar`). you can also specify</span>
 <span class="sd">    instances of classes to `listener` and `prerebotmodifier`</span>
 <span class="sd">    :param session: the pytest `Session` object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1273,7 +1273,7 @@ instances of classes to <code>listener</code> and <code>prerebotmodifier</code><
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.indexes", "content.code.copy", "navigation.top", "navigation.instant"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

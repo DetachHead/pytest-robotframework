@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -921,7 +921,7 @@
 
 <span class="nd">@keyword</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">():</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ran setup&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"ran setup"</span><span class="p">)</span>
 
 
 <span class="nd">@fixture</span><span class="p">(</span><span class="n">autouse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -930,7 +930,7 @@
 
 
 <span class="nd">@mark</span><span class="o">.</span><span class="n">asdf</span>
-<span class="nd">@mark</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
+<span class="nd">@mark</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">"value"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">test_bar</span><span class="p">():</span> <span class="o">...</span>
 </code></pre></div>
 <h2 id="setupteardown">setup/teardown</h2>
@@ -941,10 +941,10 @@
 
 <span class="nd">@fixture</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">user</span><span class="p">():</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;logging in&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"logging in"</span><span class="p">)</span>
     <span class="n">user</span> <span class="o">=</span> <span class="o">...</span>
     <span class="k">yield</span> <span class="n">user</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;logging off&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"logging off"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">test_something</span><span class="p">(</span><span class="n">user</span><span class="p">):</span> <span class="o">...</span>
@@ -966,7 +966,7 @@
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pytest</span><span class="w"> </span><span class="kn">import</span> <span class="n">mark</span>
 
 
-<span class="nd">@mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;test_input,expected&quot;</span><span class="p">,</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)])</span>
+<span class="nd">@mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">"test_input,expected"</span><span class="p">,</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)])</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">test_eval</span><span class="p">(</span><span class="n">test_input</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
     <span class="k">assert</span> <span class="n">test_input</span> <span class="o">==</span> <span class="n">expected</span>
 </code></pre></div>
@@ -976,11 +976,11 @@
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">robot.libraries.BuiltIn</span><span class="w"> </span><span class="kn">import</span> <span class="n">BuiltIn</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pytest_robotframework</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_variables</span>
 
-<span class="n">set_variables</span><span class="p">({</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="s2">&quot;baz&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]})</span>
+<span class="n">set_variables</span><span class="p">({</span><span class="s2">"foo"</span><span class="p">:</span> <span class="s2">"bar"</span><span class="p">,</span> <span class="s2">"baz"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"a"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">]})</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">test_variables</span><span class="p">():</span>
-    <span class="k">assert</span> <span class="n">BuiltIn</span><span class="p">()</span><span class="o">.</span><span class="n">get_variable_value</span><span class="p">(</span><span class="s2">&quot;$foo&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;bar&quot;</span>
+    <span class="k">assert</span> <span class="n">BuiltIn</span><span class="p">()</span><span class="o">.</span><span class="n">get_variable_value</span><span class="p">(</span><span class="s2">"$foo"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"bar"</span>
 </code></pre></div>
 <p><code>set_variables</code> is equivalent to the <code>*** Variables ***</code> section in a <code>.robot</code> file. all variables are prefixed with <code>$</code>. <code>@</code> and <code>&amp;</code> are not required since <code>$</code> variables can store lists and dicts anyway</p>
 <h2 id="running-tests-in-parallel">running tests in parallel</h2>
@@ -1070,7 +1070,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes", "content.code.copy", "navigation.top", "navigation.instant"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
