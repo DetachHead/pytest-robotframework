@@ -23,47 +23,55 @@ if TYPE_CHECKING:
 
     # keyword, no args:
     @keyword
-    def g() -> None: ...
+    def b() -> None: ...
 
-    _ = assert_type(g, Callable[[], None])  # ty:ignore[type-assertion-failure]
+    _ = assert_type(b, Callable[[], None])  # ty:ignore[type-assertion-failure]
 
     # keyword, no args, returns Never:
     @keyword  # make sure there's no deprecation warning here
-    def h() -> Never:
+    def c() -> Never:
         raise Exception
 
-    _ = assert_type(h, Callable[[], Never])  # ty:ignore[type-assertion-failure]
+    _ = assert_type(c, Callable[[], Never])  # ty:ignore[type-assertion-failure]
 
     # keyword, wrap_context_manager=True:
     @keyword(wrap_context_manager=True)
     @contextmanager
-    def b() -> Generator[None, None, None]:
+    def d() -> Generator[None, None, None]:
         yield
 
-    _ = assert_type(b, Callable[[], AbstractContextManager[None]])  # ty:ignore[type-assertion-failure]
+    _ = assert_type(d, Callable[[], AbstractContextManager[None]])  # ty:ignore[type-assertion-failure]
 
     # keyword, wrap_context_manager=False:
     @keyword(wrap_context_manager=False)
     @contextmanager
-    def c() -> Generator[None, None, None]:
+    def e() -> Generator[None, None, None]:
         yield
 
-    _ = assert_type(c, Callable[[], _GeneratorContextManager[None]])  # ty:ignore[type-assertion-failure]
+    _ = assert_type(e, Callable[[], _GeneratorContextManager[None]])  # ty:ignore[type-assertion-failure]
 
     # keyword, context manager with no wrap_context_manager arg:
     @keyword  # pyright:ignore[reportDeprecated] # ty: ignore[deprecated] # pyrefly: ignore[deprecated]
     @contextmanager
-    def d() -> Generator[None, None, None]:
+    def f() -> Generator[None, None, None]:
         yield
 
-    _ = assert_type(d, Never)
+    _ = assert_type(f, Never)
+
+    # pyright doesn't report an error here due to https://github.com/microsoft/pyright/issues/11292
+    @keyword()  # ty: ignore[deprecated] # pyrefly: ignore[deprecated]
+    @contextmanager
+    def g() -> Generator[None]:
+        yield
+
+    _ = assert_type(g, Never)
 
     # keyword, non-context manager with wrap_context_manager=True:
     # expected type error
     @keyword(wrap_context_manager=True)  # pyright:ignore[reportArgumentType]  # ty:ignore[invalid-argument-type] # pyrefly: ignore[bad-argument-type]
-    def e() -> None: ...
+    def h() -> None: ...
 
     # keyword, non-context manager with wrap_context_manager=False:
     # expected type error
     @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]  # ty:ignore[invalid-argument-type] # pyrefly: ignore[bad-specialization]
-    def f() -> None: ...
+    def i() -> None: ...
