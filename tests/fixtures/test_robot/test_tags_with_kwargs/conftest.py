@@ -11,10 +11,6 @@ def pytest_runtest_setup(item: RobotItem):
     marker_names = ["m1", "m2"]
     marker_kwargs = [{"foo": "1", "baz": "false"}, {"bar": "foo", "qux": "7"}]
     markers = list(item.iter_markers())
-    # TODO: use strict=True instead when dropping support for <3.11 # ruff: ignore[missing-todo-link]
-    assert len(marker_names) == len(marker_kwargs) == len(markers)
-    for marker, marker_name, marker_kwarg in zip(
-        markers, marker_names, marker_kwargs, strict=False
-    ):
+    for marker, marker_name, marker_kwarg in zip(markers, marker_names, marker_kwargs, strict=True):
         assert marker.name == marker_name
         assert marker.kwargs == marker_kwarg
