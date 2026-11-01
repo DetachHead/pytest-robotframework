@@ -396,7 +396,6 @@ exclude = [
   "**/*__pycache__",
   "**/*egg-info",
   "**/docs",
-  "**/tests",
   "**/.venv",
 ]
 source_roots = [
@@ -404,17 +403,27 @@ source_roots = [
 ]
 ignore_type_checking_imports = false
 
+[tool.tach.external]
+exclude = [
+  "_typeshed", # type-checking only module that doesn't exist at runtime
+  "lxml", # dev dependency only used in tests (https://github.com/tach-org/tach/issues/565)
+]
+
 [[tool.tach.modules]]
 path = "scripts"
 depends_on = []
 
 [[tool.tach.modules]]
 path = "pytest_robotframework"
-depends_on = ["pytest_robotframework._internal.*"]
+depends_on = [
+  "pytest_robotframework._internal",
+]
 
 [[tool.tach.modules]]
-path = "pytest_robotframework._internal.robot"
-cannot_depend_on = ["pytest_robotframework._internal.pytest"]
+path = "pytest_robotframework._internal"
+
+[[tool.tach.modules]]
+path = "tests"
 
 [tool.tach.rules]
 unused_ignore_directives = "error"

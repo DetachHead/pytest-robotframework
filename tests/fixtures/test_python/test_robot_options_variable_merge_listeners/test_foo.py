@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from tests.fixtures.test_python.test_robot_options_merge_listeners import Listener
 else:
-    import Listener
+    import Listener  # tach-ignore
 
 
 def test_func1():
