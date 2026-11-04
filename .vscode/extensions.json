@@ -12,7 +12,8 @@
     "github.vscode-github-actions",
     "dprint.dprint",
     "detachhead.dtach",
-    "meta.pyrefly"
+    "meta.pyrefly",
+    "detachhead.vsenv" // for dprint
   ],
   "unwantedRecommendations": [
     "ms-python.vscode-pylance"

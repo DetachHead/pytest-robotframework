@@ -75,7 +75,6 @@
     "pw.bat": true
   },
   "chat.disableAIFeatures": true,
-  "dprint.path": ".vscode/dprint", // https://github.com/dprint/dprint/issues/859#issuecomment-3194102785
   "basedpyright.disableLanguageServices": true,
   "python.pyrefly.disableLanguageServices": true,
   "git.blame.editorDecoration.enabled": true,
