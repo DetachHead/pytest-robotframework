@@ -1,10 +1,60 @@
 {
+  "min_severity": "info",
   "errors": [
+    {
+      "column": 19,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `import_resource` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
     {
       "column": 22,
       "path": "pytest_robotframework/_internal/api.py",
       "name": "invalid-type-var",
       "concise_description": "Attribute `wrapped` cannot depend on type variable `T_WrappedContextManager`, which is not in the scope of class `WrappedContextManager`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `set_suite_variable` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 55,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `_errors` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 67,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `error` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 48,
+      "path": "pytest_robotframework/_internal/robot/library.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `_request` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `run_keyword` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `run_keyword` is unknown; it is inferred as an implicit `Any`",
       "severity": "error"
     },
     {
@@ -19,6 +69,69 @@
       "path": "tests/conftest.py",
       "name": "unused-call-result",
       "concise_description": "Result of call expression is of type `Path` and is not used; assign to `_` if this is intentional",
+      "severity": "error"
+    },
+    {
+      "column": 6,
+      "path": "tests/conftest.py",
+      "name": "unknown-variable-type",
+      "concise_description": "The type of `result` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_robot_modify_args_hook/test_foo.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_robot_modify_args_hook_collect_only/test_foo.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_robot_modify_options_hook/test_foo.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_suite_variables.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_suite_variables_with_slash.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_variables_list.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_variables_not_in_scope_in_other_suites/test_one.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_variables_not_in_scope_in_other_suites/test_two.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
       "severity": "error"
     }
   ]

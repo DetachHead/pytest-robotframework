@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 
 if pytest_version < (9,):
-    from _pytest.assertion.util import running_on_ci  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]  # ty:ignore[unresolved-import] # pyrefly: ignore[missing-module-attribute]
+    from _pytest.assertion.util import running_on_ci  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]  # ty:ignore[import-not-found] # pyrefly: ignore[missing-module-attribute]
 else:
     from _pytest.compat import running_on_ci
 
@@ -854,12 +854,17 @@ def test_ansi(pr: PytestRobotTester):
         and contains(., 'span style="color: #5c5cff">2</span><span style="color: #7f7f7f"')
         ]""",
     ).text
-    assert xml.xpath("""//status[@status='FAIL' and .="\
+
+    # in pytest 9.2 they added this explanation text to the diff
+    explanation = (
+        "" if pytest_version < (9, 2) else " (-: missing in left side, +: extra in left side)"
+    )
+    assert xml.xpath(f"""//status[@status='FAIL' and .="\
 assert [1, 2, 3] == [1, '<div>asdf</div>', 3]
   
   At index 1 diff: 2 != '<div>asdf</div>'
   
-  Full diff:
+  Full diff:{explanation}
     [
         1,
   -     '<div>asdf</div>',
