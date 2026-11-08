@@ -23,8 +23,7 @@ if TYPE_CHECKING:
     from _typeshed import StrPath
 
     # https://github.com/DetachHead/basedpyright/issues/615
-    # https://github.com/facebook/pyrefly/issues/5135
-    from lxml._types import (  # pyright:ignore[reportMissingModuleSource] # pyrefly: ignore[missing-source]
+    from lxml._types import (  # pyright:ignore[reportMissingModuleSource]
         _TextArg,  # pyright: ignore[reportPrivateUsage]
         _XPathExtFuncArg,  # pyright: ignore[reportPrivateUsage]
         _XPathNSArg,  # pyright: ignore[reportPrivateUsage]
@@ -213,8 +212,7 @@ if TYPE_CHECKING:
         """
 
         # https://github.com/DetachHead/basedpyright/issues/615
-        # https://github.com/facebook/pyrefly/issues/5136
-        def __init__(self, element: _Element) -> None: ...  # pyright:ignore[reportMissingSuperCall] # pyrefly: ignore[missing-super-call]
+        def __init__(self, element: _Element) -> None: ...  # pyright:ignore[reportMissingSuperCall]
 
         @override
         def __len__(self) -> Never:  # pyright:ignore[reportReturnType] see issue above

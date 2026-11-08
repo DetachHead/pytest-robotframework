@@ -121,7 +121,7 @@ def _call_assertion_hook(
 
 # we aren't patching an existing function here but instead adding a new one to the rewrite module,
 # since the rewritten assert statement needs to call it, and this is the easist way to do that
-rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute] # pyrefly: ignore[missing-attribute]
+rewrite._call_assertion_hook = _call_assertion_hook  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[missing-attribute] # pyrefly: ignore[missing-attribute]
 
 
 @patch_method(AssertionRewriter)
@@ -191,7 +191,7 @@ def _xdist_temp_dir(session: Session) -> Path:
     return Path(
         cast(
             TempPathFactory,
-            session.config._tmp_path_factory,  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute] # pyrefly: ignore[missing-attribute]
+            session.config._tmp_path_factory,  # pyright:ignore[reportAttributeAccessIssue] # ty:ignore[missing-attribute] # pyrefly: ignore[missing-attribute]
         ).getbasetemp()
     )
 
@@ -458,7 +458,7 @@ def pytest_sessionfinish(session: Session) -> HookWrapperResult:
                     # Here we create a jenkem huffer because you can't control rebots console output
                     #  Rebot uses __stdout__, which doesn't have an implementation in contextlib
                     result = contextlib._RedirectStream(file)  # pyright: ignore[reportPrivateUsage]
-                    result._stream = "__stdout__"  # pyright: ignore[reportAttributeAccessIssue] # ty:ignore[unresolved-attribute] # pyrefly: ignore[missing-attribute]
+                    result._stream = "__stdout__"  # pyright: ignore[reportAttributeAccessIssue] # ty:ignore[missing-attribute] # pyrefly: ignore[missing-attribute]
                     return result
 
                 with Path(os.devnull).open("w", encoding="UTF8") as devull, redirector(devull):
