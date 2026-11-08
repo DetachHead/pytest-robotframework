@@ -311,6 +311,7 @@ ignore = [
   "runtime-cast-value", # quoted types look disgusting
   "trailing-whitespace", # covered by formatter + false positives inside multiline strings
   "blank-line-with-whitespace", # covered by formatter + false positives inside multiline strings
+  "missing-todo-link",
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
