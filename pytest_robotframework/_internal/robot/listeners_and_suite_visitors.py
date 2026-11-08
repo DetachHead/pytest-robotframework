@@ -17,7 +17,7 @@ from _pytest import runner
 from _pytest.python import PyobjMixin
 from ansi2html import Ansi2HTMLConverter
 from pluggy import HookCaller, HookImpl
-from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
+from pluggy._hooks import _SubsetHookCaller
 from pytest import Class, Function as PytestFunction, Item, Module, Session, StashKey
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
