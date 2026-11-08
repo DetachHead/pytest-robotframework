@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, cast
 
 from pytest import ExitCode, Item, Mark
 
+from pytest_robotframework._internal.pytest.utils import pytest_version
 from pytest_robotframework._internal.robot.utils import robot_6
 from tests.conftest import PytestRobotTester, assert_robot_total_stats, output_xml, xpath
 
@@ -158,7 +159,12 @@ def test_tags_in_settings(pr: PytestRobotTester):
 def test_warning_on_unknown_tag(pr: PytestRobotTester):
     result = pr.run_pytest("--strict-markers", "-m", "m1")
     result.assert_outcomes(errors=pr.xdist or 1)
-    assert result.ret == ExitCode.TESTS_FAILED
+    expected_exit_code = (
+        # TODO: why is the exit code different when running with xdist? i cant fucking debug tests
+        # in this project anymore because of https://github.com/microsoft/vscode-python/issues/25581#issuecomment-4438781407
+        ExitCode.TESTS_FAILED if pytest_version < (9, 2) or pr.xdist else ExitCode.USAGE_ERROR
+    )
+    assert result.ret == expected_exit_code
     assert "'m1' not found in `markers` configuration option" in result.outlines
 
 
