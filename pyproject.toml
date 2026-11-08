@@ -237,13 +237,13 @@ baseline = ".baselines/pyrefly.json"
 
 [tool.pyrefly.errors]
 implicit-bool = false
-unannotated-return = false # only enforced for public API, otherwise we can rely on inferred return type
+unannotated-return = false # we use unannotated-public-return for public api instead, otherwise we can rely on inferred return type
 
 # public API
 [[tool.pyrefly.sub-config]]
 matches = "pytest_robotframework/_internal/api.py"
 [tool.pyrefly.sub-config.errors]
-unannotated-return = true
+unannotated-public-return = true
 
 # fake tests full of dummy assertions
 [[tool.pyrefly.sub-config]]
