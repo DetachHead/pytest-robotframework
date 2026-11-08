@@ -38,7 +38,7 @@ dev = [
   "tach>=0.32.2",
   "griffe-public-redundant-aliases>=0.3.0",
   "types-lxml>=2026.2.16",
-  "pyrefly>=1.4.0.dev3",
+  "pyrefly>=1.5.0.dev1",
 ]
 
 [project.urls]
