@@ -1,10 +1,683 @@
 {
+  "min_severity": "info",
   "errors": [
+    {
+      "column": 19,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `import_resource` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `fail` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 41,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 58,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `syntax` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `skip` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 32,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `message` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `fail` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 32,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `message` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 60,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `traceback` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `debug` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `traceback` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `keyword` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 63,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `get_runner` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
     {
       "column": 22,
       "path": "pytest_robotframework/_internal/api.py",
       "name": "invalid-type-var",
       "concise_description": "Attribute `wrapped` cannot depend on type variable `T_WrappedContextManager`, which is not in the scope of class `WrappedContextManager`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `wrapped` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 41,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `__enter__` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 50,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `wrapped` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 45,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `__exit__` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 53,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 36,
+      "path": "pytest_robotframework/_internal/api.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_initialpaths` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_initialpaths` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 49,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `pyargs` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 30,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `parse_arguments` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `main` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `add_hookspecs` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 38,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `collectonly` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 81,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `suite` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 87,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `name` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 39,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `main` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 47,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_extra_cli_opts` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 47,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `_cli_opts` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 47,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_cli_opts` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `main` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 32,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `assertions_in_robot_log` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `from_parent` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `set_suite_variable` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 30,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `collectonly` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "pytest_robotframework/_internal/pytest/plugin.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `collectonly` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `from_parent` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `__init__` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `run` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 80,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `run` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 40,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `test` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 55,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_errors` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 55,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `_errors` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 67,
+      "path": "pytest_robotframework/_internal/pytest/robot_file_support.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `error` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 35,
+      "path": "pytest_robotframework/_internal/pytest/xdist_utils.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `numprocesses` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 48,
+      "path": "pytest_robotframework/_internal/robot/library.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `_request` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 30,
+      "path": "pytest_robotframework/_internal/robot/library.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of `setup_only` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 54,
+      "path": "pytest_robotframework/_internal/robot/library.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 68,
+      "path": "pytest_robotframework/_internal/robot/library.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `nextitem` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 40,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 64,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `obj` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 9,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 82,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `nextitem` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_orig` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_hookimpls` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_add_hookimpl` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 80,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `nextitem` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_hookimpls` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_remove_plugin` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 39,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `value` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 46,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `instance` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 38,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `instance` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 35,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 56,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `instance` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 66,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 38,
+      "path": "pytest_robotframework/_internal/robot/listeners_and_suite_visitors.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `instance` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 62,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `current` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 5,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `_cli_opts` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_cli_opts` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 5,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `_extra_cli_opts` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_extra_cli_opts` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `_cli_opts` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "protected-access",
+      "concise_description": "Protected attribute `_cli_opts` cannot be accessed outside of its defining class or a subclass",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of attribute `values` is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `run_keyword` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "pytest_robotframework/_internal/robot/utils.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `run_keyword` is unknown; it is inferred as an implicit `Any`",
       "severity": "error"
     },
     {
@@ -15,10 +688,122 @@
       "severity": "error"
     },
     {
+      "column": 35,
+      "path": "tests/conftest.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `node` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
       "column": 9,
       "path": "tests/conftest.py",
       "name": "unused-call-result",
       "concise_description": "Result of call expression is of type `Path` and is not used; assign to `_` if this is intentional",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "tests/conftest.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of attribute `param` is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "tests/conftest.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 6,
+      "path": "tests/conftest.py",
+      "name": "unknown-variable-type",
+      "concise_description": "The type of `result` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "tests/conftest.py",
+      "name": "unknown-from-error",
+      "concise_description": "The type of `line` is unknown because it comes from an error",
+      "severity": "error"
+    },
+    {
+      "column": 38,
+      "path": "tests/conftest.py",
+      "name": "unknown-from-error",
+      "concise_description": "The type of `line` is unknown because it comes from an error",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_robot_modify_args_hook/test_foo.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_robot_modify_args_hook_collect_only/test_foo.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_robot_modify_options_hook/test_foo.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_suite_variables.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_suite_variables_with_slash.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_variables_list.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_variables_not_in_scope_in_other_suites/test_one.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/fixtures/test_python/test_variables_not_in_scope_in_other_suites/test_two.py",
+      "name": "unknown-attribute-access",
+      "concise_description": "The type of attribute `get_variable_value` is unknown; it is inferred as an implicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "tests/test_python.py",
+      "name": "explicit-any-use",
+      "concise_description": "The type of this argument is an explicit `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "tests/test_robot.py",
+      "name": "partially-unknown-type",
+      "concise_description": "The type of this argument is partially unknown; it contains an implicit `Any`",
       "severity": "error"
     }
   ]

@@ -86,7 +86,7 @@ def setup(arg: Cloaked[Item]):
     ):
         # This only happens if the item is re-run, as is done by
         # pytest-rerunfailures.
-        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType] # ty:ignore[unresolved-attribute] # pyrefly: ignore[missing-attribute]
+        item._initrequest()  # pyright:ignore[reportAttributeAccessIssue,reportUnknownMemberType] # ty:ignore[missing-attribute] # pyrefly: ignore[missing-attribute]
     _call_and_report_robot_edition(item, "setup")
 
 
