@@ -40,7 +40,7 @@ def patch_method(
         nonlocal method_name
         if method_name is None:
             # https://github.com/astral-sh/ty/issues/599
-            method_name = fn.__name__  # ty:ignore[unresolved-attribute]
+            method_name = fn.__name__  # ty:ignore[missing-attribute]
         old_method = cast(Callable[P, T], getattr(cls, method_name))
 
         @wraps(fn)

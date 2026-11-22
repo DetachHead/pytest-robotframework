@@ -224,7 +224,7 @@ class _KeywordDecorator:
     def call(self, fn: Callable[P, T]) -> Callable[P, T]:
         if isinstance(fn, _KeywordDecorator):
             return fn
-        keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))  # ty:ignore[unresolved-attribute]
+        keyword_name = self._name or cast(str, printable_name(fn.__name__, code_style=True))  # ty:ignore[missing-attribute]
         # this doesn't really do anything in python land but we call the original robot keyword
         # decorator for completeness
         deco.keyword(name=keyword_name, tags=self._tags)(fn)
@@ -412,7 +412,7 @@ class _WrappedContextManagerKeywordDecorator(_KeywordDecorator):
                 f"keyword decorator expected a context manager but instead got {fn_result!r}"
             )
         # 🚀 independently verified for safety by the overloads
-        return WrappedContextManager(  # pyright:ignore[reportReturnType] # ty:ignore[invalid-return-type] # pyrefly: ignore[bad-return]
+        return WrappedContextManager(  # pyright:ignore[reportReturnType] # ty:ignore[invalid-explicit-return] # pyrefly: ignore[bad-return]
             fn_result, status_reporter
         )
 

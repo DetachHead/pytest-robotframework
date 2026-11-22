@@ -38,7 +38,7 @@ dev = [
   "tach>=0.32.2",
   "griffe-public-redundant-aliases>=0.3.0",
   "types-lxml>=2026.2.16",
-  "pyrefly>=1.4.0.dev3",
+  "pyrefly>=1.6.0-dev.1",
 ]
 
 [project.urls]
@@ -237,13 +237,13 @@ baseline = ".baselines/pyrefly.json"
 
 [tool.pyrefly.errors]
 implicit-bool = false
-unannotated-return = false # only enforced for public API, otherwise we can rely on inferred return type
+unannotated-return = false # we use unannotated-public-return for public api instead, otherwise we can rely on inferred return type
 
 # public API
 [[tool.pyrefly.sub-config]]
 matches = "pytest_robotframework/_internal/api.py"
 [tool.pyrefly.sub-config.errors]
-unannotated-return = true
+unannotated-public-return = true
 
 # fake tests full of dummy assertions
 [[tool.pyrefly.sub-config]]
@@ -311,6 +311,7 @@ ignore = [
   "runtime-cast-value", # quoted types look disgusting
   "trailing-whitespace", # covered by formatter + false positives inside multiline strings
   "blank-line-with-whitespace", # covered by formatter + false positives inside multiline strings
+  "missing-todo-link",
 ]
 
 [tool.ruff.lint.flake8-pytest-style]

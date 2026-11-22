@@ -33,8 +33,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-
       - run: ./pw uv sync --locked
 
       - run: ./pw basedpyright
@@ -90,7 +88,6 @@ jobs:
       - run: ./pw uv publish
       - name: get version number
         id: current-version
-        # https://github.com/astral-sh/uv/issues/6298
         run: echo ::set-output name=CURRENT_VERSION::$(./pw uv version --short)
       - uses: marvinpinto/action-automatic-releases@v1.2.1
         with:

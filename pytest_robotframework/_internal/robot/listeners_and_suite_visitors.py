@@ -17,7 +17,7 @@ from _pytest import runner
 from _pytest.python import PyobjMixin
 from ansi2html import Ansi2HTMLConverter
 from pluggy import HookCaller, HookImpl
-from pluggy._hooks import _SubsetHookCaller  # pyright:ignore[reportPrivateUsage]
+from pluggy._hooks import _SubsetHookCaller
 from pytest import Class, Function as PytestFunction, Item, Module, Session, StashKey
 from robot import model, result, running
 from robot.api.interfaces import ListenerV3, Parser
@@ -78,7 +78,7 @@ def _create_running_keyword(
         raise InternalError(f"kwargs not supported: {kwargs}")
     return running.Keyword(
         # https://github.com/astral-sh/ty/issues/599
-        name=f"{fn.__module__}.{fn.__name__}",  # ty:ignore[unresolved-attribute]
+        name=f"{fn.__module__}.{fn.__name__}",  # ty:ignore[missing-attribute]
         args=args,
         type=keyword_type,
     )
@@ -244,7 +244,7 @@ class RobotTestFilterer(SuiteVisitor):
 
     @override
     # https://github.com/robotframework/robotframework/issues/4940
-    def visit_test(  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[invalid-method-override] # pyrefly: ignore[bad-override]
+    def visit_test(  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[incompatible-method-override] # pyrefly: ignore[bad-override]
         self, test: running.TestCase
     ):
         for item in self.items:
@@ -298,7 +298,7 @@ class PytestRuntestProtocolInjector(SuiteVisitor):
 
     @override
     # https://github.com/robotframework/robotframework/issues/4940
-    def start_test(self, test: running.TestCase) -> bool | None:  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[invalid-method-override] # pyrefly: ignore[bad-override]
+    def start_test(self, test: running.TestCase) -> bool | None:  # pyright:ignore[reportIncompatibleMethodOverride] # ty:ignore[incompatible-method-override] # pyrefly: ignore[bad-override]
         if self.xdist_item:
             item = self.xdist_item
         else:
