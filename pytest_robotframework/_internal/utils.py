@@ -9,10 +9,12 @@ from typing_extensions import ParamSpec
 if TYPE_CHECKING:
     from typing import Concatenate
 
-T = TypeVar("T")
-P = ParamSpec("P")
-
 Function: TypeAlias = Callable[..., object]
+
+
+T = TypeVar("T")
+Fn = TypeVar("Fn", bound=Function)
+P = ParamSpec("P")
 
 
 def patch_method(

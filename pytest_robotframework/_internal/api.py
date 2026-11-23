@@ -35,7 +35,7 @@ from pytest_robotframework._internal.robot.utils import (
     is_robot_traceback,
     robot_6,
 )
-from pytest_robotframework._internal.utils import Function
+from pytest_robotframework._internal.utils import Fn, Function
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator, Iterable, Mapping
@@ -318,8 +318,10 @@ class _FunctionKeywordDecorator(_KeywordDecorator):
     @overload
     def __call__(self, fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
 
+    # we use Fn instead of Callable[P, T] to ensure we don't lose the information of what type of
+    # Callable it is (eg. if it's a `type`)
     @overload
-    def __call__(self, fn: Callable[P, T]) -> Callable[P, T]: ...
+    def __call__(self, fn: Fn) -> Fn: ...
 
     def __call__(self, fn: Callable[P, T]) -> Callable[P, T]:
         return self.call(fn)
@@ -468,18 +470,18 @@ def keyword(fn: Callable[P, AbstractContextManager[T]]) -> Never: ...
 
 
 @overload
-def keyword(fn: Callable[P, T]) -> Callable[P, T]: ...
+def keyword(fn: Fn) -> Fn: ...
 
 
 def keyword(  # pylint:disable=missing-param-doc
-    fn: Callable[P, T] | None = None,
+    fn: Fn | None = None,
     *,
     name: str | None = None,
     tags: tuple[str, ...] | None = None,
     module: str | None = None,
     wrap_context_manager: bool | None = None,
     max_argument_length_in_log: int | None = 100,
-) -> _KeywordDecorator | Callable[P, T]:
+) -> _KeywordDecorator | Fn:
     """
     marks a function as a keyword and makes it show in the robot log.
 
