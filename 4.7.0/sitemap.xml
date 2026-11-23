@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/configuration/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/development/compatibility/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/development/contributing/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/features/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/ide-integrations/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/installation/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/limitations/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/reference/API/</loc>
+      </url>
+      <url>
+        <loc>https://detachhead.github.io/pytest-robotframework/4.7.0/reference/hooks/</loc>
+      </url>
+</urlset>
