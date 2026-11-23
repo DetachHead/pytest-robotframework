@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from typing_extensions import override
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
     from contextlib import (
@@ -19,13 +21,13 @@ if TYPE_CHECKING:
 
     # https://github.com/astral-sh/ty/issues/1495#issuecomment-3668125131
 
-    _ = assert_type(a, Callable[[], None])  # ty:ignore[type-assertion-failure]
+    _ = assert_type(a, Callable[[], None])  # ty:ignore[assert-type-unspellable-subtype]
 
     # keyword, no args:
     @keyword
     def b() -> None: ...
 
-    _ = assert_type(b, Callable[[], None])  # ty:ignore[type-assertion-failure]
+    _ = assert_type(b, Callable[[], None])  # ty:ignore[assert-type-unspellable-subtype]
 
     # keyword, no args, returns Never:
     @keyword  # make sure there's no deprecation warning here
@@ -75,3 +77,26 @@ if TYPE_CHECKING:
     # expected type error
     @keyword(wrap_context_manager=False)  # pyright:ignore[reportArgumentType]  # ty:ignore[invalid-argument-type] # pyrefly: ignore[bad-specialization]
     def i() -> None: ...
+
+    # keyword decorator on class
+    @keyword
+    class Foo: ...
+
+    # ensure that the class can still be used as a type annotation
+    foo: Foo = Foo()
+
+    # keyword decorator on class with unnecessary call
+    @keyword()
+    class Bar: ...
+
+    bar: Bar = Bar()
+
+    # keyword decorator on class context manager
+    @keyword(wrap_context_manager=True)
+    class Baz(AbstractContextManager[None]):
+        @override
+        def __exit__(self, *_: object): ...
+
+    # TODO: can we figure out a way to get this to work? we dont want to preserve the original type
+    # because it's wrapped with a different unrelated type
+    baz: Baz = Baz()  # ty: ignore[invalid-type-form] # pyright: ignore[reportGeneralTypeIssues]
